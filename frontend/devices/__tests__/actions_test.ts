@@ -59,7 +59,7 @@ import axios from "axios";
 import { success, error, warning, info } from "../../toast/toast";
 import { edit, save } from "../../api/crud";
 import { DeepPartial } from "../../redux/interfaces";
-import { EmergencyLock, Farmbot } from "farmbot";
+import { EmergencyLock, Execute, Farmbot } from "farmbot";
 import { Path } from "../../internal_urls";
 import { csToLua, runDemoLuaCode, runDemoSequence } from "../../demo/lua_runner";
 
@@ -90,6 +90,20 @@ describe("sendRPC()", () => {
     await actions.sendRPC(cmd);
     expect(mockDevice.current.send).not.toHaveBeenCalled();
     expect(csToLua).toHaveBeenCalledWith(cmd);
+  });
+
+  it("calls sendRPC on demo accounts: execute", async () => {
+    localStorage.setItem("myBotIs", "online");
+    const cmd: Execute = { kind: "execute", args: { sequence_id: 1 }, body: [] };
+    await actions.sendRPC(cmd);
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).not.toHaveBeenCalled();
+    expect(runDemoSequence).toHaveBeenCalledWith(
+      expect.any(Object),
+      1,
+      [],
+    );
   });
 });
 

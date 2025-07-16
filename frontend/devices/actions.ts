@@ -85,7 +85,14 @@ const maybeAlertLocked = () =>
 /** Send RPC. */
 export function sendRPC(command: RpcRequestBodyItem) {
   if (forceOnline()) {
-    runDemoLuaCode(csToLua(command));
+    if (command.kind == "execute") {
+      runDemoSequence(
+        store.getState().resources.index,
+        command.args.sequence_id,
+        command.body);
+    } else {
+      runDemoLuaCode(csToLua(command));
+    }
     return;
   }
   getDevice()

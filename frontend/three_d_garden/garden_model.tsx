@@ -30,8 +30,9 @@ import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
 import { cameraInit } from "./camera";
 import { isMobile } from "../screen_size";
-import { computeSurface, getZFunc, precomputeTriangles } from "./triangles";
+import { computeSurface } from "./triangles";
 import { BigDistance } from "./constants";
+import { precomputeTriangles, getZFunc } from "./triangle_functions";
 
 const AnimatedGroup = animated(Group);
 
@@ -95,6 +96,9 @@ export const GardenModel = (props: GardenModelProps) => {
     computeSurface(props.mapPoints, config), [props.mapPoints, config]);
   const triangles = React.useMemo(() =>
     precomputeTriangles(vertexList, faces), [vertexList, faces]);
+  React.useEffect(() => {
+    sessionStorage.setItem("triangles", JSON.stringify(triangles));
+  }, [triangles]);
   const getZ = getZFunc(triangles, -config.soilHeight);
 
   // eslint-disable-next-line no-null/no-null

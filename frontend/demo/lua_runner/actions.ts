@@ -1,4 +1,6 @@
-import { PercentageProgress } from "farmbot";
+import {
+  Identifier, MoveBodyItem, ParameterApplication, PercentageProgress,
+} from "farmbot";
 import { info } from "../../toast/toast";
 import { store } from "../../redux/store";
 import { Actions } from "../../constants";
@@ -6,10 +8,15 @@ import { validBotLocationData } from "../../util/location";
 import { TOAST_OPTIONS } from "../../toast/constants";
 import { Action, XyzNumber } from "./interfaces";
 import { edit, save } from "../../api/crud";
-import { getDeviceAccountSettings } from "../../resources/selectors";
+import {
+  getDeviceAccountSettings,
+  maybeFindPointById,
+  maybeFindSlotByToolId,
+} from "../../resources/selectors";
 import { UnknownAction } from "redux";
 import { getFirmwareSettings, getGardenSize } from "./stubs";
-import { clamp } from "lodash";
+import { clamp, clone } from "lodash";
+import { getZFunc, TriangleData } from "../../three_d_garden/triangle_functions";
 
 const almostEqual = (a: XyzNumber, b: XyzNumber) => {
   const epsilon = 0.01;
@@ -62,7 +69,10 @@ const clampTarget = (target: XyzNumber): XyzNumber => {
   return clamped;
 };
 
-const expandActions = (actions: Action[]): Action[] => {
+const expandActions = (
+  actions: Action[],
+  variables: ParameterApplication[] | undefined,
+): Action[] => {
   const expanded: Action[] = [];
   const { position } = validBotLocationData(
     store.getState().bot.hardware.location_data);
@@ -106,6 +116,13 @@ const expandActions = (actions: Action[]): Action[] => {
         movementChunks(current, moveRelativeTarget).map(addPosition);
         setCurrent(moveRelativeTarget);
         break;
+      case "_move":
+        const moveItems = JSON.parse("" + action.args[0]) as MoveBodyItem[];
+        const actualMoveTarget = clampTarget(
+          calculateMove(moveItems, current, variables));
+        movementChunks(current, actualMoveTarget).map(addPosition);
+        setCurrent(actualMoveTarget);
+        break;
       case "move":
         const moveTarget = clampTarget({
           x: (action.args[0] as number | undefined) ?? current.x,
@@ -139,9 +156,12 @@ const expandActions = (actions: Action[]): Action[] => {
 
 const pending = new Set<ReturnType<typeof setTimeout>>();
 
-export const runActions = (actions: Action[]) => {
+export const runActions = (
+  actions: Action[],
+  variables: ParameterApplication[] | undefined,
+) => {
   let delay = 0;
-  expandActions(actions).map(action => {
+  expandActions(actions, variables).map(action => {
     // eslint-disable-next-line complexity
     const getFunc = () => {
       const estopped = store.getState().bot.hardware.informational_settings.locked;
@@ -241,4 +261,107 @@ export const runActions = (actions: Action[]) => {
     const func = getFunc();
     func && pending.add(setTimeout(func, delay));
   });
+};
+
+export const calculateMove = (
+  body: MoveBodyItem[] | undefined,
+  current: XyzNumber,
+  variables: ParameterApplication[] | undefined,
+) => {
+  const pos = clone(current);
+  // eslint-disable-next-line complexity
+  (body || []).map(item => {
+    switch (item.kind) {
+      case "axis_addition":
+        switch (item.args.axis_operand.kind) {
+          case "numeric":
+            if (item.args.axis == "all") {
+              pos.x += item.args.axis_operand.args.number;
+              pos.y += item.args.axis_operand.args.number;
+              pos.z += item.args.axis_operand.args.number;
+            } else {
+              pos[item.args.axis] += item.args.axis_operand.args.number;
+            }
+            break;
+          case "coordinate":
+            if (item.args.axis == "all") {
+              pos.x += item.args.axis_operand.args.x;
+              pos.y += item.args.axis_operand.args.y;
+              pos.z += item.args.axis_operand.args.z;
+            } else {
+              pos[item.args.axis] += item.args.axis_operand.args[item.args.axis];
+            }
+            break;
+        }
+        return;
+      case "axis_overwrite":
+        switch (item.args.axis_operand.kind) {
+          case "numeric":
+            if (item.args.axis == "all") {
+              pos.x = item.args.axis_operand.args.number;
+              pos.y = item.args.axis_operand.args.number;
+              pos.z = item.args.axis_operand.args.number;
+            } else {
+              pos[item.args.axis] = item.args.axis_operand.args.number;
+            }
+            break;
+          case "coordinate":
+            if (item.args.axis == "all") {
+              pos.x = item.args.axis_operand.args.x;
+              pos.y = item.args.axis_operand.args.y;
+              pos.z = item.args.axis_operand.args.z;
+            } else {
+              pos[item.args.axis] = item.args.axis_operand.args[item.args.axis];
+            }
+            break;
+          case "tool":
+            const toolSlot = maybeFindSlotByToolId(
+              store.getState().resources.index,
+              item.args.axis_operand.args.tool_id);
+            if (!toolSlot) {
+              break;
+            }
+            if (item.args.axis == "all") {
+              pos.x = toolSlot.body.x;
+              pos.y = toolSlot.body.y;
+              pos.z = toolSlot.body.z;
+            } else {
+              pos[item.args.axis] = toolSlot.body[item.args.axis];
+            }
+            break;
+          case "identifier":
+            const location = (variables || []).filter(v => {
+              const identifier = item.args.axis_operand as Identifier;
+              return v.args.label == identifier.args.label;
+            })
+              .map(v => v.args.data_value)[0];
+            if (location?.kind == "coordinate") {
+              pos.x = location.args.x;
+              pos.y = location.args.y;
+              pos.z = location.args.z;
+            }
+            if (location?.kind == "point") {
+              const point = maybeFindPointById(
+                store.getState().resources.index,
+                location.args.pointer_id);
+              if (!point) { break; }
+              pos.x = point.body.x;
+              pos.y = point.body.y;
+              pos.z = point.body.z;
+            }
+            break;
+          case "special_value":
+            if (item.args.axis_operand.args.label == "soil_height"
+              && item.args.axis == "z") {
+              const triangles = JSON.parse(
+                sessionStorage.getItem("triangles") || "[]") as TriangleData[];
+              const getZ = getZFunc(triangles, -500);
+              pos.z = getZ(pos.x, pos.y);
+            }
+            break;
+        }
+        return;
+    }
+  });
+  return pos;
 };

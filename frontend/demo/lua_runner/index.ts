@@ -8,10 +8,10 @@ import { csToLua } from "./util";
 
 export const runDemoLuaCode = (luaCode: string) => {
   const actions = runLua(luaCode, []);
-  runActions(actions);
+  runActions(actions, []);
 };
 
-export const runDemoSequence = (
+export const collectDemoSequenceActions = (
   resources: ResourceIndex,
   sequenceId: number,
   variables: ParameterApplication[] | undefined,
@@ -19,11 +19,28 @@ export const runDemoSequence = (
   const sequence = findSequenceById(resources, sequenceId);
   const actions: Action[] = [];
   (sequence.body.body as SequenceBodyItem[]).map(step => {
-    const lua = step.kind === "lua" ? step.args.lua : csToLua(step);
-    const stepActions = runLua(lua, variables || []);
-    actions.push(...stepActions);
+    if (step.kind == "execute") {
+      const seqActions = collectDemoSequenceActions(
+        resources,
+        step.args.sequence_id,
+        step.body);
+      actions.push(...seqActions);
+    } else {
+      const lua = step.kind === "lua" ? step.args.lua : csToLua(step);
+      const stepActions = runLua(lua, variables || []);
+      actions.push(...stepActions);
+    }
   });
-  runActions(actions);
+  return actions;
+};
+
+export const runDemoSequence = (
+  resources: ResourceIndex,
+  sequenceId: number,
+  variables: ParameterApplication[] | undefined,
+) => {
+  const actions = collectDemoSequenceActions(resources, sequenceId, variables);
+  runActions(actions, variables);
 };
 
 export { csToLua };

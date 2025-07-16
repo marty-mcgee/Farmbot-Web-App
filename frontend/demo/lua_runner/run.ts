@@ -13,6 +13,8 @@ import { createRecursiveNotImplemented, csToLua, jsToLua, luaToJs } from "./util
 import { Action, XyzNumber } from "./interfaces";
 import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
 import { getGardenSize, getSafeZ } from "./stubs";
+import { error } from "../../toast/toast";
+import { collectDemoSequenceActions } from "./index";
 
 export const runLua =
   (luaCode: string, variables: ParameterApplication[]): Action[] => {
@@ -161,8 +163,16 @@ export const runLua =
     lua.lua_pushjsfunction(L, () => {
       const cmd = (luaToJs(L, 1) as RpcRequest).body?.[0];
       if (!cmd) { return 0; }
-      const luaActions = runLua(csToLua(cmd), variables);
-      actions.push(...luaActions);
+      if (cmd.kind == "execute") {
+        const ri = store.getState().resources.index;
+        const sequenceId = cmd.args.sequence_id;
+        const seqVariables = cmd.body;
+        const seqActions = collectDemoSequenceActions(ri, sequenceId, seqVariables);
+        actions.push(...seqActions);
+      } else {
+        const luaActions = runLua(csToLua(cmd), variables);
+        actions.push(...luaActions);
+      }
       return 0;
     });
     lua.lua_setfield(L, envIndex, to_luastring("cs_eval"));
@@ -322,6 +332,13 @@ export const runLua =
     lua.lua_setfield(L, envIndex, to_luastring("move"));
 
     lua.lua_pushjsfunction(L, () => {
+      const arg = luaToJs(L, 1) as string;
+      actions.push({ type: "_move", args: [arg] });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("_move"));
+
+    lua.lua_pushjsfunction(L, () => {
       const pin = luaToJs(L, 1) as number;
       if (pin == 63) {
         const toolMounted =
@@ -385,8 +402,8 @@ export const runLua =
 
     const statusLoad = lauxlib.luaL_loadstring(L, to_luastring(luaCode));
     if (statusLoad !== lua.LUA_OK) {
-      const error = luaToJs(L, -1) as string;
-      console.error("Lua load error:", error);
+      const errorMsg = `Lua load error: ${luaToJs(L, -1)}`;
+      error(errorMsg);
       return [];
     }
 
@@ -395,8 +412,8 @@ export const runLua =
 
     const statusCall = lua.lua_pcall(L, 0, lua.LUA_MULTRET, 0);
     if (statusCall !== lua.LUA_OK) {
-      const error = luaToJs(L, -1) as string;
-      console.error("Lua call error:", error);
+      const errorMsg = `Lua call error: ${luaToJs(L, -1)}`;
+      error(errorMsg);
       return [];
     }
     return actions;

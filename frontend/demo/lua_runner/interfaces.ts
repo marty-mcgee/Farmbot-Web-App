@@ -5,6 +5,7 @@ export interface Action {
     | "move_absolute"
     | "move_relative"
     | "move"
+    | "_move"
     | "toggle_pin"
     | "emergency_lock"
     | "emergency_unlock"

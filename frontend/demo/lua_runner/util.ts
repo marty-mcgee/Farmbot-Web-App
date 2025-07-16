@@ -1,6 +1,8 @@
 import { lua, to_jsstring, to_luastring } from "fengari-web";
 import { Action } from "./interfaces";
 import { RpcRequestBodyItem } from "farmbot";
+import { maybeFindPeripheralById } from "../../resources/selectors_by_id";
+import { store } from "../../redux/store";
 
 export const createRecursiveNotImplemented = (
   L: unknown,
@@ -128,29 +130,21 @@ export const csToLua = (command: RpcRequestBodyItem): string => {
       }
       return `toast("move_absolute ${lKind} is not implemented", "error")`;
     case "move":
-      const values = (body || [])
-        .filter(part => part.kind == "axis_overwrite")
-        .map(axisOverwrite => {
-          const { axis, axis_operand } = axisOverwrite.args;
-          if (axis == "all") {
-            if (axis_operand.kind == "coordinate") {
-              const { args } = axis_operand;
-              return `x=${args.x}, y=${args.y}, z=${args.z}`;
-            }
-          } else {
-            if (axis_operand.kind == "numeric") {
-              return `${axis}=${axis_operand.args.number}`;
-            }
-            if (axis_operand.kind == "coordinate") {
-              return `${axis}=${axis_operand.args[axis]}`;
-            }
-          }
-        })
-        .join(", ");
-      return `move{${values}}`;
+      const jsonString = JSON.stringify(JSON.stringify(body || []));
+      return `_move(${jsonString})`;
     case "write_pin":
+      let pin = undefined;
+      if (typeof args.pin_number == "object") {
+        const namedPin = maybeFindPeripheralById(
+          store.getState().resources.index,
+          args.pin_number.args.pin_id);
+        if (!namedPin) { return ""; }
+        pin = namedPin.body.pin;
+      } else {
+        pin = args.pin_number;
+      }
       const mode = args.pin_mode ? "analog" : "digital";
-      return `write_pin(${args.pin_number}, "${mode}", ${args.pin_value})`;
+      return `write_pin(${pin}, "${mode}", ${args.pin_value})`;
     case "toggle_pin":
       return `toggle_pin(${args.pin_number})`;
     case "lua":

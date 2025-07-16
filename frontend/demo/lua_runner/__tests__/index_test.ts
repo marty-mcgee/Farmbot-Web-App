@@ -33,11 +33,18 @@ jest.mock("../../../api/crud", () => ({
   save: jest.fn(),
 }));
 
-import { ParameterApplication, TaggedSequence } from "farmbot";
+import {
+  Execute, FindHome, Move, ParameterApplication, TaggedSequence,
+} from "farmbot";
 import { Actions } from "../../../constants";
 import { store } from "../../../redux/store";
-import { info } from "../../../toast/toast";
-import { csToLua, runDemoLuaCode, runDemoSequence } from "..";
+import { error, info } from "../../../toast/toast";
+import {
+  collectDemoSequenceActions,
+  csToLua,
+  runDemoLuaCode,
+  runDemoSequence,
+} from "..";
 import { TOAST_OPTIONS } from "../../../toast/constants";
 import { edit, save } from "../../../api/crud";
 
@@ -45,7 +52,6 @@ describe("runDemoSequence()", () => {
   beforeEach(() => {
     localStorage.setItem("myBotIs", "online");
     console.log = jest.fn();
-    console.error = jest.fn();
     jest.useFakeTimers();
   });
 
@@ -66,7 +72,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("1");
   });
@@ -88,7 +94,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("text");
   });
@@ -110,7 +116,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
   });
@@ -139,7 +145,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
   });
@@ -165,7 +171,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("undefined");
   });
@@ -190,7 +196,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("1");
   });
@@ -213,7 +219,7 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("undefined");
   });
@@ -239,7 +245,7 @@ describe("runDemoSequence()", () => {
       "Variable \"Other\" of type identifier not implemented.",
       TOAST_OPTIONS().error);
     expect(console.log).toHaveBeenCalledWith("undefined");
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
   });
 
   it("runs non-lua sequence step", () => {
@@ -252,8 +258,40 @@ describe("runDemoSequence()", () => {
     const ri = buildResourceIndex([sequence]).index;
     runDemoSequence(ri, sequence.body.id, []);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  it("runs move sequence step", () => {
+    mockPosition = { x: 1, y: 2, z: 3 };
+    const firmwareConfig = fakeFirmwareConfig();
+    firmwareConfig.body.movement_home_up_z = 0;
+    mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
+    const sequence = fakeSequence();
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_addition",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "coordinate", args: { x: 1, y: 2, z: 3 } },
+          },
+        },
+      ],
+    };
+    sequence.body.body = [command];
+    sequence.body.id = 1;
+    const ri = buildResourceIndex([sequence]).index;
+    runDemoSequence(ri, sequence.body.id, []);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith({
+      type: Actions.DEMO_SET_POSITION,
+      payload: { x: 2, y: 4, z: 6 },
+    });
     expect(console.log).not.toHaveBeenCalled();
   });
 
@@ -271,7 +309,7 @@ describe("runDemoSequence()", () => {
       "Variable \"Number\" of type undefined not implemented.",
       TOAST_OPTIONS().error);
     expect(console.log).toHaveBeenCalledWith("undefined");
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
   });
 
   it("handles missing sequence body", () => {
@@ -286,7 +324,7 @@ describe("runDemoSequence()", () => {
     jest.runAllTimers();
     expect(console.log).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
   });
 
   it("handles load error", () => {
@@ -298,9 +336,8 @@ describe("runDemoSequence()", () => {
     jest.runAllTimers();
     expect(console.log).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith(
-      "Lua load error:",
-      "[string \"!\"]:1: unexpected symbol near '!'",
+    expect(error).toHaveBeenCalledWith(
+      "Lua load error: [string \"!\"]:1: unexpected symbol near '!'",
     );
   });
 
@@ -313,10 +350,41 @@ describe("runDemoSequence()", () => {
     jest.runAllTimers();
     expect(console.log).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith(
-      "Lua call error:",
-      expect.stringContaining("attempt to perform arithmetic"),
-    );
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("Lua call error:"));
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("attempt to perform arithmetic"));
+  });
+});
+
+describe("collectDemoSequenceActions()", () => {
+  it("collects actions", () => {
+    const sequence1 = fakeSequence();
+    sequence1.body.id = 1;
+    const findHome1: FindHome = {
+      kind: "find_home",
+      args: { axis: "x", speed: 100 },
+    };
+    const execute: Execute = {
+      kind: "execute",
+      args: { sequence_id: 2 },
+    };
+    sequence1.body.body = [findHome1, execute];
+
+    const sequence2 = fakeSequence();
+    sequence2.body.id = 2;
+    const findHome2: FindHome = {
+      kind: "find_home",
+      args: { axis: "y", speed: 100 },
+    };
+    sequence2.body.body = [findHome2];
+
+    const ri = buildResourceIndex([sequence1, sequence2]).index;
+    const actions = collectDemoSequenceActions(ri, 1, []);
+    expect(actions).toEqual([
+      { type: "find_home", args: ["x"] },
+      { type: "find_home", args: ["y"] },
+    ]);
   });
 });
 
@@ -324,7 +392,6 @@ describe("runDemoLuaCode()", () => {
   beforeEach(() => {
     localStorage.setItem("myBotIs", "online");
     console.log = jest.fn();
-    console.error = jest.fn();
     jest.useFakeTimers();
     mockLocked = false;
     const firmwareConfig = fakeFirmwareConfig();
@@ -339,7 +406,7 @@ describe("runDemoLuaCode()", () => {
   it("runs print", () => {
     runDemoLuaCode("print(\"Hello, world!\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("Hello, world!");
   });
 
@@ -351,7 +418,7 @@ describe("runDemoLuaCode()", () => {
       print(a, false, true, nil, {1}, {a = {b = 1}}, f)
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith(
       "4	false	true	undefined	[1]	{\"a\":{\"b\":1}}	\"<function>\"");
   });
@@ -367,7 +434,7 @@ describe("runDemoLuaCode()", () => {
       "print(garden_size().y)\n" +
       "print(garden_size().z)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("1000");
     expect(console.log).toHaveBeenCalledWith("2000");
     expect(console.log).toHaveBeenCalledWith("500");
@@ -385,7 +452,7 @@ describe("runDemoLuaCode()", () => {
       print(type(data), #data)
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("table	1");
     expect(info).not.toHaveBeenCalled();
   });
@@ -404,7 +471,7 @@ describe("runDemoLuaCode()", () => {
       print(type(data), #data)
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("table	1");
     expect(info).not.toHaveBeenCalled();
   });
@@ -421,7 +488,7 @@ describe("runDemoLuaCode()", () => {
       print(type(data), #data)
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("table	1");
     expect(info).not.toHaveBeenCalled();
   });
@@ -436,7 +503,7 @@ describe("runDemoLuaCode()", () => {
       print(data)
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("false");
     expect(info).toHaveBeenCalledWith(
       "API call GET /api/other not implemented.",
@@ -456,46 +523,69 @@ describe("runDemoLuaCode()", () => {
       }
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 2, z: 3 },
     });
   });
 
+  it("runs cs_eval: execute", () => {
+    const sequence = fakeSequence();
+    sequence.body.id = 1;
+    sequence.body.body = [{
+      kind: "send_message",
+      args: { message: "test", message_type: "info" },
+    }];
+    mockResources = buildResourceIndex([sequence]);
+    mockPosition = { x: 1, y: 2, z: 3 };
+    runDemoLuaCode(`
+      cs_eval{
+        kind = "rpc_request",
+        args = { label = "", priority = 0 },
+        body = {
+          { kind = "execute", args = { sequence_id = 1 } }
+        }
+      }
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
+  });
+
   it("runs cs_eval: no body", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("cs_eval{}");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 
   it("runs toast", () => {
     runDemoLuaCode("toast(\"test\", \"info\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
   });
 
   it("runs toast: default", () => {
     runDemoLuaCode("toast(\"test\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
   });
 
   it("runs debug", () => {
     runDemoLuaCode("debug(\"test\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().debug);
   });
 
   it("runs send_message", () => {
     runDemoLuaCode("send_message(\"info\", \"test\", \"toast\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
   });
 
@@ -508,7 +598,7 @@ describe("runDemoLuaCode()", () => {
       })
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_JOB_PROGRESS,
       payload: ["job", {
@@ -532,7 +622,7 @@ describe("runDemoLuaCode()", () => {
       })
     `);
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_JOB_PROGRESS,
       payload: ["job", {
@@ -551,7 +641,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("find_home(\"all\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 0, z: 0 },
@@ -562,7 +652,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("go_to_home(\"all\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 0, z: 0 },
@@ -573,7 +663,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("go_to_home(\"x\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 2, z: 3 },
@@ -584,7 +674,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("go_to_home(\"y\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 0, z: 3 },
@@ -599,7 +689,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("find_axis_length(\"x\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 2, z: 3 },
@@ -618,7 +708,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("find_axis_length(\"y\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 0, z: 3 },
@@ -637,7 +727,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("find_axis_length(\"z\")");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 2, z: 0 },
@@ -651,7 +741,7 @@ describe("runDemoLuaCode()", () => {
   it("runs toggle_pin", () => {
     runDemoLuaCode("toggle_pin(5)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_TOGGLE_PIN,
       payload: 5,
@@ -661,7 +751,7 @@ describe("runDemoLuaCode()", () => {
   it("runs write_pin", () => {
     runDemoLuaCode("write_pin(5, \"digital\", 1)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_WRITE_PIN,
       payload: { pin: 5, mode: "digital", value: 1 },
@@ -671,7 +761,7 @@ describe("runDemoLuaCode()", () => {
   it("runs on", () => {
     runDemoLuaCode("on(5)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_WRITE_PIN,
       payload: { pin: 5, mode: "digital", value: 1 },
@@ -682,14 +772,14 @@ describe("runDemoLuaCode()", () => {
     mockLocked = true;
     runDemoLuaCode("on(5)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).not.toHaveBeenCalled();
   });
 
   it("runs off", () => {
     runDemoLuaCode("off(5)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_WRITE_PIN,
       payload: { pin: 5, mode: "digital", value: 0 },
@@ -699,7 +789,7 @@ describe("runDemoLuaCode()", () => {
   it("runs safe_z", () => {
     runDemoLuaCode("print(safe_z())");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
     expect(info).not.toHaveBeenCalled();
   });
@@ -707,7 +797,7 @@ describe("runDemoLuaCode()", () => {
   it("runs env", () => {
     runDemoLuaCode("print(env(\"foo\"))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("");
     expect(info).not.toHaveBeenCalled();
   });
@@ -715,7 +805,7 @@ describe("runDemoLuaCode()", () => {
   it("runs soil_height", () => {
     runDemoLuaCode("print(soil_height(0, 0))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("-500");
     expect(info).not.toHaveBeenCalled();
   });
@@ -726,7 +816,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([device]);
     runDemoLuaCode("print(get_device(\"mounted_tool_id\"))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("1");
     expect(info).not.toHaveBeenCalled();
   });
@@ -737,7 +827,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([device]);
     runDemoLuaCode("print(get_device(\"mounted_tool_id\"))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("false");
     expect(info).not.toHaveBeenCalled();
   });
@@ -748,7 +838,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([device]);
     runDemoLuaCode("update_device{ mounted_tool_id = 1 }");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).not.toHaveBeenCalled();
     expect(info).not.toHaveBeenCalled();
     expect(edit).toHaveBeenCalledWith(device, { mounted_tool_id: 1 });
@@ -761,7 +851,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([device]);
     runDemoLuaCode("print(read_pin(63))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
     expect(info).not.toHaveBeenCalled();
   });
@@ -772,7 +862,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([device]);
     runDemoLuaCode("print(read_pin(63))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("1");
     expect(info).not.toHaveBeenCalled();
   });
@@ -781,7 +871,7 @@ describe("runDemoLuaCode()", () => {
     mockResources = buildResourceIndex([]);
     runDemoLuaCode("print(read_pin(5))");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
     expect(info).not.toHaveBeenCalled();
   });
@@ -790,7 +880,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move_relative(1, 0, 0)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 2, z: 3 },
@@ -801,7 +891,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 0, y: 0, z: 0 };
     runDemoLuaCode("move_relative(0, 0, 0)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 0, z: 0 },
@@ -812,7 +902,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move_absolute(1, 0, 0)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 0, z: 0 },
@@ -823,7 +913,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move_absolute{ x = 1, y = 0, z = 0 }");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 0, z: 0 },
@@ -838,7 +928,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move_absolute(0, 0, 1000)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 0, z: 100 },
@@ -853,7 +943,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move_absolute(0, 0, -1000)");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 0, z: -100 },
@@ -864,7 +954,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move{ y = 1 }");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 1, y: 1, z: 3 },
@@ -875,7 +965,7 @@ describe("runDemoLuaCode()", () => {
     mockPosition = { x: 1, y: 2, z: 3 };
     runDemoLuaCode("move{ x = 0, z = 0 }");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 0, y: 2, z: 0 },
@@ -885,7 +975,7 @@ describe("runDemoLuaCode()", () => {
   it("runs emergency_lock", () => {
     runDemoLuaCode("emergency_lock()");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_ESTOP,
       payload: true,
@@ -895,7 +985,7 @@ describe("runDemoLuaCode()", () => {
   it("runs emergency_unlock", () => {
     runDemoLuaCode("emergency_unlock()");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_ESTOP,
       payload: false,
@@ -906,7 +996,7 @@ describe("runDemoLuaCode()", () => {
     mockLocked = true;
     runDemoLuaCode("emergency_unlock()");
     jest.runAllTimers();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_ESTOP,
       payload: false,

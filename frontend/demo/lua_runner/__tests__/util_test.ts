@@ -1,3 +1,17 @@
+import {
+  buildResourceIndex,
+} from "../../../__test_support__/resource_index_builder";
+import {
+  fakePeripheral,
+} from "../../../__test_support__/fake_state/resources";
+let mockResources = buildResourceIndex([]);
+jest.mock("../../../redux/store", () => ({
+  store: {
+    dispatch: jest.fn(),
+    getState: () => ({ resources: mockResources }),
+  },
+}));
+
 import { csToLua } from "../util";
 import {
   EmergencyLock, EmergencyUnlock, FindHome, Home, Lua, Move, MoveAbsolute,
@@ -88,63 +102,15 @@ describe("csToLua()", () => {
         },
       ],
     };
-    expect(csToLua(command)).toEqual("move{y=1}");
-  });
-
-  it("converts celery script to lua: move all axes to coordinate", () => {
-    const command: Move = {
-      kind: "move",
-      args: {},
-      body: [
-        {
-          kind: "axis_overwrite",
-          args: {
-            axis: "all",
-            axis_operand: { kind: "coordinate", args: { x: 1, y: 2, z: 3 } },
-          },
-        },
-      ],
-    };
-    expect(csToLua(command)).toEqual("move{x=1, y=2, z=3}");
-  });
-
-  it("converts celery script to lua: move axis to coordinate", () => {
-    const command: Move = {
-      kind: "move",
-      args: {},
-      body: [
-        {
-          kind: "axis_overwrite",
-          args: {
-            axis: "x",
-            axis_operand: { kind: "coordinate", args: { x: 1, y: 2, z: 3 } },
-          },
-        },
-      ],
-    };
-    expect(csToLua(command)).toEqual("move{x=1}");
-  });
-
-  it("converts celery script to lua: move no coordinate", () => {
-    const command: Move = {
-      kind: "move",
-      args: {},
-      body: [
-        {
-          kind: "axis_overwrite",
-          args: {
-            axis: "all",
-            axis_operand: { kind: "numeric", args: { number: 1 } },
-          },
-        },
-      ],
-    };
-    expect(csToLua(command)).toEqual("move{}");
+    expect(csToLua(command)).toEqual(
+      "_move(\"[{\\\"kind\\\":\\\"axis_overwrite\\\",\\\"args\\\":{" +
+      "\\\"axis\\\":\\\"y\\\",\\\"axis_operand\\\":{\\\"kind\\\":\\\"" +
+      "numeric\\\",\\\"args\\\":{\\\"number\\\":1}}}}]\")");
   });
 
   it("converts celery script to lua: move no body", () => {
     const command: Move = { kind: "move", args: {} };
-    expect(csToLua(command)).toEqual("move{}");
+    expect(csToLua(command)).toEqual("_move(\"[]\")");
   });
 
   it("converts celery script to lua: write_pin", () => {
@@ -153,6 +119,41 @@ describe("csToLua()", () => {
       args: { pin_number: 1, pin_mode: 0, pin_value: 1 },
     };
     expect(csToLua(command)).toEqual("write_pin(1, \"digital\", 1)");
+  });
+
+  it("converts celery script to lua: peripheral", () => {
+    const peripheral = fakePeripheral();
+    peripheral.body.id = 1;
+    peripheral.body.pin = 2;
+    mockResources = buildResourceIndex([peripheral]);
+    const command: WritePin = {
+      kind: "write_pin",
+      args: {
+        pin_number: {
+          kind: "named_pin",
+          args: { pin_id: 1, pin_type: "Peripheral" },
+        },
+        pin_mode: 0,
+        pin_value: 1,
+      },
+    };
+    expect(csToLua(command)).toEqual("write_pin(2, \"digital\", 1)");
+  });
+
+  it("converts celery script to lua: missing peripheral", () => {
+    mockResources = buildResourceIndex([]);
+    const command: WritePin = {
+      kind: "write_pin",
+      args: {
+        pin_number: {
+          kind: "named_pin",
+          args: { pin_id: 1, pin_type: "Peripheral" },
+        },
+        pin_mode: 0,
+        pin_value: 1,
+      },
+    };
+    expect(csToLua(command)).toEqual("");
   });
 
   it("converts celery script to lua: write_pin analog", () => {
