@@ -17,7 +17,7 @@ import { error } from "../../toast/toast";
 import { collectDemoSequenceActions } from "./index";
 
 export const runLua =
-  (luaCode: string, variables: ParameterApplication[]): Action[] => {
+  (depth: number, luaCode: string, variables: ParameterApplication[]): Action[] => {
     const actions: Action[] = [];
     const L = lauxlib.luaL_newstate(); // stack: []
 
@@ -167,10 +167,11 @@ export const runLua =
         const ri = store.getState().resources.index;
         const sequenceId = cmd.args.sequence_id;
         const seqVariables = cmd.body;
-        const seqActions = collectDemoSequenceActions(ri, sequenceId, seqVariables);
+        const seqActions = collectDemoSequenceActions(
+          depth + 1, ri, sequenceId, seqVariables);
         actions.push(...seqActions);
       } else {
-        const luaActions = runLua(csToLua(cmd), variables);
+        const luaActions = runLua(depth, csToLua(cmd), variables);
         actions.push(...luaActions);
       }
       return 0;

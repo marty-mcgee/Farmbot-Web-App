@@ -8,7 +8,7 @@ describe("runLua()", () => {
     go_to_home("all")
     move{ y = 1 }
     `;
-    expect(runLua(code, [])).toEqual([
+    expect(runLua(0, code, [])).toEqual([
       { type: "move_absolute", args: [1, 2, 3] },
       { type: "wait_ms", args: [1000] },
       { type: "go_to_home", args: ["all"] },

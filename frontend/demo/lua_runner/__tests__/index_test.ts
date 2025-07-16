@@ -11,7 +11,6 @@ import {
   fakeToolSlot,
 } from "../../../__test_support__/fake_state/resources";
 let mockResources = buildResourceIndex([]);
-let mockPosition = { x: 0, y: 0, z: 0 };
 let mockLocked = false;
 jest.mock("../../../redux/store", () => ({
   store: {
@@ -20,7 +19,6 @@ jest.mock("../../../redux/store", () => ({
       resources: mockResources,
       bot: {
         hardware: {
-          location_data: { position: mockPosition },
           informational_settings: { locked: mockLocked },
         },
       },
@@ -47,6 +45,7 @@ import {
 } from "..";
 import { TOAST_OPTIONS } from "../../../toast/constants";
 import { edit, save } from "../../../api/crud";
+import { setCurrent } from "../actions";
 
 describe("runDemoSequence()", () => {
   beforeEach(() => {
@@ -260,11 +259,11 @@ describe("runDemoSequence()", () => {
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(2);
   });
 
   it("runs move sequence step", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     const firmwareConfig = fakeFirmwareConfig();
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
@@ -292,7 +291,7 @@ describe("runDemoSequence()", () => {
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 4, z: 6 },
     });
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(3);
   });
 
   it("handles missing variables", () => {
@@ -322,7 +321,7 @@ describe("runDemoSequence()", () => {
     }
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(info).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
   });
@@ -334,7 +333,7 @@ describe("runDemoSequence()", () => {
     const ri = buildResourceIndex([sequence]).index;
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(info).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith(
       "Lua load error: [string \"!\"]:1: unexpected symbol near '!'",
@@ -348,7 +347,7 @@ describe("runDemoSequence()", () => {
     const ri = buildResourceIndex([sequence]).index;
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(info).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith(
       expect.stringContaining("Lua call error:"));
@@ -380,11 +379,35 @@ describe("collectDemoSequenceActions()", () => {
     sequence2.body.body = [findHome2];
 
     const ri = buildResourceIndex([sequence1, sequence2]).index;
-    const actions = collectDemoSequenceActions(ri, 1, []);
+    const actions = collectDemoSequenceActions(0, ri, 1, []);
     expect(actions).toEqual([
       { type: "find_home", args: ["x"] },
       { type: "find_home", args: ["y"] },
     ]);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("handles circular references", () => {
+    const sequence1 = fakeSequence();
+    sequence1.body.id = 1;
+    const execute2: Execute = {
+      kind: "execute",
+      args: { sequence_id: 2 },
+    };
+    sequence1.body.body = [execute2];
+
+    const sequence2 = fakeSequence();
+    sequence2.body.id = 2;
+    const execute1: Execute = {
+      kind: "execute",
+      args: { sequence_id: 1 },
+    };
+    sequence2.body.body = [execute1];
+
+    const ri = buildResourceIndex([sequence1, sequence2]).index;
+    const actions = collectDemoSequenceActions(0, ri, 1, []);
+    expect(actions).toEqual([]);
+    expect(error).toHaveBeenCalledWith("Maximum call depth exceeded.");
   });
 });
 
@@ -512,7 +535,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs cs_eval", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode(`
       cs_eval{
         kind = "rpc_request",
@@ -538,7 +561,7 @@ describe("runDemoLuaCode()", () => {
       args: { message: "test", message_type: "info" },
     }];
     mockResources = buildResourceIndex([sequence]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode(`
       cs_eval{
         kind = "rpc_request",
@@ -554,7 +577,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs cs_eval: no body", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("cs_eval{}");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -638,7 +661,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs find_home: all", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("find_home(\"all\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -649,7 +672,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs go_to_home: all", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("go_to_home(\"all\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -660,7 +683,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs go_to_home: x", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("go_to_home(\"x\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -671,7 +694,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs go_to_home: y", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("go_to_home(\"y\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -686,7 +709,7 @@ describe("runDemoLuaCode()", () => {
     firmwareConfig.body.movement_axis_nr_steps_x = 500;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("find_axis_length(\"x\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -705,7 +728,7 @@ describe("runDemoLuaCode()", () => {
     firmwareConfig.body.movement_axis_nr_steps_y = 500;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("find_axis_length(\"y\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -724,7 +747,7 @@ describe("runDemoLuaCode()", () => {
     firmwareConfig.body.movement_axis_nr_steps_z = 2500;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("find_axis_length(\"z\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -839,7 +862,7 @@ describe("runDemoLuaCode()", () => {
     runDemoLuaCode("update_device{ mounted_tool_id = 1 }");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(console.log).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(info).not.toHaveBeenCalled();
     expect(edit).toHaveBeenCalledWith(device, { mounted_tool_id: 1 });
     expect(save).toHaveBeenCalledWith(device.uuid);
@@ -877,7 +900,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move_relative", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move_relative(1, 0, 0)");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -888,7 +911,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move_relative: zero", () => {
-    mockPosition = { x: 0, y: 0, z: 0 };
+    setCurrent({ x: 0, y: 0, z: 0 });
     runDemoLuaCode("move_relative(0, 0, 0)");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -899,7 +922,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move_absolute", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move_absolute(1, 0, 0)");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -910,7 +933,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move_absolute: alternate syntax", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move_absolute{ x = 1, y = 0, z = 0 }");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -925,7 +948,7 @@ describe("runDemoLuaCode()", () => {
     firmwareConfig.body.movement_axis_nr_steps_z = 2500;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move_absolute(0, 0, 1000)");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -940,7 +963,7 @@ describe("runDemoLuaCode()", () => {
     firmwareConfig.body.movement_axis_nr_steps_z = 2500;
     firmwareConfig.body.movement_home_up_z = 1;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move_absolute(0, 0, -1000)");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -951,7 +974,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move: y", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move{ y = 1 }");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
@@ -962,7 +985,7 @@ describe("runDemoLuaCode()", () => {
   });
 
   it("runs move: x and z", () => {
-    mockPosition = { x: 1, y: 2, z: 3 };
+    setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("move{ x = 0, z = 0 }");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();

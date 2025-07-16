@@ -4,7 +4,6 @@ import {
 import { info } from "../../toast/toast";
 import { store } from "../../redux/store";
 import { Actions } from "../../constants";
-import { validBotLocationData } from "../../util/location";
 import { TOAST_OPTIONS } from "../../toast/constants";
 import { Action, XyzNumber } from "./interfaces";
 import { edit, save } from "../../api/crud";
@@ -69,18 +68,24 @@ const clampTarget = (target: XyzNumber): XyzNumber => {
   return clamped;
 };
 
+const current = {
+  x: 0,
+  y: 0,
+  z: 0,
+};
+
+
+export const setCurrent = (position: XyzNumber) => {
+  current.x = position.x;
+  current.y = position.y;
+  current.z = position.z;
+};
+
 const expandActions = (
   actions: Action[],
   variables: ParameterApplication[] | undefined,
 ): Action[] => {
   const expanded: Action[] = [];
-  const { position } = validBotLocationData(
-    store.getState().bot.hardware.location_data);
-  const current = {
-    x: position.x as number,
-    y: position.y as number,
-    z: position.z as number,
-  };
   const addPosition = (position: XyzNumber) => {
     expanded.push({
       type: "wait_ms",
@@ -90,11 +95,6 @@ const expandActions = (
       type: "move_absolute",
       args: [position.x, position.y, position.z],
     });
-  };
-  const setCurrent = (position: XyzNumber) => {
-    current.x = position.x;
-    current.y = position.y;
-    current.z = position.z;
   };
   actions.map(action => {
     switch (action.type) {
@@ -154,7 +154,12 @@ const expandActions = (
   return expanded;
 };
 
-const pending = new Set<ReturnType<typeof setTimeout>>();
+interface Scheduled {
+  timeoutId: ReturnType<typeof setTimeout>;
+  timestamp: number;
+}
+const pending = new Set<Scheduled>();
+let latestActionMs = Date.now();
 
 export const runActions = (
   actions: Action[],
@@ -184,9 +189,12 @@ export const runActions = (
             console.log(action.args[0]);
           };
         case "emergency_lock":
+          delay = 0;
+          latestActionMs = Date.now();
           return () => {
-            pending.forEach(clearTimeout);
+            pending.forEach(t => clearTimeout(t.timeoutId));
             pending.clear();
+            console.log(`Queue length: ${pending.size}`);
             store.dispatch({
               type: Actions.DEMO_SET_ESTOP,
               payload: true,
@@ -259,7 +267,20 @@ export const runActions = (
       }
     };
     const func = getFunc();
-    func && pending.add(setTimeout(func, delay));
+    if (func) {
+      latestActionMs = Math.max(latestActionMs, Date.now()) + delay;
+      const funcDelay = latestActionMs - Date.now();
+      const timeout = {
+        timeoutId: setTimeout(() => {
+          pending.delete(timeout);
+          console.log(`Queue length: ${pending.size}`);
+          func();
+        }, funcDelay),
+        timestamp: latestActionMs,
+      };
+      pending.add(timeout);
+      delay = 0;
+    }
   });
 };
 
