@@ -342,7 +342,7 @@ export const Tools = (props: ToolsProps) => {
           position={[
             position.x - 30,
             position.y - 15,
-            position.z,
+            position.z - 40,
           ]}
           rotation={[0, 0, Math.PI / 2]}>
           {toolProps.firstTrough

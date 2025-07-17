@@ -143,7 +143,7 @@ module Devices
         device
           .fbos_config
           .update!(
-            safe_height: -200,
+            safe_height: -150,
           )
       end
 

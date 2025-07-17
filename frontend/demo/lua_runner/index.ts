@@ -1,15 +1,16 @@
 import { findSequenceById } from "../../resources/selectors";
 import { ResourceIndex } from "../../resources/interfaces";
-import { ParameterApplication, SequenceBodyItem } from "farmbot";
+import { ParameterApplication, Point, SequenceBodyItem } from "farmbot";
 import { runLua } from "./run";
-import { runActions } from "./actions";
+import { expandActions, runActions } from "./actions";
 import { Action } from "./interfaces";
 import { csToLua } from "./util";
 import { error } from "../../toast/toast";
+import { getGroupPoints } from "./stubs";
 
 export const runDemoLuaCode = (luaCode: string) => {
   const actions = runLua(0, luaCode, []);
-  runActions(actions, []);
+  runActions(expandActions(actions, []));
 };
 
 export const collectDemoSequenceActions = (
@@ -17,7 +18,7 @@ export const collectDemoSequenceActions = (
   resources: ResourceIndex,
   sequenceId: number,
   variables: ParameterApplication[] | undefined,
-) => {
+): Action[] => {
   console.log(`Call depth: ${depth}`);
   if (depth > 100) {
     error("Maximum call depth exceeded.");
@@ -25,6 +26,29 @@ export const collectDemoSequenceActions = (
   }
   const sequence = findSequenceById(resources, sequenceId);
   const actions: Action[] = [];
+  if (variables?.[0]?.args.data_value.kind == "point_group") {
+    const variableLabel = variables[0].args.label;
+    const groupId = variables[0].args.data_value.args.point_group_id;
+    getGroupPoints(resources, groupId).map(p => {
+      const pointValue: Point = {
+        kind: "point", args: {
+          pointer_type: p.body.pointer_type,
+          pointer_id: p.body.id as number,
+        }
+      };
+      const pointVariables: ParameterApplication[] = [{
+        kind: "parameter_application",
+        args: { label: variableLabel, data_value: pointValue }
+      }];
+      const loopSeqActions = collectDemoSequenceActions(
+        depth + 1,
+        resources,
+        sequence.body.id as number,
+        pointVariables);
+      actions.push(...expandActions(loopSeqActions, pointVariables));
+    });
+    return actions;
+  }
   (sequence.body.body as SequenceBodyItem[]).map(step => {
     if (step.kind == "execute") {
       const seqActions = collectDemoSequenceActions(
@@ -48,7 +72,7 @@ export const runDemoSequence = (
   variables: ParameterApplication[] | undefined,
 ) => {
   const actions = collectDemoSequenceActions(0, resources, sequenceId, variables);
-  runActions(actions, variables);
+  runActions(expandActions(actions, variables));
 };
 
 export { csToLua };

@@ -49,6 +49,10 @@ jest.mock("../../demo/lua_runner", () => ({
   csToLua: jest.fn(),
 }));
 
+jest.mock("../../demo/lua_runner/actions", () => ({
+  eStop: jest.fn(),
+}));
+
 import * as actions from "../actions";
 import {
   fakeFirmwareConfig, fakeFbosConfig,
@@ -59,9 +63,10 @@ import axios from "axios";
 import { success, error, warning, info } from "../../toast/toast";
 import { edit, save } from "../../api/crud";
 import { DeepPartial } from "../../redux/interfaces";
-import { EmergencyLock, Execute, Farmbot } from "farmbot";
+import { EmergencyLock, Execute, Farmbot, Wait } from "farmbot";
 import { Path } from "../../internal_urls";
 import { csToLua, runDemoLuaCode, runDemoSequence } from "../../demo/lua_runner";
+import { eStop } from "../../demo/lua_runner/actions";
 
 const replaceDeviceWith = async (d: DeepPartial<Farmbot>, cb: Function) => {
   jest.clearAllMocks();
@@ -86,10 +91,19 @@ describe("sendRPC()", () => {
 
   it("calls sendRPC on demo accounts", async () => {
     localStorage.setItem("myBotIs", "online");
-    const cmd: EmergencyLock = { kind: "emergency_lock", args: {} };
+    const cmd: Wait = { kind: "wait", args: { milliseconds: 1000 } };
     await actions.sendRPC(cmd);
     expect(mockDevice.current.send).not.toHaveBeenCalled();
     expect(csToLua).toHaveBeenCalledWith(cmd);
+  });
+
+  it("calls sendRPC on demo accounts: estop", async () => {
+    localStorage.setItem("myBotIs", "online");
+    const cmd: EmergencyLock = { kind: "emergency_lock", args: {} };
+    await actions.sendRPC(cmd);
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).not.toHaveBeenCalled();
+    expect(eStop).toHaveBeenCalled();
   });
 
   it("calls sendRPC on demo accounts: execute", async () => {
@@ -190,7 +204,8 @@ describe("emergencyLock() / emergencyUnlock", () => {
     localStorage.setItem("myBotIs", "online");
     actions.emergencyLock();
     expect(mockDevice.current.emergencyLock).not.toHaveBeenCalled();
-    expect(runDemoLuaCode).toHaveBeenCalledWith("emergency_lock()");
+    expect(runDemoLuaCode).not.toHaveBeenCalled();
+    expect(eStop).toHaveBeenCalled();
   });
 
   it("calls emergencyUnlock", () => {

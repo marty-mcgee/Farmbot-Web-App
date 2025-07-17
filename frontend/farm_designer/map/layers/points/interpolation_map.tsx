@@ -6,7 +6,7 @@ import {
 import { MapTransformProps } from "../../interfaces";
 import { transformXY } from "../../util";
 import { isUndefined, range, round, sum } from "lodash";
-import { distance, findNearest } from "../../../../point_groups/paths";
+import { distance, findNearest } from "../../../../point_groups/other_sort_methods";
 import { selectMostRecentPoints } from "../../../location_info";
 import { betterCompact } from "../../../../util";
 import { t } from "../../../../i18next_wrapper";

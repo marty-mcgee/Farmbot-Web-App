@@ -20,9 +20,9 @@ import { ToolTips } from "../../constants";
 import { overwriteGroup } from "../actions";
 import { PointGroupItem } from "../point_group_item";
 import { TaggedPoint } from "farmbot";
-import { sortGroup } from "../../farm_designer/map/group_order_visual";
 import { equals } from "../../util";
 import { floor, take } from "lodash";
+import { sortGroupBy } from "../point_group_sort";
 
 const CRITERIA_POINT_TYPE_LOOKUP =
   (): Record<PointerType, string> => ({
@@ -165,7 +165,7 @@ export class GroupPointCountBreakdown
   });
 
   get sortedGroup() {
-    return sortGroup(
+    return sortGroupBy(
       this.props.tryGroupSortType || this.props.group.body.sort_type,
       this.props.pointsSelectedByGroup);
   }

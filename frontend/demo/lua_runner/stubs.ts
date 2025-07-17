@@ -10,6 +10,12 @@ import { XyzNumber } from "./interfaces";
 import { FirmwareConfig } from "farmbot/dist/resources/configs/firmware";
 import { WebAppConfig } from "farmbot/dist/resources/configs/web_app";
 import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
+import {
+  selectAllPointGroups, selectAllPoints,
+} from "../../resources/selectors_by_kind";
+import { pointsSelectedByGroup } from "../../point_groups/criteria/apply";
+import { sortGroupBy } from "../../point_groups/point_group_sort";
+import { ResourceIndex } from "../../resources/interfaces";
 
 export const getFirmwareSettings = (): FirmwareConfig => {
   const fwConfig = getFirmwareConfig(store.getState().resources.index);
@@ -43,4 +49,12 @@ export const getGardenSize = (): XyzNumber => {
 export const getSafeZ = (): number => {
   const fbosSettings = getFbosSettings();
   return fbosSettings.safe_height || 0;
+};
+
+export const getGroupPoints = (resources: ResourceIndex, groupId: number) => {
+  const allPoints = selectAllPoints(resources);
+  const group = selectAllPointGroups(resources)
+    .filter(group => group.body.id === groupId)[0];
+  const groupPoints = pointsSelectedByGroup(group, allPoints);
+  return sortGroupBy(group.body.sort_type, groupPoints);
 };

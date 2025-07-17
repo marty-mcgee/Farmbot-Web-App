@@ -306,7 +306,7 @@ module Devices
         PointGroups::Create.run!(device: device,
                                  name: name,
                                  point_ids: [],
-                                 sort_type: "yx_ascending",
+                                 sort_type: "yx_alternating",
                                  criteria: {
                                    string_eq: {
                                      pointer_type: [pointer_type],

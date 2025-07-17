@@ -13,9 +13,10 @@ import {
   maybeFindSlotByToolId,
 } from "../../resources/selectors";
 import { UnknownAction } from "redux";
-import { getFirmwareSettings, getGardenSize } from "./stubs";
+import { getFirmwareSettings, getGardenSize, getSafeZ } from "./stubs";
 import { clamp, clone } from "lodash";
 import { getZFunc, TriangleData } from "../../three_d_garden/triangle_functions";
+import { validBotLocationData } from "../../util/location";
 
 const almostEqual = (a: XyzNumber, b: XyzNumber) => {
   const epsilon = 0.01;
@@ -27,6 +28,7 @@ const almostEqual = (a: XyzNumber, b: XyzNumber) => {
 const movementChunks = (
   current: XyzNumber,
   target: XyzNumber,
+  mmPerTimeStep: number,
 ): XyzNumber[] => {
   const dx = target.x - current.x;
   const dy = target.y - current.y;
@@ -39,17 +41,17 @@ const movementChunks = (
     y: dy / length,
     z: dz / length,
   };
-  const steps = Math.floor(length / 100);
+  const steps = Math.floor(length / mmPerTimeStep);
   const chunks: XyzNumber[] = [];
-  for (let i = 0; i <= steps; i++) {
+  for (let i = 1; i <= steps; i++) {
     const step = {
-      x: current.x + direction.x * 100 * i,
-      y: current.y + direction.y * 100 * i,
-      z: current.z + direction.z * 100 * i,
+      x: current.x + direction.x * mmPerTimeStep * i,
+      y: current.y + direction.y * mmPerTimeStep * i,
+      z: current.z + direction.z * mmPerTimeStep * i,
     };
     chunks.push(step);
   }
-  if (!almostEqual(chunks[chunks.length - 1], target)) {
+  if (chunks.length === 0 || !almostEqual(chunks[chunks.length - 1], target)) {
     chunks.push(target);
   }
   return chunks;
@@ -81,18 +83,21 @@ export const setCurrent = (position: XyzNumber) => {
   current.z = position.z;
 };
 
-const expandActions = (
+export const expandActions = (
   actions: Action[],
   variables: ParameterApplication[] | undefined,
 ): Action[] => {
   const expanded: Action[] = [];
+  const timeStepMs = parseInt(localStorage.getItem("timeStepMs") || "500");
+  const mmPerSecond = parseInt(localStorage.getItem("mmPerSecond") || "200");
+  const mmPerTimeStep = (mmPerSecond * timeStepMs) / 1000;
   const addPosition = (position: XyzNumber) => {
     expanded.push({
       type: "wait_ms",
-      args: [500],
+      args: [timeStepMs],
     });
     expanded.push({
-      type: "move_absolute",
+      type: "expanded_move_absolute",
       args: [position.x, position.y, position.z],
     });
   };
@@ -104,7 +109,7 @@ const expandActions = (
           y: action.args[1] as number,
           z: action.args[2] as number,
         });
-        movementChunks(current, moveAbsoluteTarget).map(addPosition);
+        movementChunks(current, moveAbsoluteTarget, mmPerTimeStep).map(addPosition);
         setCurrent(moveAbsoluteTarget);
         break;
       case "move_relative":
@@ -113,15 +118,17 @@ const expandActions = (
           y: current.y + (action.args[1] as number),
           z: current.z + (action.args[2] as number),
         });
-        movementChunks(current, moveRelativeTarget).map(addPosition);
+        movementChunks(current, moveRelativeTarget, mmPerTimeStep).map(addPosition);
         setCurrent(moveRelativeTarget);
         break;
       case "_move":
         const moveItems = JSON.parse("" + action.args[0]) as MoveBodyItem[];
-        const actualMoveTarget = clampTarget(
-          calculateMove(moveItems, current, variables));
-        movementChunks(current, actualMoveTarget).map(addPosition);
-        setCurrent(actualMoveTarget);
+        const moves = calculateMove(moveItems, current, variables);
+        const actualMoveTargets = moves.map(clampTarget);
+        actualMoveTargets.map(actualMoveTarget => {
+          movementChunks(current, actualMoveTarget, mmPerTimeStep).map(addPosition);
+          setCurrent(actualMoveTarget);
+        });
         break;
       case "move":
         const moveTarget = clampTarget({
@@ -129,7 +136,7 @@ const expandActions = (
           y: (action.args[1] as number | undefined) ?? current.y,
           z: (action.args[2] as number | undefined) ?? current.z,
         });
-        movementChunks(current, moveTarget).map(addPosition);
+        movementChunks(current, moveTarget, mmPerTimeStep).map(addPosition);
         setCurrent(moveTarget);
         break;
       case "find_home":
@@ -142,7 +149,7 @@ const expandActions = (
             y: axis == "y" ? 0 : current.y,
             z: axis == "z" ? 0 : current.z,
           };
-          movementChunks(current, homeTarget).map(addPosition);
+          movementChunks(current, homeTarget, mmPerTimeStep).map(addPosition);
           setCurrent(homeTarget);
         });
         break;
@@ -155,18 +162,33 @@ const expandActions = (
 };
 
 interface Scheduled {
-  timeoutId: ReturnType<typeof setTimeout>;
+  func(): void;
   timestamp: number;
 }
-const pending = new Set<Scheduled>();
+const pending: Scheduled[] = [];
 let latestActionMs = Date.now();
+let currentTimer: ReturnType<typeof setTimeout> | undefined = undefined;
+
+export const eStop = () => {
+  latestActionMs = 0;
+  pending.length = 0;
+  console.log(`Queue length: ${pending.length}`);
+  store.dispatch({
+    type: Actions.DEMO_SET_ESTOP,
+    payload: true,
+  });
+  const { position } = validBotLocationData(
+    store.getState().bot.hardware.location_data);
+  current.x = position.x as number;
+  current.y = position.y as number;
+  current.z = position.z as number;
+};
 
 export const runActions = (
   actions: Action[],
-  variables: ParameterApplication[] | undefined,
 ) => {
   let delay = 0;
-  expandActions(actions, variables).map(action => {
+  actions.map(action => {
     // eslint-disable-next-line complexity
     const getFunc = () => {
       const estopped = store.getState().bot.hardware.informational_settings.locked;
@@ -189,17 +211,7 @@ export const runActions = (
             console.log(action.args[0]);
           };
         case "emergency_lock":
-          delay = 0;
-          latestActionMs = Date.now();
-          return () => {
-            pending.forEach(t => clearTimeout(t.timeoutId));
-            pending.clear();
-            console.log(`Queue length: ${pending.size}`);
-            store.dispatch({
-              type: Actions.DEMO_SET_ESTOP,
-              payload: true,
-            });
-          };
+          return eStop;
         case "emergency_unlock":
           return () => {
             store.dispatch({
@@ -207,7 +219,7 @@ export const runActions = (
               payload: false,
             });
           };
-        case "move_absolute":
+        case "expanded_move_absolute":
           const x = action.args[0] as number;
           const y = action.args[1] as number;
           const z = action.args[2] as number;
@@ -269,29 +281,39 @@ export const runActions = (
     const func = getFunc();
     if (func) {
       latestActionMs = Math.max(latestActionMs, Date.now()) + delay;
-      const funcDelay = latestActionMs - Date.now();
-      const timeout = {
-        timeoutId: setTimeout(() => {
-          pending.delete(timeout);
-          console.log(`Queue length: ${pending.size}`);
-          func();
-        }, funcDelay),
-        timestamp: latestActionMs,
-      };
-      pending.add(timeout);
+      const item = { func, timestamp: latestActionMs };
+      pending.push(item);
       delay = 0;
+      runNext();
     }
   });
+};
+
+const runNext = () => {
+  if (currentTimer || pending.length === 0) {
+    return;
+  }
+  const next = pending[0];
+  const delay = Math.max(next.timestamp - Date.now(), 0);
+
+  currentTimer = setTimeout(() => {
+    currentTimer = undefined;
+    const task = pending.shift();
+    task?.func();
+    console.log(`Queue length: ${pending.length}`);
+    runNext();
+  }, delay);
 };
 
 export const calculateMove = (
   body: MoveBodyItem[] | undefined,
   current: XyzNumber,
   variables: ParameterApplication[] | undefined,
-) => {
+): XyzNumber[] => {
   const pos = clone(current);
+  const moveBodyItems = body || [];
   // eslint-disable-next-line complexity
-  (body || []).map(item => {
+  moveBodyItems.map(item => {
     switch (item.kind) {
       case "axis_addition":
         switch (item.args.axis_operand.kind) {
@@ -379,10 +401,22 @@ export const calculateMove = (
               const getZ = getZFunc(triangles, -500);
               pos.z = getZ(pos.x, pos.y);
             }
+            if (item.args.axis_operand.args.label == "safe_height"
+              && item.args.axis == "z") {
+              pos.z = getSafeZ();
+            }
             break;
         }
         return;
     }
   });
-  return pos;
+  if (moveBodyItems.some(item => item.kind === "safe_z")) {
+    const safeZ = getSafeZ();
+    return [
+      { x: current.x, y: current.y, z: safeZ },
+      { x: pos.x, y: pos.y, z: safeZ },
+      pos,
+    ];
+  }
+  return [pos];
 };

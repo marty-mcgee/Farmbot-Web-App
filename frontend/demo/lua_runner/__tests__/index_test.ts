@@ -9,6 +9,7 @@ import {
   fakePoint,
   fakeSequence, fakeTool,
   fakeToolSlot,
+  fakePointGroup,
 } from "../../../__test_support__/fake_state/resources";
 let mockResources = buildResourceIndex([]);
 let mockLocked = false;
@@ -223,6 +224,39 @@ describe("runDemoSequence()", () => {
     expect(console.log).toHaveBeenCalledWith("undefined");
   });
 
+  it("runs sequence with point group variable", () => {
+    const point1 = fakePoint();
+    point1.body.id = 1;
+    const point2 = fakePoint();
+    point2.body.id = 2;
+    const point3 = fakePoint();
+    point3.body.id = 3;
+    const group = fakePointGroup();
+    group.body.id = 1;
+    group.body.point_ids = [1, 2, 3];
+    const sequence = fakeSequence();
+    sequence.body.id = 1;
+    sequence.body.body = [{
+      kind: "send_message",
+      args: { message: "text", message_type: "info" },
+    }];
+    const ri = buildResourceIndex([
+      group, point1, point2, point3, sequence,
+    ]).index;
+    const variables: ParameterApplication[] = [{
+      kind: "parameter_application",
+      args: {
+        label: "Location",
+        data_value: { kind: "point_group", args: { point_group_id: 1 } },
+      },
+    }];
+    runDemoSequence(ri, sequence.body.id, variables);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledTimes(3);
+    expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
+  });
+
   it("runs sequence with other variable", () => {
     const sequence = fakeSequence();
     sequence.body.body = [{
@@ -291,7 +325,7 @@ describe("runDemoSequence()", () => {
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 4, z: 6 },
     });
-    expect(console.log).toHaveBeenCalledTimes(3);
+    expect(console.log).toHaveBeenCalledTimes(2);
   });
 
   it("handles missing variables", () => {

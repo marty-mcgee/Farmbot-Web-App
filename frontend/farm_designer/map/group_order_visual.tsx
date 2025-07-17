@@ -4,9 +4,7 @@ import { isUndefined } from "lodash";
 import { sortGroupBy } from "../../point_groups/point_group_sort";
 import { Color } from "../../ui";
 import { transformXY } from "./util";
-import {
-  ExtendedPointGroupSortType, convertToXY,
-} from "../../point_groups/paths";
+import { convertToXY } from "../../point_groups/paths";
 import { TaggedPoint, TaggedPointGroup } from "farmbot";
 import { zoomCompensation } from "./zoom";
 import { equals } from "../../util";
@@ -20,15 +18,6 @@ export interface GroupOrderProps {
   tryGroupSortType: PointGroupSortType | undefined;
 }
 
-export const sortGroup = (
-  groupSortType: ExtendedPointGroupSortType,
-  groupPoints: TaggedPoint[],
-) => {
-  switch (groupSortType) {
-    default: return sortGroupBy(groupSortType, groupPoints);
-  }
-};
-
 const sortedPointCoordinates = (
   group: TaggedPointGroup | undefined,
   groupPoints: TaggedPoint[],
@@ -36,7 +25,7 @@ const sortedPointCoordinates = (
 ): { x: number, y: number }[] => {
   if (isUndefined(group)) { return []; }
   const groupSortType = tryGroupSortType || group.body.sort_type;
-  return convertToXY(sortGroup(groupSortType, groupPoints));
+  return convertToXY(sortGroupBy(groupSortType, groupPoints));
 };
 
 interface PointsPathLineProps {

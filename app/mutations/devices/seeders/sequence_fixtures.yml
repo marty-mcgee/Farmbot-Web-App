@@ -585,6 +585,8 @@
             :kind: numeric
             :args:
               :number: 150
+      - :kind: safe_z
+        :args: {}
     :comment: Move above seed bin
   - :kind: write_pin
     :args:

@@ -37,6 +37,7 @@ import { forceOnline } from "./must_be_online";
 import { store } from "../redux/store";
 import { linkToSetting } from "../settings/maybe_highlight";
 import { runDemoLuaCode, runDemoSequence, csToLua } from "../demo/lua_runner";
+import { eStop } from "../demo/lua_runner/actions";
 
 const ON = 1, OFF = 0;
 export type ConfigKey = keyof McuParams;
@@ -90,6 +91,8 @@ export function sendRPC(command: RpcRequestBodyItem) {
         store.getState().resources.index,
         command.args.sequence_id,
         command.body);
+    } else if (command.kind == "emergency_lock") {
+      eStop();
     } else {
       runDemoLuaCode(csToLua(command));
     }
@@ -173,7 +176,7 @@ export function flashFirmware(firmwareName: FirmwareHardware) {
 export function emergencyLock() {
   const noun = t("Emergency stop");
   if (forceOnline()) {
-    runDemoLuaCode("emergency_lock()");
+    eStop();
     return;
   }
   getDevice()
