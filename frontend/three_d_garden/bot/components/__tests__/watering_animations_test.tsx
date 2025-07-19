@@ -3,11 +3,13 @@ import { render } from "@testing-library/react";
 import {
   WateringAnimations, WateringAnimationsProps,
 } from "../watering_animations";
+import { clone } from "lodash";
+import { INITIAL } from "../../../config";
 
 describe("<WateringAnimations />", () => {
   const fakeProps = (): WateringAnimationsProps => ({
     waterFlow: true,
-    botPosition: { x: 0, y: 0, z: 0 },
+    config: clone(INITIAL),
     getZ: () => 0,
   });
 

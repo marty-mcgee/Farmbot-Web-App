@@ -21,7 +21,6 @@ import {
 } from "../../../farm_designer/map/tool_graphics/all_tools";
 import { Xyz } from "farmbot";
 import { ToolPulloutDirection } from "farmbot/dist/resources/api_resources";
-import { WateringAnimations } from "./watering_animations";
 import { useNavigate } from "react-router";
 import { Path } from "../../../internal_urls";
 import { setPanelOpen } from "../../../farm_designer/panel_header";
@@ -261,11 +260,6 @@ export const Tools = (props: ToolsProps) => {
             scale={1000}
             geometry={wateringNozzle.nodes[PartName.wateringNozzle].geometry}
             material={wateringNozzle.materials.PaletteMaterial001} />
-          {!inToolbay && props.config.waterFlow &&
-            <WateringAnimations
-              waterFlow={props.config.waterFlow}
-              botPosition={botPosition}
-              getZ={props.getZ} />}
         </ToolbaySlot>;
       case ToolName.seedBin:
         return <ToolbaySlot {...common}>

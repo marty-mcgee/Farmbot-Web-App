@@ -32,6 +32,7 @@ import {
   GantryBeam,
 } from "./components";
 import { SlotWithTool } from "../../resources/interfaces";
+import { WateringAnimations } from "./components/watering_animations";
 
 export const extrusionWidth = 20;
 const utmRadius = 35;
@@ -649,6 +650,11 @@ export const Bot = (props: FarmbotModelProps) => {
       getZ={props.getZ}
       toolSlots={props.toolSlots}
       mountedToolName={props.mountedToolName} />
+    {config.waterFlow &&
+      <WateringAnimations
+        waterFlow={config.waterFlow}
+        config={config}
+        getZ={props.getZ} />}
     <PowerSupply config={config} />
     <XAxisWaterTube config={config} />
     <Bounds config={config} />
