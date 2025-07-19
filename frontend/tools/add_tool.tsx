@@ -199,10 +199,10 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
               name="toolName"
               onChange={e =>
                 this.setState({ toolName: e.currentTarget.value })} />
-            {reduceToolName(toolName) == ToolName.wateringNozzle &&
-              <WaterFlowRateInput value={this.state.flowRate}
-                onChange={this.changeFlowRate} />}
           </div>
+          {reduceToolName(toolName) == ToolName.wateringNozzle &&
+            <WaterFlowRateInput value={this.state.flowRate}
+              onChange={this.changeFlowRate} />}
           <p className="name-error">
             {alreadyAdded ? t("Already added.") : ""}
           </p>

@@ -47,7 +47,7 @@ export interface WaterFlowRateInputProps {
 }
 
 export const WaterFlowRateInput = (props: WaterFlowRateInputProps) => {
-  return <div className={"flow-rate-input"}>
+  return <div className={"flow-rate-input row grid-exp-3"}>
     <label>{t("Water Flow Rate (mL/s)")}</label>
     {!props.hideTooltip && <Help text={ToolTips.WATER_FLOW_RATE}
       enableMarkdown={true} />}
@@ -143,10 +143,10 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
           <input name="toolName"
             value={toolName}
             onChange={e => this.setState({ toolName: e.currentTarget.value })} />
-          {reduceToolName(toolName) == ToolName.wateringNozzle &&
-            <WaterFlowRateInput value={this.state.flowRate}
-              onChange={this.changeFlowRate} />}
         </div>
+        {reduceToolName(toolName) == ToolName.wateringNozzle &&
+          <WaterFlowRateInput value={this.state.flowRate}
+            onChange={this.changeFlowRate} />}
         <p className="name-error">
           {nameTaken ? t("Name already taken.") : ""}
         </p>

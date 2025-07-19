@@ -16,6 +16,7 @@ import {
 import { pointsSelectedByGroup } from "../../point_groups/criteria/apply";
 import { sortGroupBy } from "../../point_groups/point_group_sort";
 import { ResourceIndex } from "../../resources/interfaces";
+import { getZFunc, TriangleData } from "../../three_d_garden/triangle_functions";
 
 export const getFirmwareSettings = (): FirmwareConfig => {
   const fwConfig = getFirmwareConfig(store.getState().resources.index);
@@ -49,6 +50,13 @@ export const getGardenSize = (): XyzNumber => {
 export const getSafeZ = (): number => {
   const fbosSettings = getFbosSettings();
   return fbosSettings.safe_height || 0;
+};
+
+export const getSoilHeight = (x: number, y: number): number => {
+  const triangles = JSON.parse(
+    sessionStorage.getItem("triangles") || "[]") as TriangleData[];
+  const getZ = getZFunc(triangles, -500);
+  return getZ(x, y);
 };
 
 export const getGroupPoints = (resources: ResourceIndex, groupId: number) => {

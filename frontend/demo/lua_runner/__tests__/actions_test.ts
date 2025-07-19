@@ -29,10 +29,14 @@ jest.mock("../../../three_d_garden/triangle_functions", () => ({
   getZFunc: jest.fn(() => () => 3),
 }));
 
-import { Move, ParameterApplication } from "farmbot";
+import {
+  AxisAddition, AxisOverwrite, Move, MoveBodyItem, ParameterApplication,
+} from "farmbot";
 import { TOAST_OPTIONS } from "../../../toast/constants";
 import { info } from "../../../toast/toast";
-import { calculateMove, eStop, expandActions, runActions, setCurrent } from "../actions";
+import {
+  calculateMove, eStop, expandActions, runActions, setCurrent,
+} from "../actions";
 
 describe("runActions()", () => {
   beforeEach(() => {
@@ -130,7 +134,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 2, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 2, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles number all axis addition", () => {
@@ -148,7 +152,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 2, y: 3, z: 4 }]);
+      .toEqual({ moves: [{ x: 2, y: 3, z: 4 }], warnings: [] });
   });
 
   it("handles coordinate single axis addition", () => {
@@ -166,7 +170,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 2, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 2, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles coordinate all axis addition", () => {
@@ -184,7 +188,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 2, y: 4, z: 6 }]);
+      .toEqual({ moves: [{ x: 2, y: 4, z: 6 }], warnings: [] });
   });
 
   it("handles number single axis overwrite", () => {
@@ -202,7 +206,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 3, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 3, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles number all axis overwrite", () => {
@@ -220,7 +224,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 1, y: 2, z: 3 }, []))
-      .toEqual([{ x: 1, y: 1, z: 1 }]);
+      .toEqual({ moves: [{ x: 1, y: 1, z: 1 }], warnings: [] });
   });
 
   it("handles coordinate single axis overwrite", () => {
@@ -238,7 +242,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 1, y: 0, z: 0 }]);
+      .toEqual({ moves: [{ x: 1, y: 0, z: 0 }], warnings: [] });
   });
 
   it("handles coordinate all axis overwrite", () => {
@@ -256,7 +260,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 1, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 1, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles tool single axis overwrite", () => {
@@ -282,7 +286,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 1, y: 0, z: 0 }]);
+      .toEqual({ moves: [{ x: 1, y: 0, z: 0 }], warnings: [] });
   });
 
   it("handles tool all axis overwrite", () => {
@@ -308,7 +312,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 1, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 1, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles missing tool", () => {
@@ -327,7 +331,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 0 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 0 }], warnings: [] });
   });
 
   it("handles coordinate identifier all axis overwrite", () => {
@@ -358,7 +362,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, variables))
-      .toEqual([{ x: 1, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 1, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles point identifier all axis overwrite", () => {
@@ -394,7 +398,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, variables))
-      .toEqual([{ x: 1, y: 2, z: 3 }]);
+      .toEqual({ moves: [{ x: 1, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles missing point", () => {
@@ -425,7 +429,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, variables))
-      .toEqual([{ x: 0, y: 0, z: 0 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 0 }], warnings: [] });
   });
 
   it("handles missing variables", () => {
@@ -444,7 +448,10 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, undefined))
-      .toEqual([{ x: 0, y: 0, z: 0 }]);
+      .toEqual({
+        moves: [{ x: 0, y: 0, z: 0 }],
+        warnings: ["identifier location kind: undefined"],
+      });
   });
 
   it("handles soil height z axis overwrite", () => {
@@ -462,7 +469,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 3 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 3 }], warnings: [] });
   });
 
   it("handles soil height z axis overwrite: triangle data", () => {
@@ -481,7 +488,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 3 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 3 }], warnings: [] });
   });
 
   it("handles safe height z axis overwrite", () => {
@@ -504,7 +511,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 3 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 3 }], warnings: [] });
   });
 
   it("handles soil height z axis overwrite: wrong label", () => {
@@ -522,7 +529,10 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 0 }]);
+      .toEqual({
+        moves: [{ x: 0, y: 0, z: 0 }],
+        warnings: ["special_value label: nope"],
+      });
   });
 
   it("handles safe_z", () => {
@@ -537,20 +547,92 @@ describe("calculateMove()", () => {
             axis_operand: { kind: "numeric", args: { number: 100 } },
           },
         },
+        {
+          kind: "speed_overwrite",
+          args: {
+            axis: "all",
+            speed_setting: { kind: "numeric", args: { number: 100 } },
+          },
+        },
         { kind: "safe_z", args: {} },
       ],
     };
     expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
-      .toEqual([
-        { x: 50, y: 50, z: 0 },
-        { x: 100, y: 100, z: 0 },
-        { x: 100, y: 100, z: 100 },
-      ]);
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 0 },
+          { x: 100, y: 100, z: 0 },
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles unknown pieces", () => {
+    const variables: ParameterApplication[] = [
+      {
+        kind: "parameter_application",
+        args: {
+          label: "parent",
+          data_value: {
+            kind: "foo" as ParameterApplication["args"]["data_value"]["kind"],
+            args: { pointer_id: 1, pointer_type: "Plant" },
+          } as ParameterApplication["args"]["data_value"],
+        },
+      },
+    ];
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "foo" as MoveBodyItem["kind"],
+          args: {},
+        } as MoveBodyItem,
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: {
+              kind: "bar" as AxisOverwrite["args"]["axis_operand"]["kind"],
+              args: {},
+            } as AxisOverwrite["args"]["axis_operand"],
+          },
+        },
+        {
+          kind: "axis_addition",
+          args: {
+            axis: "all",
+            axis_operand: {
+              kind: "bar" as AxisAddition["args"]["axis_operand"]["kind"],
+              args: {},
+            } as AxisAddition["args"]["axis_operand"],
+          },
+        },
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "identifier", args: { label: "parent" } },
+          },
+        },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, variables))
+      .toEqual({
+        moves: [{ x: 0, y: 0, z: 0 }],
+        warnings: [
+          "item kind: foo",
+          "axis_overwrite axis_operand kind: bar",
+          "axis_addition axis_operand kind: bar",
+          "identifier location kind: foo",
+        ],
+      });
   });
 
   it("handles missing body", () => {
     const command: Move = { kind: "move", args: {} };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual([{ x: 0, y: 0, z: 0 }]);
+      .toEqual({ moves: [{ x: 0, y: 0, z: 0 }], warnings: [] });
   });
 });

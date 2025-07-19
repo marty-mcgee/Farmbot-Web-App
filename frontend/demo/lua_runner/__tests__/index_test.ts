@@ -30,6 +30,7 @@ jest.mock("../../../redux/store", () => ({
 jest.mock("../../../api/crud", () => ({
   edit: jest.fn(),
   save: jest.fn(),
+  initSave: jest.fn(),
 }));
 
 import {
@@ -45,7 +46,7 @@ import {
   runDemoSequence,
 } from "..";
 import { TOAST_OPTIONS } from "../../../toast/constants";
-import { edit, save } from "../../../api/crud";
+import { edit, initSave, save } from "../../../api/crud";
 import { setCurrent } from "../actions";
 
 describe("runDemoSequence()", () => {
@@ -325,7 +326,7 @@ describe("runDemoSequence()", () => {
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 4, z: 6 },
     });
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(3);
   });
 
   it("handles missing variables", () => {
@@ -531,6 +532,47 @@ describe("runDemoLuaCode()", () => {
     expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("table	1");
     expect(info).not.toHaveBeenCalled();
+  });
+
+  it("runs api: creates point", () => {
+    mockResources = buildResourceIndex([]);
+    runDemoLuaCode(`
+      api{ url="/api/points",
+           method="POST",
+           body={
+             name = "test",
+             pointer_type = "GenericPointer",
+             x = 1, y = 2, z = 3,
+             radius = 5 }}`);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Point", {
+      name: "test", pointer_type: "GenericPointer",
+      x: 1, y: 2, z: 3, radius: 5, meta: {},
+    });
+  });
+
+  it("runs api: creates point with meta", () => {
+    mockResources = buildResourceIndex([]);
+    runDemoLuaCode(`
+      api{ url="/api/points",
+           method="POST",
+           body={
+             name = "test",
+             pointer_type = "GenericPointer",
+             meta = { color = "red" },
+             x = 1, y = 2, z = 3,
+             radius = 5 }}`);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Point", {
+      name: "test", pointer_type: "GenericPointer",
+      x: 1, y: 2, z: 3, radius: 5, meta: { color: "red" },
+    });
   });
 
   it("runs api: tools", () => {
@@ -1106,9 +1148,9 @@ describe("csToLua()", () => {
  * [ y ] current_day
  *
  * FBOS:
- * [ y ] variable (numeric/text only)
+ * [ y ] variable
  * [   ] auth_token
- * [ y ] api (GET /api/points only)
+ * [ y ] api
  * [   ] base64.decode
  * [   ] base64.encode
  * [   ] calibrate_camera
@@ -1159,9 +1201,9 @@ describe("csToLua()", () => {
  * [   ] read_status
  * [ y ] rpc
  * [ y ] sequence
- * [ y ] send_message (info only)
+ * [ y ] send_message
  * [ y ] debug
- * [ y ] toast (info only)
+ * [ y ] toast
  * [ y ] safe_z
  * [   ] set_job
  * [ y ] set_job_progress
@@ -1187,5 +1229,5 @@ describe("csToLua()", () => {
  * [   ] watch_pin
  * [ y ] on
  * [ y ] off
- * [ y ] write_pin (digital only)
+ * [ y ] write_pin
  */

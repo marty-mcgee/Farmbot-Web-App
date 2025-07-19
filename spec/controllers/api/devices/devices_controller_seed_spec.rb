@@ -1677,6 +1677,12 @@ describe Api::DevicesController do
       expect(sequences_grid?(device)).to be_kind_of(Sequence)
     end
 
+    it "seeds accounts with demo account data when tools not available" do
+      start_tests "none", false, true
+
+      expect(tools_watering_nozzle?(device)).to_not be
+    end
+
     it "seeds accounts when sequence versions not available:  Genesis XL 1.6" do
       start_tests "genesis_xl_1.6", false
 

@@ -6,17 +6,19 @@ import { store } from "../../redux/store";
 import { Actions } from "../../constants";
 import { TOAST_OPTIONS } from "../../toast/constants";
 import { Action, XyzNumber } from "./interfaces";
-import { edit, save } from "../../api/crud";
+import { edit, initSave, save } from "../../api/crud";
 import {
   getDeviceAccountSettings,
   maybeFindPointById,
   maybeFindSlotByToolId,
 } from "../../resources/selectors";
 import { UnknownAction } from "redux";
-import { getFirmwareSettings, getGardenSize, getSafeZ } from "./stubs";
+import {
+  getFirmwareSettings, getGardenSize, getSafeZ, getSoilHeight,
+} from "./stubs";
 import { clamp, clone } from "lodash";
-import { getZFunc, TriangleData } from "../../three_d_garden/triangle_functions";
 import { validBotLocationData } from "../../util/location";
+import { Point } from "farmbot/dist/resources/api_resources";
 
 const almostEqual = (a: XyzNumber, b: XyzNumber) => {
   const epsilon = 0.01;
@@ -76,7 +78,6 @@ const current = {
   z: 0,
 };
 
-
 export const setCurrent = (position: XyzNumber) => {
   current.x = position.x;
   current.y = position.y;
@@ -123,7 +124,11 @@ export const expandActions = (
         break;
       case "_move":
         const moveItems = JSON.parse("" + action.args[0]) as MoveBodyItem[];
-        const moves = calculateMove(moveItems, current, variables);
+        const { moves, warnings } = calculateMove(moveItems, current, variables);
+        expanded.push({
+          type: "send_message",
+          args: ["warn", `not yet supported: ${warnings.join(", ")}`],
+        });
         const actualMoveTargets = moves.map(clampTarget);
         actualMoveTargets.map(actualMoveTarget => {
           movementChunks(current, actualMoveTarget, mmPerTimeStep).map(addPosition);
@@ -267,6 +272,12 @@ export const runActions = (
               payload: [job, progress],
             });
           };
+        case "create_point":
+          const point = JSON.parse("" + action.args[0]) as Point;
+          point.meta = point.meta || {};
+          return () => {
+            store.dispatch(initSave("Point", point) as unknown as UnknownAction);
+          };
         case "update_device":
           return () => {
             const device =
@@ -309,8 +320,9 @@ export const calculateMove = (
   body: MoveBodyItem[] | undefined,
   current: XyzNumber,
   variables: ParameterApplication[] | undefined,
-): XyzNumber[] => {
+): { moves: XyzNumber[], warnings: string[] } => {
   const pos = clone(current);
+  const warnings: string[] = [];
   const moveBodyItems = body || [];
   // eslint-disable-next-line complexity
   moveBodyItems.map(item => {
@@ -334,6 +346,10 @@ export const calculateMove = (
             } else {
               pos[item.args.axis] += item.args.axis_operand.args[item.args.axis];
             }
+            break;
+          default:
+            warnings.push(
+              `axis_addition axis_operand kind: ${item.args.axis_operand.kind}`);
             break;
         }
         return;
@@ -382,8 +398,7 @@ export const calculateMove = (
               pos.x = location.args.x;
               pos.y = location.args.y;
               pos.z = location.args.z;
-            }
-            if (location?.kind == "point") {
+            } else if (location?.kind == "point") {
               const point = maybeFindPointById(
                 store.getState().resources.index,
                 location.args.pointer_id);
@@ -391,32 +406,47 @@ export const calculateMove = (
               pos.x = point.body.x;
               pos.y = point.body.y;
               pos.z = point.body.z;
+            } else {
+              warnings.push(`identifier location kind: ${location?.kind}`);
             }
             break;
           case "special_value":
             if (item.args.axis_operand.args.label == "soil_height"
               && item.args.axis == "z") {
-              const triangles = JSON.parse(
-                sessionStorage.getItem("triangles") || "[]") as TriangleData[];
-              const getZ = getZFunc(triangles, -500);
-              pos.z = getZ(pos.x, pos.y);
-            }
-            if (item.args.axis_operand.args.label == "safe_height"
+              pos.z = getSoilHeight(pos.x, pos.y);
+            } else if (item.args.axis_operand.args.label == "safe_height"
               && item.args.axis == "z") {
               pos.z = getSafeZ();
+            } else {
+              warnings.push(
+                `special_value label: ${item.args.axis_operand.args.label}`);
             }
             break;
+          default:
+            warnings.push(
+              `axis_overwrite axis_operand kind: ${item.args.axis_operand.kind}`);
+            break;
         }
+        return;
+      case "speed_overwrite":
+        return;
+      case "safe_z":
+        return;
+      default:
+        warnings.push(`item kind: ${(item as MoveBodyItem).kind}`);
         return;
     }
   });
   if (moveBodyItems.some(item => item.kind === "safe_z")) {
     const safeZ = getSafeZ();
-    return [
-      { x: current.x, y: current.y, z: safeZ },
-      { x: pos.x, y: pos.y, z: safeZ },
-      pos,
-    ];
+    return {
+      moves: [
+        { x: current.x, y: current.y, z: safeZ },
+        { x: pos.x, y: pos.y, z: safeZ },
+        pos,
+      ],
+      warnings,
+    };
   }
-  return [pos];
+  return { moves: [pos], warnings };
 };

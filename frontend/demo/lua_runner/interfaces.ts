@@ -14,6 +14,7 @@ export interface Action {
     | "go_to_home"
     | "send_message"
     | "update_device"
+    | "create_point"
     | "print"
     | "wait_ms"
     | "write_pin"

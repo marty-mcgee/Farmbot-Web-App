@@ -20,9 +20,11 @@ module Devices
 
       def create_webcam_feed(product_line)
         feed_name = feed(product_line)
-        WebcamFeeds::Create.run!({ name: feed_name,
-                                   url: BASE_URL + FEEDS[feed_name],
-                                   device: device })
+        if feed_name != ""
+          WebcamFeeds::Create.run!({ name: feed_name,
+                                     url: BASE_URL + FEEDS.fetch(feed_name, ""),
+                                     device: device })
+        end
       end
 
       def add_plants(product_line)
@@ -152,6 +154,8 @@ module Devices
         add_plants(product_line)
         add_soil_height_points(product_line)
         add_point_groups
+        tool = device.tools.find_by(name: ToolNames::WATERING_NOZZLE)
+        Tools::Update.run(tool: tool, flow_rate_ml_per_s: 100) if tool
 
         marketing_bulletin
         device.alerts.where(problem_tag: UNUSED_ALERTS).destroy_all

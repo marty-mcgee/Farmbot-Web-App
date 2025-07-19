@@ -12,7 +12,7 @@ import { LUA_HELPERS } from "./lua";
 import { createRecursiveNotImplemented, csToLua, jsToLua, luaToJs } from "./util";
 import { Action, XyzNumber } from "./interfaces";
 import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
-import { getGardenSize, getSafeZ } from "./stubs";
+import { getGardenSize, getSafeZ, getSoilHeight } from "./stubs";
 import { error } from "../../toast/toast";
 import { collectDemoSequenceActions } from "./index";
 
@@ -117,6 +117,16 @@ export const runLua =
     lua.lua_newtable(L);
     const envOsIndex = lua.lua_gettop(L);
     lua.lua_getfield(L, osIndex, to_luastring("time"));
+    const rawTime = lua.lua_toproxy(L, -1);
+    lua.lua_pop(L, 1);
+    lua.lua_pushjsfunction(L, () => {
+      rawTime(L);
+      lua.lua_call(L, 0, 1);
+      const intTime = luaToJs(L, -1) as number;
+      lua.lua_pop(L, 1);
+      jsToLua(L, intTime + 0.0);
+      return 1;
+    });
     lua.lua_setfield(L, envOsIndex, to_luastring("time"));
     lua.lua_getfield(L, osIndex, to_luastring("date"));
     lua.lua_setfield(L, envOsIndex, to_luastring("date"));
@@ -125,9 +135,10 @@ export const runLua =
 
     lua.lua_pushjsfunction(L, () => {
       lua.lua_getfield(L, 1, to_luastring("method"));
-      const method = lua.lua_isnil(L, -1)
+      const rawMethod = lua.lua_isnil(L, -1)
         ? "GET"
         : luaToJs(L, -1) as string;
+      const method = rawMethod.toUpperCase();
       lua.lua_pop(L, 1);
 
       lua.lua_getfield(L, 1, to_luastring("url"));
@@ -135,11 +146,22 @@ export const runLua =
       const url = rawUrl.replace(/\/$/, "");
       lua.lua_pop(L, 1);
 
-      if (method == "GET" && url == "/api/points") {
+      if (url == "/api/points") {
         const points = selectAllPoints(store.getState().resources.index);
-        const results = sortGroupBy("yx_alternating", points).map(p => p.body);
-        jsToLua(L, results);
-        return 1;
+        if (method == "GET") {
+          const results = sortGroupBy("yx_alternating", points).map(p => p.body);
+          jsToLua(L, results);
+          return 1;
+        }
+        if (method == "POST") {
+          lua.lua_getfield(L, 1, to_luastring("body"));
+          const body = luaToJs(L, -1) as Object;
+          lua.lua_pop(L, 1);
+          const point = JSON.stringify(body);
+          actions.push({ type: "create_point", args: [point] });
+          jsToLua(L, true);
+          return 1;
+        }
       } else if (method == "GET" && url == "/api/tools") {
         const results = selectAllTools(store.getState().resources.index)
           .map(p => p.body);
@@ -320,7 +342,9 @@ export const runLua =
     lua.lua_setfield(L, envIndex, to_luastring("env"));
 
     lua.lua_pushjsfunction(L, () => {
-      jsToLua(L, -500);
+      const x = luaToJs(L, 1) as number;
+      const y = luaToJs(L, 2) as number;
+      jsToLua(L, getSoilHeight(x, y));
       return 1;
     });
     lua.lua_setfield(L, envIndex, to_luastring("soil_height"));
