@@ -126,6 +126,7 @@ export const VariableForm =
       list.unshift(LOCATION_PLACEHOLDER_DDI());
     }
     const narrowLabel = !!removeVariable;
+    const [isCustom, setIsCustom] = React.useState(false);
     return <div className={"location-form"}>
       <div className={"location-form-content"}>
         <Row className={isDefaultValueForm ? "grid-exp-2" : "grid-exp-3"}>
@@ -155,6 +156,8 @@ export const VariableForm =
                 ? LOCATION_PLACEHOLDER_DDI().label
                 : NO_VALUE_SELECTED_DDI().label}
               onChange={ddi => {
+                setIsCustom(
+                  [t("Custom number"), t("Custom text")].includes(ddi.label));
                 onChange(convertDDItoVariable({
                   identifierLabel: label,
                   allowedVariableNodes,
@@ -177,7 +180,8 @@ export const VariableForm =
         </Row>
         {!isDefaultValueForm && variableType == VariableType.Number &&
           celeryNode.kind != "parameter_declaration" &&
-          !usingDefaultValue && celeryNode.args.data_value.kind != "identifier" &&
+          (!usingDefaultValue || isCustom) &&
+          celeryNode.args.data_value.kind != "identifier" &&
           <Row className="grid-2-col">
             <div></div>
             <NumericInput label={label} variableNode={celeryNode}
@@ -185,7 +189,8 @@ export const VariableForm =
           </Row>}
         {!isDefaultValueForm && variableType == VariableType.Text &&
           celeryNode.kind != "parameter_declaration" &&
-          !usingDefaultValue && celeryNode.args.data_value.kind != "identifier" &&
+          (!usingDefaultValue || isCustom) &&
+          celeryNode.args.data_value.kind != "identifier" &&
           <Row className="grid-2-col">
             <div></div>
             <TextInput label={label} variableNode={celeryNode}

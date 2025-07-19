@@ -326,7 +326,76 @@ describe("runDemoSequence()", () => {
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 4, z: 6 },
     });
-    expect(console.log).toHaveBeenCalledTimes(3);
+    expect(console.log).toHaveBeenCalledTimes(2);
+  });
+
+  it("applies sequence variables", () => {
+    const sequence = fakeSequence();
+    sequence.body.body = [{
+      kind: "lua",
+      args: { lua: "toast(variable(\"Variable\"))" },
+    }];
+    sequence.body.args.locals.body = [{
+      kind: "variable_declaration",
+      args: {
+        label: "Variable",
+        data_value: { kind: "text", args: { string: "v" } },
+      },
+    }];
+    sequence.body.id = 1;
+    const ri = buildResourceIndex([sequence]).index;
+    runDemoSequence(ri, sequence.body.id, undefined);
+    jest.runAllTimers();
+    expect(info).toHaveBeenCalledWith("v", TOAST_OPTIONS().info);
+    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("doesn't duplicate sequence variables", () => {
+    const sequence = fakeSequence();
+    sequence.body.body = [{
+      kind: "lua",
+      args: { lua: "toast(variable(\"Variable\"))" },
+    }];
+    sequence.body.args.locals.body = [{
+      kind: "variable_declaration",
+      args: {
+        label: "Variable",
+        data_value: { kind: "text", args: { string: "v" } },
+      },
+    }];
+    sequence.body.id = 1;
+    const variables: ParameterApplication[] = [{
+      kind: "parameter_application",
+      args: {
+        label: "Variable",
+        data_value: { kind: "text", args: { string: "abc" } },
+      },
+    }];
+    const ri = buildResourceIndex([sequence]).index;
+    runDemoSequence(ri, sequence.body.id, variables);
+    jest.runAllTimers();
+    expect(info).toHaveBeenCalledWith("abc", TOAST_OPTIONS().info);
+    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("handles missing variable name sets", () => {
+    const sequence = fakeSequence();
+    sequence.body.body = [{
+      kind: "lua",
+      args: { lua: "print(variable(\"Number\"))" },
+    }];
+    sequence.body.id = 1;
+    const ri = buildResourceIndex([sequence]).index;
+    ri.sequenceMetas = { [sequence.uuid]: { foo: undefined } };
+    runDemoSequence(ri, sequence.body.id, undefined);
+    jest.runAllTimers();
+    expect(info).toHaveBeenCalledWith(
+      "Variable \"Number\" of type undefined not implemented.",
+      TOAST_OPTIONS().error);
+    expect(console.log).toHaveBeenCalledWith("undefined");
+    expect(error).not.toHaveBeenCalled();
   });
 
   it("handles missing variables", () => {
@@ -337,6 +406,7 @@ describe("runDemoSequence()", () => {
     }];
     sequence.body.id = 1;
     const ri = buildResourceIndex([sequence]).index;
+    ri.sequenceMetas = {};
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
     expect(info).toHaveBeenCalledWith(

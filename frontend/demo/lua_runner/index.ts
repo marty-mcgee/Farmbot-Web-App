@@ -17,7 +17,7 @@ export const collectDemoSequenceActions = (
   depth: number,
   resources: ResourceIndex,
   sequenceId: number,
-  variables: ParameterApplication[] | undefined,
+  bodyVariables: ParameterApplication[] | undefined,
 ): Action[] => {
   console.log(`Call depth: ${depth}`);
   if (depth > 100) {
@@ -25,10 +25,21 @@ export const collectDemoSequenceActions = (
     return [];
   }
   const sequence = findSequenceById(resources, sequenceId);
+  const varData = resources.sequenceMetas[sequence.uuid];
+  const sequenceVariables = Object.values(varData || {})
+    .map(v => v?.celeryNode)
+    .filter(v => v?.kind == "variable_declaration")
+    .filter(v => !bodyVariables?.map(v => v.args.label).includes(v.args.label))
+    .map(v => ({
+      kind: "parameter_application",
+      args: v.args,
+    } as ParameterApplication));
+  const variables = [...sequenceVariables, ...(bodyVariables || [])];
   const actions: Action[] = [];
-  if (variables?.[0]?.args.data_value.kind == "point_group") {
-    const variableLabel = variables[0].args.label;
-    const groupId = variables[0].args.data_value.args.point_group_id;
+  const firstVarArgs = variables[0]?.args;
+  if (firstVarArgs?.data_value.kind == "point_group") {
+    const variableLabel = firstVarArgs.label;
+    const groupId = firstVarArgs.data_value.args.point_group_id;
     getGroupPoints(resources, groupId).map(p => {
       const pointValue: Point = {
         kind: "point", args: {
@@ -59,7 +70,7 @@ export const collectDemoSequenceActions = (
       actions.push(...seqActions);
     } else {
       const lua = step.kind === "lua" ? step.args.lua : csToLua(step);
-      const stepActions = runLua(depth, lua, variables || []);
+      const stepActions = runLua(depth, lua, variables);
       actions.push(...stepActions);
     }
   });

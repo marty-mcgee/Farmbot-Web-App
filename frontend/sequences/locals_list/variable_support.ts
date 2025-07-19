@@ -4,9 +4,8 @@ import {
   VariableDeclaration, ParameterDeclaration,
 } from "farmbot";
 import { betterCompact } from "../../util";
-import { isParameterDeclaration } from "./locals_list";
 import { determineVector, determineDropdown } from "../../resources/sequence_meta";
-import { VariableNode } from "./locals_list_support";
+import { isParameterDeclaration, VariableNode } from "./locals_list_support";
 
 const createVariableDeclaration =
   (parameter: ParameterDeclaration): VariableDeclaration => ({
@@ -22,7 +21,10 @@ const createParameterApplication =
 
 const onlyParameterDeclarations = (variableData: VariableNameSet | undefined) =>
   betterCompact(Object.values(variableData || {})
-    .map(v => v && isParameterDeclaration(v.celeryNode) ? v.celeryNode : undefined));
+    .map(v =>
+      v && isParameterDeclaration(v.celeryNode)
+        ? v.celeryNode
+        : undefined));
 
 /**
  * Create default parameter applications for unassigned variables.

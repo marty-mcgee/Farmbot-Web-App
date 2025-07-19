@@ -85,12 +85,21 @@ describe("expandActions()", () => {
     expect(expandActions([
       { type: "move_absolute", args: [300, 0, 0] },
     ], [])).toEqual([
-      { type: "wait_ms", args: [500] },
-      { type: "expanded_move_absolute", args: [100, 0, 0] },
-      { type: "wait_ms", args: [500] },
-      { type: "expanded_move_absolute", args: [200, 0, 0] },
-      { type: "wait_ms", args: [500] },
+      { type: "wait_ms", args: [250] },
+      { type: "expanded_move_absolute", args: [125, 0, 0] },
+      { type: "wait_ms", args: [250] },
+      { type: "expanded_move_absolute", args: [250, 0, 0] },
+      { type: "wait_ms", args: [250] },
       { type: "expanded_move_absolute", args: [300, 0, 0] },
+    ]);
+  });
+
+  it("chunks movements: lands on target", () => {
+    expect(expandActions([
+      { type: "move_absolute", args: [125, 0, 0] },
+    ], [])).toEqual([
+      { type: "wait_ms", args: [250] },
+      { type: "expanded_move_absolute", args: [125, 0, 0] },
     ]);
   });
 
@@ -102,6 +111,17 @@ describe("expandActions()", () => {
     ], [])).toEqual([
       { type: "wait_ms", args: [1000] },
       { type: "expanded_move_absolute", args: [300, 0, 0] },
+    ]);
+  });
+
+  it("chunks movements: warns", () => {
+    expect(expandActions([
+      { type: "_move", args: [JSON.stringify([{ kind: "foo", args: {} }])] },
+    ], [])).toEqual([
+      { type: "send_message", args: ["warn", "not yet supported: item kind: foo"] },
+
+      { type: "wait_ms", args: [250] },
+      { type: "expanded_move_absolute", args: [0, 0, 0] },
     ]);
   });
 });

@@ -89,8 +89,8 @@ export const expandActions = (
   variables: ParameterApplication[] | undefined,
 ): Action[] => {
   const expanded: Action[] = [];
-  const timeStepMs = parseInt(localStorage.getItem("timeStepMs") || "500");
-  const mmPerSecond = parseInt(localStorage.getItem("mmPerSecond") || "200");
+  const timeStepMs = parseInt(localStorage.getItem("timeStepMs") || "250");
+  const mmPerSecond = parseInt(localStorage.getItem("mmPerSecond") || "500");
   const mmPerTimeStep = (mmPerSecond * timeStepMs) / 1000;
   const addPosition = (position: XyzNumber) => {
     expanded.push({
@@ -125,7 +125,7 @@ export const expandActions = (
       case "_move":
         const moveItems = JSON.parse("" + action.args[0]) as MoveBodyItem[];
         const { moves, warnings } = calculateMove(moveItems, current, variables);
-        expanded.push({
+        warnings.length > 0 && expanded.push({
           type: "send_message",
           args: ["warn", `not yet supported: ${warnings.join(", ")}`],
         });

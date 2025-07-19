@@ -28,7 +28,6 @@ const mockCB = jest.fn();
 jest.mock("../locals_list/locals_list", () => ({
   LocalsList: () => <div />,
   localListCallback: jest.fn(() => jest.fn(() => mockCB)),
-  isParameterDeclaration: jest.fn(),
   removeVariable: jest.fn(),
   generateNewVariableLabel: jest.fn(),
 }));

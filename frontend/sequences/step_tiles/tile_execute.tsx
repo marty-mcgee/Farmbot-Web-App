@@ -7,11 +7,13 @@ import { ToolTips } from "../../constants";
 import { StepWrapper } from "../step_ui";
 import { SequenceSelectBox } from "../sequence_select_box";
 import { findSequenceById } from "../../resources/selectors_by_id";
-import { isParameterDeclaration, LocalsList } from "../locals_list/locals_list";
+import { LocalsList } from "../locals_list/locals_list";
 import {
   addOrEditParamApps, variableList,
 } from "../locals_list/variable_support";
-import { AllowedVariableNodes } from "../locals_list/locals_list_support";
+import {
+  AllowedVariableNodes, isParameterDeclaration,
+} from "../locals_list/locals_list_support";
 import { isNumber } from "lodash";
 
 /** Replaces the execute step body with a new array of variables. */
