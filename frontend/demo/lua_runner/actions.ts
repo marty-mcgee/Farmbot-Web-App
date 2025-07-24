@@ -432,6 +432,8 @@ export const calculateMove = (
         return;
       case "safe_z":
         return;
+      case "axis_order":
+        return;
       default:
         warnings.push(`item kind: ${(item as MoveBodyItem).kind}`);
         return;
@@ -447,6 +449,31 @@ export const calculateMove = (
       ],
       warnings,
     };
+  }
+  const axisOrderItems = moveBodyItems.filter(item => item.kind === "axis_order");
+  if (axisOrderItems.length > 0) {
+    const { order } = axisOrderItems[0].args;
+    switch (order) {
+      case "z,y,x":
+        return {
+          moves: [
+            { x: current.x, y: current.y, z: pos.z },
+            { x: current.x, y: pos.y, z: pos.z },
+            pos,
+          ],
+          warnings,
+        };
+      case "z,xy":
+        return {
+          moves: [
+            { x: current.x, y: current.y, z: pos.z },
+            pos,
+          ],
+          warnings,
+        };
+      default:
+        return { moves: [pos], warnings };
+    }
   }
   return { moves: [pos], warnings };
 };

@@ -588,6 +588,81 @@ describe("calculateMove()", () => {
       });
   });
 
+  it("handles axis_order: xyz", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 100 } },
+          },
+        },
+        { kind: "axis_order", args: { order: "xyz" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,xy", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 100 } },
+          },
+        },
+        { kind: "axis_order", args: { order: "z,xy" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 100 },
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,y,x", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 100 } },
+          },
+        },
+        { kind: "axis_order", args: { order: "z,y,x" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 100 },
+          { x: 50, y: 100, z: 100 },
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
   it("handles unknown pieces", () => {
     const variables: ParameterApplication[] = [
       {

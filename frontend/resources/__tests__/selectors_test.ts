@@ -17,6 +17,7 @@ const SLOT_ID = 100;
 const fakeTool: TaggedTool = arrayUnwrap(newTaggedResource("Tool", {
   name: "yadda yadda",
   flow_rate_ml_per_s: 0,
+  seeder_tip_z_offset: 80,
   id: TOOL_ID
 }));
 const fakeSlot: TaggedToolSlotPointer = arrayUnwrap(newTaggedResource("Point",

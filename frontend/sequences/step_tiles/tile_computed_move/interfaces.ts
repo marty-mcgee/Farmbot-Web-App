@@ -3,6 +3,7 @@ import {
 } from "farmbot";
 import { ResourceIndex, UUID } from "../../../resources/interfaces";
 import { BotPosition } from "../../../devices/interfaces";
+import { DropDownItem } from "../../../ui";
 
 export type LocationNode = Identifier | Point | Tool;
 
@@ -16,6 +17,7 @@ export interface ComputedMoveState {
   variance: Record<Xyz, number | undefined>;
   speed: Record<Xyz, number | string | undefined>;
   safeZ: boolean;
+  axisOrder: string | undefined;
   viewRaw?: boolean;
 }
 
@@ -68,11 +70,6 @@ export interface LocationSelectionProps {
   sequenceUuid: UUID;
 }
 
-export interface SafeZCheckboxProps {
-  checked: boolean;
-  onChange(): void;
-}
-
 interface InputRowBase {
   disabledAxes: Record<Xyz, boolean>;
   onCommit: CommitMoveField;
@@ -94,6 +91,12 @@ export interface OffsetInputRowProps extends InputRowBase {
 export interface SpeedInputRowProps extends InputRowBase {
   speed: Record<Xyz, number | string | undefined>;
   setAxisState: SetAxisState;
+}
+
+export interface AxisOrderInputRowProps {
+  onChange(ddi: DropDownItem): void;
+  order: string | undefined;
+  safeZ: boolean;
 }
 
 export interface OverwriteInputRowProps extends InputRowBase {

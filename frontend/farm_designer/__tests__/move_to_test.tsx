@@ -37,7 +37,7 @@ describe("<MoveToForm />", () => {
   it("moves to location: custom z value", () => {
     const wrapper = mount(<MoveToForm {...fakeProps()} />);
     wrapper.setState({ z: 50 });
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 1, y: 2, z: 50, speed: 100, safeZ: false,
     });
@@ -58,10 +58,14 @@ describe("<MoveToForm />", () => {
   });
 
   it("changes safe z value", () => {
-    const wrapper = shallow<MoveToForm>(<MoveToForm {...fakeProps()} />);
-    wrapper.findWhere(n => "onChange" in n.props()).at(2)
-      .simulate("change");
-    expect(wrapper.state().safeZ).toEqual(true);
+    render(<MoveToForm {...fakeProps()} />);
+    expect(screen.queryByText("Safe Z")).not.toBeInTheDocument();
+    const dropdown = screen.getByRole("button", { name: "None" });
+    fireEvent.click(dropdown);
+    expect(screen.getAllByText("Safe Z").length).toEqual(1);
+    const item = screen.getByRole("menuitem", { name: "Safe Z" });
+    fireEvent.click(item);
+    expect(screen.getAllByText("Safe Z").length).toEqual(2);
   });
 
   it("fills in some missing values", () => {
@@ -69,7 +73,7 @@ describe("<MoveToForm />", () => {
     p.chosenLocation = { x: 1, y: undefined, z: undefined };
     const wrapper = mount(<MoveToForm {...p} />);
     expect(wrapper.find("input").at(1).props().value).toEqual("---");
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 1, y: 20, z: 30, speed: 100, safeZ: false,
     });
@@ -81,7 +85,7 @@ describe("<MoveToForm />", () => {
     p.currentBotLocation = { x: undefined, y: undefined, z: undefined };
     const wrapper = mount(<MoveToForm {...p} />);
     expect(wrapper.find("input").at(1).props().value).toEqual("---");
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 0, y: 0, z: 0, speed: 100, safeZ: false,
     });
@@ -91,7 +95,7 @@ describe("<MoveToForm />", () => {
     const p = fakeProps();
     p.botOnline = false;
     const wrapper = mount(<MoveToForm {...p} />);
-    expect(wrapper.find("button").hasClass("pseudo-disabled")).toBeTruthy();
+    expect(wrapper.find("button").at(0).hasClass("pseudo-disabled")).toBeTruthy();
   });
 });
 

@@ -206,6 +206,7 @@ module CeleryScriptSettingsBag
     url: { defn: [v(:string)] },
     value: { defn: [v(:string), v(:integer), v(:boolean)] },
     variance: { defn: [v(:integer)] },
+    order: { defn: [v(:string)] },
     version: { defn: [v(:integer)] },
     x: { defn: [v(:integer), v(:float)] },
     y: { defn: [v(:integer), v(:float)] },
@@ -557,6 +558,10 @@ module CeleryScriptSettingsBag
       args: [],
       tags: [:data],
     },
+    axis_order: {
+      args: [:order],
+      tags: [:data],
+    },
     random: {
       args: [:variance],
       tags: [:data],
@@ -566,6 +571,7 @@ module CeleryScriptSettingsBag
         :axis_overwrite,
         :axis_addition,
         :speed_overwrite,
+        :axis_order,
         :safe_z,
       ],
       tags: [:function, :firmware_user],

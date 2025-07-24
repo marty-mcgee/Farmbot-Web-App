@@ -1,6 +1,6 @@
 import React from "react";
 import { StepWrapper } from "../../step_ui";
-import { Row, ExpandableHeader } from "../../../ui";
+import { Row, ExpandableHeader, DropDownItem } from "../../../ui";
 import { ToolTips } from "../../../constants";
 import { t } from "../../../i18next_wrapper";
 import { Move, Xyz } from "farmbot";
@@ -27,7 +27,10 @@ import {
 import {
   getSpeedState, getSpeedNode, speedOverwrite, SpeedInputRow,
 } from "./speed";
-import { SafeZCheckbox, getSafeZState, SAFE_Z } from "./safe_z";
+import { getSafeZState, SAFE_Z } from "./safe_z";
+import {
+  axisOrder, AxisOrderInputRow, getAxisOrderState, getNewAxisOrderState,
+} from "./axis_order";
 import { StepParams } from "../../interfaces";
 
 /**
@@ -98,6 +101,7 @@ export class ComputedMove
       z: getSpeedState(this.step, "z"),
     },
     safeZ: getSafeZState(this.step),
+    axisOrder: getAxisOrderState(this.step),
   };
 
   get step() { return this.props.currentStep; }
@@ -178,6 +182,7 @@ export class ComputedMove
       ...speedOverwrite("y", this.speedNodes.y),
       ...speedOverwrite("z", this.speedNodes.z),
       ...(this.state.safeZ ? [SAFE_Z] : []),
+      ...axisOrder(this.state.axisOrder),
     ];
   };
 
@@ -241,7 +246,9 @@ export class ComputedMove
         }
       }, this.update);
 
-  toggleSafeZ = () => this.setState({ safeZ: !this.state.safeZ }, this.update);
+  setAxisOrder = (ddi: DropDownItem) => {
+    this.setState(getNewAxisOrderState(ddi), this.update);
+  };
   toggleMore = () => this.setState({ more: !this.state.more });
 
   LocationInputRow = () =>
@@ -304,10 +311,12 @@ export class ComputedMove
         setAxisState={this.setAxisState} />
       : undefined;
 
-  SafeZCheckbox = () =>
-    (this.state.safeZ || this.state.more)
-      ? <SafeZCheckbox checked={this.state.safeZ}
-        onChange={this.toggleSafeZ} />
+  AxisOrderInputRow = () =>
+    (this.state.axisOrder || this.state.safeZ || this.state.more)
+      ? <AxisOrderInputRow
+        order={this.state.axisOrder}
+        safeZ={this.state.safeZ}
+        onChange={this.setAxisOrder} />
       : undefined;
 
   render() {
@@ -327,7 +336,7 @@ export class ComputedMove
       <this.OffsetInputRow />
       <this.VarianceInputRow />
       <this.SpeedInputRow />
-      <this.SafeZCheckbox />
+      <this.AxisOrderInputRow />
     </StepWrapper>;
   }
 }

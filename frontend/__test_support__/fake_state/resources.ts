@@ -125,6 +125,7 @@ export function fakeTool(): TaggedTool {
   return fakeResource("Tool", {
     name: "Foo",
     flow_rate_ml_per_s: 0,
+    seeder_tip_z_offset: 80,
   });
 }
 

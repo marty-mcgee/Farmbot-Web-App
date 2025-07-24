@@ -114,7 +114,7 @@ describe("<ComputedMove />", () => {
   });
 
   it("shows options", () => {
-    const MORE = ["offset", "variance", "safe"];
+    const MORE = ["offset", "variance", "axis order"];
     const wrapper = mount<ComputedMove>(<ComputedMove {...fakeProps()} />);
     MORE.map(string =>
       expect(wrapper.text().toLowerCase()).not.toContain(string));
@@ -132,9 +132,20 @@ describe("<ComputedMove />", () => {
 
   it("enables safe z", () => {
     const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
+    expect(wrapper.state().axisOrder).toEqual(undefined);
     expect(wrapper.state().safeZ).toEqual(false);
-    wrapper.instance().toggleSafeZ();
+    wrapper.instance().setAxisOrder({ label: "", value: "safe_z" });
     expect(wrapper.state().safeZ).toEqual(true);
+    expect(wrapper.state().axisOrder).toEqual(undefined);
+  });
+
+  it("enables axis order", () => {
+    const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
+    expect(wrapper.state().axisOrder).toEqual(undefined);
+    expect(wrapper.state().safeZ).toEqual(false);
+    wrapper.instance().setAxisOrder({ label: "", value: "xyz" });
+    expect(wrapper.state().safeZ).toEqual(false);
+    expect(wrapper.state().axisOrder).toEqual("xyz");
   });
 
   it("commits number value", () => {

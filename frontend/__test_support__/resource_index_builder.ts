@@ -314,6 +314,7 @@ const tr14: TaggedResource = {
     "id": 14,
     "name": "Trench Digging Tool",
     "flow_rate_ml_per_s": 0,
+    "seeder_tip_z_offset": 80,
   },
   "uuid": "Tool.14.49"
 };
@@ -325,6 +326,7 @@ const tr15: TaggedResource = {
     "id": 15,
     "name": "Berry Picking Tool",
     "flow_rate_ml_per_s": 0,
+    "seeder_tip_z_offset": 80,
   },
   "uuid": "Tool.15.50"
 };
