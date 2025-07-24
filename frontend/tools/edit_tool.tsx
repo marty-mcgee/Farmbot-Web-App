@@ -62,6 +62,21 @@ export const WaterFlowRateInput = (props: WaterFlowRateInputProps) => {
   </div>;
 };
 
+export interface TipZOffsetInputProps {
+  value: number;
+  onChange(value: number): void;
+}
+
+export const TipZOffsetInput = (props: TipZOffsetInputProps) => {
+  return <div className={"row grid-exp-3"}>
+    <label>{t("Seeder Tip Z Offset (mm)")}</label>
+    <input
+      value={props.value}
+      type={"number"}
+      onChange={e => props.onChange(parseInt(e.currentTarget.value))} />
+  </div>;
+};
+
 export const mapStateToProps = (props: Everything): EditToolProps => ({
   findTool: (id: string) =>
     maybeFindToolById(props.resources.index, parseInt(id)),
@@ -79,6 +94,7 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
   state: EditToolState = {
     toolName: this.tool?.body.name || "",
     flowRate: this.tool?.body.flow_rate_ml_per_s || 0,
+    tipZOffset: this.tool?.body.seeder_tip_z_offset || 0,
   };
 
   get stringyID() { return Path.getSlug(Path.tools()); }
@@ -98,6 +114,7 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
   };
 
   changeFlowRate = (flowRate: number) => this.setState({ flowRate });
+  changeTipZOffset = (tipZOffset: number) => this.setState({ tipZOffset });
 
   default = (tool: TaggedTool) => {
     const { dispatch } = this.props;
@@ -116,6 +133,7 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
             this.props.dispatch(edit(tool, {
               name: toolName,
               flow_rate_ml_per_s: this.state.flowRate,
+              seeder_tip_z_offset: this.state.tipZOffset,
             }));
             this.props.dispatch(save(tool.uuid));
             this.navigate(Path.tools());
@@ -147,6 +165,9 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
         {reduceToolName(toolName) == ToolName.wateringNozzle &&
           <WaterFlowRateInput value={this.state.flowRate}
             onChange={this.changeFlowRate} />}
+        {reduceToolName(toolName) == ToolName.seeder &&
+          <TipZOffsetInput value={this.state.tipZOffset}
+            onChange={this.changeTipZOffset} />}
         <p className="name-error">
           {nameTaken ? t("Name already taken.") : ""}
         </p>

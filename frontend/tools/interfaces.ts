@@ -26,6 +26,7 @@ export interface AddToolState {
   toAdd: string[];
   uuid: UUID | undefined;
   flowRate: number;
+  tipZOffset: number;
 }
 
 export interface EditToolProps {
@@ -41,6 +42,7 @@ export interface EditToolProps {
 export interface EditToolState {
   toolName: string;
   flowRate: number;
+  tipZOffset: number;
 }
 
 export interface ToolTransformProps {

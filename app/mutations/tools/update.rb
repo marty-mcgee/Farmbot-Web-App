@@ -7,6 +7,7 @@ module Tools
     optional do
       string :name
       integer :flow_rate_ml_per_s
+      float :seeder_tip_z_offset
     end
 
     def execute

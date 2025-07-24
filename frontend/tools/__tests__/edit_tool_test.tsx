@@ -7,10 +7,14 @@ jest.mock("../../api/crud", () => ({
 jest.mock("../../devices/actions", () => ({ sendRPC: jest.fn() }));
 
 import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { mount, shallow } from "enzyme";
 import {
   RawEditTool as EditTool, mapStateToProps, isActive, WaterFlowRateInput,
   WaterFlowRateInputProps, LUA_WATER_FLOW_RATE,
+  TipZOffsetInput,
+  TipZOffsetInputProps,
 } from "../edit_tool";
 import {
   fakeTool, fakeToolSlot,
@@ -52,11 +56,24 @@ describe("<EditTool />", () => {
     expect(wrapper.text().toLowerCase()).toContain("flow rate");
   });
 
+  it("renders seeder", () => {
+    const wrapper = mount(<EditTool {...fakeProps()} />);
+    wrapper.setState({ toolName: "seeder" });
+    expect(wrapper.text().toLowerCase()).toContain("tip z offset");
+  });
+
   it("changes flow rate", () => {
     const wrapper = shallow<EditTool>(<EditTool {...fakeProps()} />);
     expect(wrapper.state().flowRate).toEqual(0);
     wrapper.instance().changeFlowRate(1);
     expect(wrapper.state().flowRate).toEqual(1);
+  });
+
+  it("changes tip z offset", () => {
+    const wrapper = shallow<EditTool>(<EditTool {...fakeProps()} />);
+    expect(wrapper.state().tipZOffset).toEqual(80);
+    wrapper.instance().changeTipZOffset(1);
+    expect(wrapper.state().tipZOffset).toEqual(1);
   });
 
   it("handles missing tool name", () => {
@@ -118,7 +135,9 @@ describe("<EditTool />", () => {
     const wrapper = mountWithContext(<EditTool {...p} />);
     wrapper.find(".save-btn").simulate("click");
     expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      name: "Foo", flow_rate_ml_per_s: 0,
+      name: "Foo",
+      flow_rate_ml_per_s: 0,
+      seeder_tip_z_offset: 80,
     });
     expect(save).toHaveBeenCalledWith(tool.uuid);
     expect(mockNavigate).toHaveBeenCalledWith(Path.tools());
@@ -190,18 +209,34 @@ describe("<WaterFlowRateInput />", () => {
   });
 
   it("sends RPC", () => {
-    const wrapper = mount(<WaterFlowRateInput {...fakeProps()} />);
-    wrapper.find("button").first().simulate("click");
+    render(<WaterFlowRateInput {...fakeProps()} />);
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
     expect(sendRPC).toHaveBeenCalledWith({
       kind: "lua", args: { lua: LUA_WATER_FLOW_RATE }
     });
   });
 
-  it("changes value", () => {
+  it("changes value", async () => {
     const p = fakeProps();
-    const wrapper = mount(<WaterFlowRateInput {...p} />);
-    wrapper.find("input").first().simulate("change",
-      { currentTarget: { value: "1" } });
-    expect(p.onChange).toHaveBeenCalledWith(1);
+    render(<WaterFlowRateInput {...p} />);
+    const input = screen.getByRole("spinbutton");
+    await userEvent.type(input, "2");
+    expect(p.onChange).toHaveBeenCalledWith(12);
+  });
+});
+
+describe("<TipZOffsetInput />", () => {
+  const fakeProps = (): TipZOffsetInputProps => ({
+    value: 1,
+    onChange: jest.fn(),
+  });
+
+  it("changes value", async () => {
+    const p = fakeProps();
+    render(<TipZOffsetInput {...p} />);
+    const input = screen.getByRole("spinbutton");
+    await userEvent.type(input, "2");
+    expect(p.onChange).toHaveBeenCalledWith(12);
   });
 });
