@@ -599,7 +599,11 @@ function speed_overwrite(axis, num)
     }
 end
 
-function re_move(input)
+function axis_order(order)
+    return { kind = "axis_order", args = { order = order } }
+end
+
+function move(input)
     cs_eval({
         kind = "rpc_request",
         args = {label = "move_cmd_lua", priority = 500},
@@ -614,6 +618,7 @@ function re_move(input)
                     input.speed and speed_overwrite("x", input.speed),
                     input.speed and speed_overwrite("y", input.speed),
                     input.speed and speed_overwrite("z", input.speed),
+                    input.axis_order and axis_order(input.axis_order),
                     input.safe_z and {kind = "safe_z", args = {}}
                 }
             }

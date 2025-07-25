@@ -1,5 +1,6 @@
 import {
   Identifier, MoveBodyItem, ParameterApplication, PercentageProgress,
+  Xyz,
 } from "farmbot";
 import { info } from "../../toast/toast";
 import { store } from "../../redux/store";
@@ -134,15 +135,6 @@ export const expandActions = (
           movementChunks(current, actualMoveTarget, mmPerTimeStep).map(addPosition);
           setCurrent(actualMoveTarget);
         });
-        break;
-      case "move":
-        const moveTarget = clampTarget({
-          x: (action.args[0] as number | undefined) ?? current.x,
-          y: (action.args[1] as number | undefined) ?? current.y,
-          z: (action.args[2] as number | undefined) ?? current.z,
-        });
-        movementChunks(current, moveTarget, mmPerTimeStep).map(addPosition);
-        setCurrent(moveTarget);
         break;
       case "find_home":
       case "go_to_home":
@@ -453,27 +445,27 @@ export const calculateMove = (
   const axisOrderItems = moveBodyItems.filter(item => item.kind === "axis_order");
   if (axisOrderItems.length > 0) {
     const { order } = axisOrderItems[0].args;
-    switch (order) {
-      case "z,y,x":
-        return {
-          moves: [
-            { x: current.x, y: current.y, z: pos.z },
-            { x: current.x, y: pos.y, z: pos.z },
-            pos,
-          ],
-          warnings,
-        };
-      case "z,xy":
-        return {
-          moves: [
-            { x: current.x, y: current.y, z: pos.z },
-            pos,
-          ],
-          warnings,
-        };
-      default:
-        return { moves: [pos], warnings };
-    }
+    const moves = generateMoves(order, current, pos);
+    return { moves, warnings };
   }
   return { moves: [pos], warnings };
+};
+
+const generateMoves = (order: string, current: XyzNumber, target: XyzNumber) => {
+  const axes: Xyz[] = ["x", "y", "z"];
+  const groups = order.split(",");
+  const moves: XyzNumber[] = [];
+  let lastState = { ...current };
+  groups.map(group => {
+    const normalized = group.split("").sort().join("");
+    const movement = { ...lastState };
+    axes.map(axis => {
+      if (normalized.includes(axis)) {
+        movement[axis] = target[axis];
+      }
+    });
+    moves.push(movement);
+    lastState = movement;
+  });
+  return moves;
 };

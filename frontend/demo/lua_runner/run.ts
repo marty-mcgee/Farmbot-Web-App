@@ -350,13 +350,6 @@ export const runLua =
     lua.lua_setfield(L, envIndex, to_luastring("soil_height"));
 
     lua.lua_pushjsfunction(L, () => {
-      const args = luaToJs(L, 1) as Partial<XyzNumber>;
-      actions.push({ type: "move", args: [args.x, args.y, args.z] });
-      return 0;
-    });
-    lua.lua_setfield(L, envIndex, to_luastring("move"));
-
-    lua.lua_pushjsfunction(L, () => {
       const arg = luaToJs(L, 1) as string;
       actions.push({ type: "_move", args: [arg] });
       return 0;

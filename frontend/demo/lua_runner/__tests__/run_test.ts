@@ -12,7 +12,13 @@ describe("runLua()", () => {
       { type: "move_absolute", args: [1, 2, 3] },
       { type: "wait_ms", args: [1000] },
       { type: "go_to_home", args: ["all"] },
-      { type: "move", args: [undefined, 1, undefined] },
+      {
+        type: "_move",
+        args: [
+          "[{\"kind\":\"axis_overwrite\",\"args\":{\"axis\":\"y\",\""
+          + "axis_operand\":{\"kind\":\"numeric\",\"args\":{\"number\":1}}}}]",
+        ],
+      },
     ]);
   });
 });

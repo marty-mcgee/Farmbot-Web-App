@@ -65,10 +65,10 @@ const luaTableToJs = (L: unknown, idx: number): unknown => {
     keyVals.push([key, val]);
     lua.lua_pop(L, 1);
   }
-  const isSequentialArray =
-    keyVals.every(([k], i) => typeof k === "number" && k === i + 1);
-  if (isSequentialArray) {
-    return keyVals.map(([, v]) => v);
+  const isArrayLike =
+    keyVals.every(([k]) => typeof k === "number");
+  if (isArrayLike) {
+    return keyVals.map(([, v]) => v).filter(v => v !== undefined);
   } else {
     const result: Record<string, unknown> = {};
     for (const [key, value] of keyVals) {
