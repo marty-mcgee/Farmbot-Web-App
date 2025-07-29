@@ -123,6 +123,19 @@ describe("<ComputedMove />", () => {
       expect(wrapper.text().toLowerCase()).toContain(string));
   });
 
+  it("shows options: axis order", () => {
+    const MORE = ["axis order"];
+    const p = fakeProps();
+    p.currentStep = {
+      kind: "move", args: {}, body: [{
+        kind: "axis_order", args: { grouping: "xyz", route: "high" }
+      }],
+    };
+    const wrapper = mount<ComputedMove>(<ComputedMove {...p} />);
+    MORE.map(string =>
+      expect(wrapper.text().toLowerCase()).toContain(string));
+  });
+
   it("enables additional option display", () => {
     const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
     expect(wrapper.state().more).toEqual(false);
@@ -132,20 +145,24 @@ describe("<ComputedMove />", () => {
 
   it("enables safe z", () => {
     const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
-    expect(wrapper.state().axisOrder).toEqual(undefined);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
     expect(wrapper.state().safeZ).toEqual(false);
     wrapper.instance().setAxisOrder({ label: "", value: "safe_z" });
     expect(wrapper.state().safeZ).toEqual(true);
-    expect(wrapper.state().axisOrder).toEqual(undefined);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
   });
 
   it("enables axis order", () => {
     const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
-    expect(wrapper.state().axisOrder).toEqual(undefined);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
     expect(wrapper.state().safeZ).toEqual(false);
-    wrapper.instance().setAxisOrder({ label: "", value: "xyz" });
+    wrapper.instance().setAxisOrder({ label: "", value: "xyz;high" });
     expect(wrapper.state().safeZ).toEqual(false);
-    expect(wrapper.state().axisOrder).toEqual("xyz");
+    expect(wrapper.state().axisGrouping).toEqual("xyz");
+    expect(wrapper.state().axisRoute).toEqual("high");
   });
 
   it("commits number value", () => {

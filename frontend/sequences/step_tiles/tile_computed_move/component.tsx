@@ -29,7 +29,8 @@ import {
 } from "./speed";
 import { getSafeZState, SAFE_Z } from "./safe_z";
 import {
-  axisOrder, AxisOrderInputRow, getAxisOrderState, getNewAxisOrderState,
+  axisOrder, AxisOrderInputRow, getAxisGroupingState, getAxisRouteState,
+  getNewAxisOrderState,
 } from "./axis_order";
 import { StepParams } from "../../interfaces";
 
@@ -101,7 +102,8 @@ export class ComputedMove
       z: getSpeedState(this.step, "z"),
     },
     safeZ: getSafeZState(this.step),
-    axisOrder: getAxisOrderState(this.step),
+    axisGrouping: getAxisGroupingState(this.step),
+    axisRoute: getAxisRouteState(this.step),
   };
 
   get step() { return this.props.currentStep; }
@@ -182,7 +184,7 @@ export class ComputedMove
       ...speedOverwrite("y", this.speedNodes.y),
       ...speedOverwrite("z", this.speedNodes.z),
       ...(this.state.safeZ ? [SAFE_Z] : []),
-      ...axisOrder(this.state.axisOrder),
+      ...axisOrder(this.state.axisGrouping, this.state.axisRoute),
     ];
   };
 
@@ -247,7 +249,7 @@ export class ComputedMove
       }, this.update);
 
   setAxisOrder = (ddi: DropDownItem) => {
-    this.setState(getNewAxisOrderState(ddi), this.update);
+    this.setState({ ...this.state, ...getNewAxisOrderState(ddi) }, this.update);
   };
   toggleMore = () => this.setState({ more: !this.state.more });
 
@@ -312,9 +314,12 @@ export class ComputedMove
       : undefined;
 
   AxisOrderInputRow = () =>
-    (this.state.axisOrder || this.state.safeZ || this.state.more)
+    ((this.state.axisGrouping && this.state.axisRoute)
+      || this.state.safeZ
+      || this.state.more)
       ? <AxisOrderInputRow
-        order={this.state.axisOrder}
+        grouping={this.state.axisGrouping}
+        route={this.state.axisRoute}
         safeZ={this.state.safeZ}
         onChange={this.setAxisOrder} />
       : undefined;

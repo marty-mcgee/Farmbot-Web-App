@@ -1,4 +1,6 @@
 import {
+  ALLOWED_GROUPING,
+  ALLOWED_ROUTE,
   Identifier, MoveBodyItem, ParameterApplication, PercentageProgress,
   Xyz,
 } from "farmbot";
@@ -444,19 +446,53 @@ export const calculateMove = (
   }
   const axisOrderItems = moveBodyItems.filter(item => item.kind === "axis_order");
   if (axisOrderItems.length > 0) {
-    const { order } = axisOrderItems[0].args;
-    const moves = generateMoves(order, current, pos);
+    const { grouping, route } = axisOrderItems[0].args;
+    const moves = generateMoves(grouping, route, current, pos);
     return { moves, warnings };
   }
   return { moves: [pos], warnings };
 };
 
-const generateMoves = (order: string, current: XyzNumber, target: XyzNumber) => {
+const generateMoves = (
+  grouping: ALLOWED_GROUPING,
+  route: ALLOWED_ROUTE,
+  current: XyzNumber,
+  target: XyzNumber,
+) => {
   const axes: Xyz[] = ["x", "y", "z"];
-  const groups = order.split(",");
+  const zGoingUp = Math.abs(target.z) < Math.abs(current.z);
+  const groupsInput: string[] = grouping.split(",");
+  const isZFirst = (groups: string[]): boolean =>
+    !groups.join("").includes("z") || groups[0].includes("z");
+  const zFirst = (groupsArg: string[]): string[] => {
+    const groups = clone(groupsArg);
+    const idx = groups.findIndex(s => s.includes("z"));
+    if (idx > 0) {
+      const [group] = groups.splice(idx, 1);
+      groups.unshift(group);
+    }
+    return groups;
+  };
+  const reverse = (groupsArg: string[]): string[] => clone(groupsArg).reverse();
+  const isOrderOk = (groups: string[]): boolean => {
+    switch (route) {
+      case "high":
+        return isZFirst(zGoingUp ? groups : reverse(groups));
+      case "low":
+        return isZFirst(zGoingUp ? reverse(groups) : groups);
+      default:
+        return true;
+    }
+  };
+  const reorder = (groups: string[]): string[] => {
+    if (isOrderOk(groups)) { return groups; }
+    if (isOrderOk(reverse(groups))) { return reverse(groups); }
+    if (isOrderOk(zFirst(groups))) { return zFirst(groups); }
+    return reverse(zFirst(groups));
+  };
   const moves: XyzNumber[] = [];
   let lastState = { ...current };
-  groups.map(group => {
+  reorder(groupsInput).map(group => {
     const normalized = group.split("").sort().join("");
     const movement = { ...lastState };
     axes.map(axis => {

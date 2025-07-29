@@ -1,11 +1,16 @@
 import {
   Identifier, Point, Tool, TaggedSequence, Move, Xyz, AxisOverwrite,
+  ALLOWED_GROUPING,
+  ALLOWED_ROUTE,
 } from "farmbot";
 import { ResourceIndex, UUID } from "../../../resources/interfaces";
 import { BotPosition } from "../../../devices/interfaces";
 import { DropDownItem } from "../../../ui";
 
 export type LocationNode = Identifier | Point | Tool;
+
+export type AxisGrouping = ALLOWED_GROUPING | undefined;
+export type AxisRoute = ALLOWED_ROUTE | undefined;
 
 export interface ComputedMoveState {
   locationSelection: LocSelection | undefined;
@@ -17,7 +22,8 @@ export interface ComputedMoveState {
   variance: Record<Xyz, number | undefined>;
   speed: Record<Xyz, number | string | undefined>;
   safeZ: boolean;
-  axisOrder: string | undefined;
+  axisGrouping: AxisGrouping;
+  axisRoute: AxisRoute;
   viewRaw?: boolean;
 }
 
@@ -95,7 +101,8 @@ export interface SpeedInputRowProps extends InputRowBase {
 
 export interface AxisOrderInputRowProps {
   onChange(ddi: DropDownItem): void;
-  order: string | undefined;
+  grouping: AxisGrouping;
+  route: AxisRoute;
   safeZ: boolean;
 }
 

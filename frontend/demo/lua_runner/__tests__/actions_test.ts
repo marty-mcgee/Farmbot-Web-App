@@ -600,7 +600,7 @@ describe("calculateMove()", () => {
             axis_operand: { kind: "numeric", args: { number: 100 } },
           },
         },
-        { kind: "axis_order", args: { order: "xyz" } },
+        { kind: "axis_order", args: { grouping: "xyz", route: "in_order" } },
       ],
     };
     expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
@@ -624,13 +624,190 @@ describe("calculateMove()", () => {
             axis_operand: { kind: "numeric", args: { number: 100 } },
           },
         },
-        { kind: "axis_order", args: { order: "z,xy" } },
+        { kind: "axis_order", args: { grouping: "z,xy", route: "in_order" } },
       ],
     };
     expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
       .toEqual({
         moves: [
           { x: 50, y: 50, z: 100 },
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,xy, high from low", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 0 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "z,xy", route: "high" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 0 },
+          { x: 0, y: 0, z: 0 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,xy, high from high", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 10 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "z,xy", route: "high" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 0 }, []))
+      .toEqual({
+        moves: [
+          { x: 10, y: 10, z: 0 },
+          { x: 10, y: 10, z: 10 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,xy, low from high", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 100 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "z,xy", route: "low" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 100 },
+          { x: 100, y: 100, z: 100 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: z,xy, low from low", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 10 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "z,xy", route: "low" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 10, y: 10, z: 50 },
+          { x: 10, y: 10, z: 10 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: xy,z, high from low", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 0 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "xy,z", route: "high" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 0 },
+          { x: 0, y: 0, z: 0 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: x,z,y, high from low", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 0 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "x,z,y", route: "high" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 50, z: 0 },
+          { x: 0, y: 50, z: 0 },
+          { x: 0, y: 0, z: 0 },
+        ],
+        warnings: [],
+      });
+  });
+
+  it("handles axis_order: x,z,y, high from high", () => {
+    const command: Move = {
+      kind: "move",
+      args: {},
+      body: [
+        {
+          kind: "axis_overwrite",
+          args: {
+            axis: "all",
+            axis_operand: { kind: "numeric", args: { number: 100 } },
+          },
+        },
+        { kind: "axis_order", args: { grouping: "x,z,y", route: "high" } },
+      ],
+    };
+    expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
+      .toEqual({
+        moves: [
+          { x: 50, y: 100, z: 50 },
+          { x: 100, y: 100, z: 50 },
           { x: 100, y: 100, z: 100 },
         ],
         warnings: [],
@@ -649,7 +826,7 @@ describe("calculateMove()", () => {
             axis_operand: { kind: "numeric", args: { number: 100 } },
           },
         },
-        { kind: "axis_order", args: { order: "z,y,x" } },
+        { kind: "axis_order", args: { grouping: "z,y,x", route: "in_order" } },
       ],
     };
     expect(calculateMove(command.body, { x: 50, y: 50, z: 50 }, []))
