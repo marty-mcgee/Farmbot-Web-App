@@ -31,6 +31,12 @@ jest.mock("../../../api/crud", () => ({
   edit: jest.fn(),
   save: jest.fn(),
   initSave: jest.fn(),
+  init: jest.fn(() => ({ payload: { uuid: "" } })),
+}));
+
+jest.mock("lodash", () => ({
+  ...jest.requireActual("lodash"),
+  random: () => 0,
 }));
 
 import {
@@ -46,8 +52,11 @@ import {
   runDemoSequence,
 } from "..";
 import { TOAST_OPTIONS } from "../../../toast/constants";
-import { edit, initSave, save } from "../../../api/crud";
+import { edit, init, initSave, save } from "../../../api/crud";
 import { setCurrent } from "../actions";
+import { API } from "../../../api";
+
+API.setBaseUrl("");
 
 describe("runDemoSequence()", () => {
   beforeEach(() => {
@@ -254,8 +263,17 @@ describe("runDemoSequence()", () => {
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledTimes(3);
-    expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledTimes(3);
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "text",
+      type: "info",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 0,
+      y: 0,
+      z: 0,
+    });
   });
 
   it("runs sequence with other variable", () => {
@@ -275,9 +293,16 @@ describe("runDemoSequence()", () => {
     }];
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
-    expect(info).toHaveBeenCalledWith(
-      "Variable \"Other\" of type identifier not implemented.",
-      TOAST_OPTIONS().error);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "Variable \"Other\" of type identifier not implemented.",
+      type: "error",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 0,
+      y: 0,
+      z: 0,
+    });
     expect(console.log).toHaveBeenCalledWith("undefined");
     expect(error).not.toHaveBeenCalled();
   });
@@ -293,7 +318,16 @@ describe("runDemoSequence()", () => {
     runDemoSequence(ri, sequence.body.id, []);
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "text",
+      type: "info",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 0,
+      y: 0,
+      z: 0,
+    });
     expect(console.log).toHaveBeenCalledTimes(1);
   });
 
@@ -391,9 +425,16 @@ describe("runDemoSequence()", () => {
     ri.sequenceMetas = { [sequence.uuid]: { foo: undefined } };
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
-    expect(info).toHaveBeenCalledWith(
-      "Variable \"Number\" of type undefined not implemented.",
-      TOAST_OPTIONS().error);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "Variable \"Number\" of type undefined not implemented.",
+      type: "error",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 2,
+      y: 4,
+      z: 6,
+    });
     expect(console.log).toHaveBeenCalledWith("undefined");
     expect(error).not.toHaveBeenCalled();
   });
@@ -409,9 +450,16 @@ describe("runDemoSequence()", () => {
     ri.sequenceMetas = {};
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
-    expect(info).toHaveBeenCalledWith(
-      "Variable \"Number\" of type undefined not implemented.",
-      TOAST_OPTIONS().error);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "Variable \"Number\" of type undefined not implemented.",
+      type: "error",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 2,
+      y: 4,
+      z: 6,
+    });
     expect(console.log).toHaveBeenCalledWith("undefined");
     expect(error).not.toHaveBeenCalled();
   });
@@ -674,10 +722,18 @@ describe("runDemoLuaCode()", () => {
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("false");
-    expect(info).toHaveBeenCalledWith(
-      "API call GET /api/other not implemented.",
-      TOAST_OPTIONS().error,
-    );
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith(
+      "Log",
+      {
+        message: "API call GET /api/other not implemented.",
+        type: "error",
+        channels: ["undefined"],
+        verbosity: undefined,
+        x: 2,
+        y: 4,
+        z: 6,
+      });
   });
 
   it("runs cs_eval", () => {
@@ -719,7 +775,16 @@ describe("runDemoLuaCode()", () => {
     `);
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "test",
+      type: "info",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 1,
+      y: 2,
+      z: 3,
+    });
   });
 
   it("runs cs_eval: no body", () => {
@@ -748,11 +813,27 @@ describe("runDemoLuaCode()", () => {
     runDemoLuaCode("debug(\"test\")");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().debug);
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "test",
+      type: "debug",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 1,
+      y: 2,
+      z: 3,
+    });
   });
 
   it("runs send_message", () => {
     runDemoLuaCode("send_message(\"info\", \"test\", \"toast\")");
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
+  });
+
+  it("runs send_message: multiple channels", () => {
+    runDemoLuaCode("send_message(\"info\", \"test\", {\"email\", \"toast\"})");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("test", TOAST_OPTIONS().info);
@@ -850,9 +931,13 @@ describe("runDemoLuaCode()", () => {
     });
   });
 
-  it("runs find_axis_length: x", () => {
+  it.each<[number, number, number]>([
+    [0, 0, 100],
+    [1, 0, 100],
+  ])("runs find_axis_length: x %s %s %s", (up, first, second) => {
     const firmwareConfig = fakeFirmwareConfig();
     firmwareConfig.body.movement_axis_nr_steps_x = 500;
+    firmwareConfig.body.movement_home_up_x = up;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
     setCurrent({ x: 1, y: 2, z: 3 });
@@ -861,17 +946,21 @@ describe("runDemoLuaCode()", () => {
     expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 0, y: 2, z: 3 },
+      payload: { x: first, y: 2, z: 3 },
     });
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 100, y: 2, z: 3 },
+      payload: { x: second, y: 2, z: 3 },
     });
   });
 
-  it("runs find_axis_length: y", () => {
+  it.each<[number, number, number]>([
+    [0, 0, 100],
+    [1, 0, 100],
+  ])("runs find_axis_length: y %s %s %s", (up, first, second) => {
     const firmwareConfig = fakeFirmwareConfig();
     firmwareConfig.body.movement_axis_nr_steps_y = 500;
+    firmwareConfig.body.movement_home_up_y = up;
     firmwareConfig.body.movement_home_up_z = 0;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
     setCurrent({ x: 1, y: 2, z: 3 });
@@ -880,18 +969,21 @@ describe("runDemoLuaCode()", () => {
     expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 1, y: 0, z: 3 },
+      payload: { x: 1, y: first, z: 3 },
     });
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 1, y: 100, z: 3 },
+      payload: { x: 1, y: second, z: 3 },
     });
   });
 
-  it("runs find_axis_length: z", () => {
+  it.each<[number, number, number]>([
+    [0, 0, 100],
+    [1, 0, -100],
+  ])("runs find_axis_length: z %s %s %s", (up, first, second) => {
     const firmwareConfig = fakeFirmwareConfig();
     firmwareConfig.body.movement_axis_nr_steps_z = 2500;
-    firmwareConfig.body.movement_home_up_z = 0;
+    firmwareConfig.body.movement_home_up_z = up;
     mockResources = buildResourceIndex([firmwareConfig, fakeWebAppConfig()]);
     setCurrent({ x: 1, y: 2, z: 3 });
     runDemoLuaCode("find_axis_length(\"z\")");
@@ -899,11 +991,11 @@ describe("runDemoLuaCode()", () => {
     expect(error).not.toHaveBeenCalled();
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 1, y: 2, z: 0 },
+      payload: { x: 1, y: 2, z: first },
     });
     expect(store.dispatch).toHaveBeenCalledWith({
       type: Actions.DEMO_SET_POSITION,
-      payload: { x: 1, y: 2, z: 100 },
+      payload: { x: 1, y: 2, z: second },
     });
   });
 
@@ -1141,6 +1233,102 @@ describe("runDemoLuaCode()", () => {
     });
   });
 
+  it("runs take_photo", () => {
+    setCurrent({ x: 1, y: 2, z: 3 });
+    runDemoLuaCode("take_photo()");
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Image", {
+      attachment_url: "http://localhost/soil.png",
+      created_at: expect.any(String),
+      meta: {
+        name: "demo.png",
+        x: 1,
+        y: 2,
+        z: 3,
+      },
+    });
+  });
+
+  it("runs calibrate_camera", () => {
+    setCurrent({ x: 1, y: 2, z: 3 });
+    runDemoLuaCode("calibrate_camera()");
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Image", {
+      attachment_url: "http://localhost/soil.png",
+      created_at: expect.any(String),
+      meta: {
+        name: "demo.png",
+        x: 1,
+        y: 2,
+        z: 3,
+      },
+    });
+  });
+
+  it("runs detect_weeds", () => {
+    setCurrent({ x: 1, y: 2, z: 3 });
+    runDemoLuaCode("detect_weeds()");
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Image", {
+      attachment_url: "http://localhost/soil.png",
+      created_at: expect.any(String),
+      meta: {
+        name: "demo.png",
+        x: 1,
+        y: 2,
+        z: 3,
+      },
+    });
+    expect(initSave).toHaveBeenCalledWith("Point", {
+      meta: {
+        color: "red",
+        created_by: "plant-detection",
+      },
+      name: "Weed",
+      plant_stage: "pending",
+      pointer_type: "Weed",
+      radius: 50,
+      x: 1,
+      y: 2,
+      z: -500,
+    });
+  });
+
+  it("runs measure_soil_height", () => {
+    setCurrent({ x: 1, y: 2, z: 3 });
+    runDemoLuaCode("measure_soil_height()");
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("Image", {
+      attachment_url: "http://localhost/soil.png",
+      created_at: expect.any(String),
+      meta: {
+        name: "demo.png",
+        x: 1,
+        y: 2,
+        z: 3,
+      },
+    });
+    expect(initSave).toHaveBeenCalledWith("Point", {
+      meta: {
+        at_soil_level: "true",
+      },
+      name: "Soil Height",
+      pointer_type: "GenericPointer",
+      radius: 0,
+      x: 1,
+      y: 2,
+      z: -500,
+    });
+  });
+
   it("runs emergency_lock", () => {
     runDemoLuaCode("emergency_lock()");
     jest.runAllTimers();
@@ -1175,10 +1363,16 @@ describe("runDemoLuaCode()", () => {
   it("runs non-implemented function", () => {
     runDemoLuaCode("foo.bar.baz()");
     jest.runAllTimers();
-    expect(info).toHaveBeenCalledWith(
-      "Lua function \"foo.bar.baz\" is not implemented.",
-      TOAST_OPTIONS().error,
-    );
+    expect(info).not.toHaveBeenCalled();
+    expect(init).toHaveBeenCalledWith("Log", {
+      message: "Lua function \"foo.bar.baz\" is not implemented.",
+      type: "error",
+      channels: ["undefined"],
+      verbosity: undefined,
+      x: 0,
+      y: 0,
+      z: 0,
+    });
   });
 });
 
@@ -1223,7 +1417,7 @@ describe("csToLua()", () => {
  * [ y ] api
  * [   ] base64.decode
  * [   ] base64.encode
- * [   ] calibrate_camera
+ * [ y ] calibrate_camera
  * [   ] check_position
  * [   ] complete_job
  * [   ] coordinate
@@ -1232,7 +1426,7 @@ describe("csToLua()", () => {
  * [ y ] current_minute
  * [ y ] current_month
  * [ y ] current_second
- * [   ] detect_weeds
+ * [ y ] detect_weeds
  * [ y ] dispense
  * [ y ] emergency_lock
  * [ y ] emergency_unlock
@@ -1252,7 +1446,7 @@ describe("csToLua()", () => {
  * [   ] get_position
  * [ y ] get_seed_tray_cell
  * [   ] get_xyz
- * [   ] get_tool
+ * [ y ] get_tool
  * [ y ] go_to_home
  * [ y ] grid
  * [   ] group
@@ -1260,7 +1454,7 @@ describe("csToLua()", () => {
  * [   ] inspect
  * [   ] json.decode
  * [   ] json.encode
- * [   ] measure_soil_height
+ * [ y ] measure_soil_height
  * [ y ] mount_tool
  * [ y ] dismount_tool
  * [ y ] move_absolute
@@ -1282,7 +1476,7 @@ describe("csToLua()", () => {
  * [ y ] soil_height
  * [   ] sort
  * [   ] take_photo_raw
- * [   ] take_photo
+ * [ y ] take_photo
  * [ y ] toggle_pin
  * [   ] uart.open
  * [   ] uart.list

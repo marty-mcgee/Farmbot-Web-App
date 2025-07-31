@@ -246,7 +246,10 @@ export function execSequence(
 }
 
 export function takePhoto() {
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode("take_photo()");
+    return;
+  }
   getDevice().takePhoto()
     .then(commandOK("", Content.PROCESSING_PHOTO))
     .catch(() => error(t("Error taking photo")));

@@ -12,7 +12,9 @@ import { LUA_HELPERS } from "./lua";
 import { createRecursiveNotImplemented, csToLua, jsToLua, luaToJs } from "./util";
 import { Action, XyzNumber } from "./interfaces";
 import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
-import { getGardenSize, getSafeZ, getSoilHeight } from "./stubs";
+import {
+  getFirmwareSettings, getGardenSize, getSafeZ, getSoilHeight,
+} from "./stubs";
 import { error } from "../../toast/toast";
 import { collectDemoSequenceActions } from "./index";
 
@@ -100,7 +102,6 @@ export const runLua =
             args: [
               "error",
               `Variable "${variableName}" of type ${n?.kind} not implemented.`,
-              "toast",
             ],
           });
           lua.lua_pushnil(L);
@@ -173,7 +174,6 @@ export const runLua =
           args: [
             "error",
             `API call ${method} ${url} not implemented.`,
-            "toast",
           ],
         });
         jsToLua(L, false);
@@ -205,6 +205,9 @@ export const runLua =
       const args = [];
       for (let i = 1; i <= n; i++) {
         args.push(luaToJs(L, i) as string);
+      }
+      if (Array.isArray(args[2])) {
+        args[2] = args[2].join(",");
       }
       actions.push({ type: "send_message", args: args });
       return 0;
@@ -277,28 +280,34 @@ export const runLua =
 
     lua.lua_pushjsfunction(L, () => {
       const axis = luaToJs(L, -1) as string;
+      const firmwareSettings = getFirmwareSettings();
+      const sign = {
+        x: 1,
+        y: 1,
+        z: firmwareSettings.movement_home_up_z ? -1 : 1,
+      };
       actions.push({
         type: "move_relative",
         args: [
-          axis == "x" ? -9999 : 0,
-          axis == "y" ? -9999 : 0,
-          axis == "z" ? -9999 : 0,
+          axis == "x" ? sign.x * -9999 : 0,
+          axis == "y" ? sign.y * -9999 : 0,
+          axis == "z" ? sign.z * -9999 : 0,
         ],
       });
       actions.push({
         type: "move_relative",
         args: [
-          axis == "x" ? 9999 : 0,
-          axis == "y" ? 9999 : 0,
-          axis == "z" ? 9999 : 0,
+          axis == "x" ? sign.x * 9999 : 0,
+          axis == "y" ? sign.y * 9999 : 0,
+          axis == "z" ? sign.z * 9999 : 0,
         ],
       });
       actions.push({
         type: "move_relative",
         args: [
-          axis == "x" ? -9999 : 0,
-          axis == "y" ? -9999 : 0,
-          axis == "z" ? -9999 : 0,
+          axis == "x" ? sign.x * -9999 : 0,
+          axis == "y" ? sign.y * -9999 : 0,
+          axis == "z" ? sign.z * -9999 : 0,
         ],
       });
       return 0;
@@ -355,6 +364,30 @@ export const runLua =
       return 0;
     });
     lua.lua_setfield(L, envIndex, to_luastring("_move"));
+
+    lua.lua_pushjsfunction(L, () => {
+      actions.push({ type: "take_photo", args: [] });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("take_photo"));
+
+    lua.lua_pushjsfunction(L, () => {
+      actions.push({ type: "calibrate_camera", args: [] });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("calibrate_camera"));
+
+    lua.lua_pushjsfunction(L, () => {
+      actions.push({ type: "detect_weeds", args: [] });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("detect_weeds"));
+
+    lua.lua_pushjsfunction(L, () => {
+      actions.push({ type: "measure_soil_height", args: [] });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("measure_soil_height"));
 
     lua.lua_pushjsfunction(L, () => {
       const pin = luaToJs(L, 1) as number;

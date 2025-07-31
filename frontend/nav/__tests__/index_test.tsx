@@ -13,6 +13,7 @@ jest.mock("../../devices/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen } from "@testing-library/react";
 import { shallow, mount } from "enzyme";
 import { NavBar } from "../index";
 import { bot } from "../../__test_support__/fake_state/bot";
@@ -40,6 +41,10 @@ import { mountWithContext } from "../../__test_support__/mount_with_context";
 import { ControlsPanel, ControlsPanelProps } from "../../controls/controls";
 
 describe("<NavBar />", () => {
+  beforeEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   const fakeProps = (): NavBarProps => ({
     timeSettings: fakeTimeSettings(),
     logs: [],
@@ -74,6 +79,12 @@ describe("<NavBar />", () => {
     expect(wrapper.find("div").first().hasClass("nav-wrapper")).toBeTruthy();
     expect(wrapper.find("div").first().hasClass("red")).toBeFalsy();
     expect(wrapper.html()).not.toContain("hover");
+  });
+
+  it("renders demo account", () => {
+    localStorage.setItem("myBotIs", "online");
+    render(<NavBar {...fakeProps()} />);
+    expect(screen.getByText("Using a demo account")).toBeInTheDocument();
   });
 
   it("shows popups as open", () => {

@@ -321,12 +321,24 @@ describe("execSequence()", () => {
 });
 
 describe("takePhoto()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls takePhoto", async () => {
     await actions.takePhoto();
     expect(mockDevice.current.takePhoto).toHaveBeenCalled();
     expect(success).toHaveBeenCalledWith(Content.PROCESSING_PHOTO,
       { title: "Request sent" });
     expect(error).not.toHaveBeenCalled();
+  });
+
+  it("calls takePhoto on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.takePhoto();
+    expect(mockDevice.current.takePhoto).not.toHaveBeenCalled();
+    expect(success).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("take_photo()");
   });
 
   it("calls takePhoto: error", async () => {

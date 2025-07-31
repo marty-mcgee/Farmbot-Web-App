@@ -14,8 +14,21 @@ jest.mock("../../../redux/store", () => ({
 
 import { csToLua } from "../util";
 import {
-  EmergencyLock, EmergencyUnlock, FindHome, Home, Lua, Move, MoveAbsolute,
-  MoveRelative, SendMessage, SequenceBodyItem, TogglePin, Wait, WritePin,
+  EmergencyLock,
+  EmergencyUnlock,
+  ExecuteScript,
+  FindHome,
+  Home,
+  Lua,
+  Move,
+  MoveAbsolute,
+  MoveRelative,
+  SendMessage,
+  SequenceBodyItem,
+  TakePhoto,
+  TogglePin,
+  Wait,
+  WritePin,
 } from "farmbot";
 
 describe("csToLua()", () => {
@@ -53,6 +66,35 @@ describe("csToLua()", () => {
       args: { message: "text", message_type: "info" },
     };
     expect(csToLua(command)).toEqual("send_message(\"info\", \"text\")");
+  });
+
+  it("converts celery script to lua: take_photo", () => {
+    const command: TakePhoto = { kind: "take_photo", args: {} };
+    expect(csToLua(command)).toEqual("take_photo()");
+  });
+
+  it("converts celery script to lua: execute_script: plant-detection", () => {
+    const command: ExecuteScript = {
+      kind: "execute_script",
+      args: { label: "plant-detection" },
+    };
+    expect(csToLua(command)).toEqual("detect_weeds()");
+  });
+
+  it("converts celery script to lua: execute_script Measure Soil Height", () => {
+    const command: ExecuteScript = {
+      kind: "execute_script",
+      args: { label: "Measure Soil Height" },
+    };
+    expect(csToLua(command)).toEqual("measure_soil_height()");
+  });
+
+  it("converts celery script to lua: execute_script other", () => {
+    const command: ExecuteScript = {
+      kind: "execute_script",
+      args: { label: "other" },
+    };
+    expect(csToLua(command)).toEqual("");
   });
 
   it("converts celery script to lua: move_relative", () => {

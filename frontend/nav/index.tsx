@@ -5,7 +5,7 @@ import { Popover } from "../ui";
 import { updatePageInfo } from "../util";
 import { validBotLocationData } from "../util/location";
 import { NavLinks } from "./nav_links";
-import { TickerList } from "./ticker_list";
+import { demoAccountLog, TickerList } from "./ticker_list";
 import { AdditionalMenu } from "./additional_menu";
 import { MobileMenu } from "./mobile_menu";
 import { Position } from "@blueprintjs/core";
@@ -17,7 +17,7 @@ import { DiagnosisSaucer } from "../devices/connectivity/diagnosis";
 import { maybeSetTimezone } from "../devices/timezones/guess_timezone";
 import { BooleanSetting } from "../session_keys";
 import { ReadOnlyIcon } from "../read_only_mode";
-import { isBotOnlineFromState } from "../devices/must_be_online";
+import { forceOnline, isBotOnlineFromState } from "../devices/must_be_online";
 import { setupProgressString } from "../wizard/data";
 import { lastSeenNumber } from "../settings/fbos_settings/last_seen_row";
 import { Path } from "../internal_urls";
@@ -59,6 +59,10 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   navigate: NavigateFunction = url => { this.context(url as string); };
 
   get isStaff() { return this.props.authAud == "staff"; }
+
+  get logs() {
+    return this.props.logs.concat(forceOnline() ? [demoAccountLog()] : []);
+  }
 
   toggle = (key: keyof NavBarState) => () =>
     this.setState({ [key]: !this.state[key] });
@@ -262,7 +266,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           dispatch={this.props.dispatch}
           bot={this.props.bot}
           getConfigValue={this.props.getConfigValue}
-          logs={this.props.logs}
+          logs={this.logs}
           jobsPanelState={this.props.appState.jobs}
           sourceFbosConfig={this.props.sourceFbosConfig}
           fbosVersion={this.props.device.body.fbos_version}
@@ -298,7 +302,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   TickerList = () =>
     <TickerList
       dispatch={this.props.dispatch}
-      logs={this.props.logs}
+      logs={this.logs}
       timeSettings={this.props.timeSettings}
       getConfigValue={this.props.getConfigValue}
       lastSeen={lastSeenNumber({ bot: this.props.bot, device: this.props.device })}

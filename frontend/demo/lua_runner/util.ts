@@ -24,7 +24,6 @@ export const createRecursiveNotImplemented = (
       args: [
         "error",
         `Lua function "${fullPath}" is not implemented.`,
-        "toast",
       ],
     });
     jsToLua(L, false);
@@ -120,6 +119,16 @@ export const csToLua = (command: RpcRequestBodyItem): string => {
       return `wait(${args.milliseconds})`;
     case "send_message":
       return `send_message("${args.message_type}", "${args.message}")`;
+    case "take_photo":
+      return "take_photo()";
+    case "execute_script":
+      if (args.label == "plant-detection") {
+        return "detect_weeds()";
+      }
+      if (args.label == "Measure Soil Height") {
+        return "measure_soil_height()";
+      }
+      return "";
     case "move_relative":
       return `move_relative(${args.x}, ${args.y}, ${args.z})`;
     case "move_absolute":

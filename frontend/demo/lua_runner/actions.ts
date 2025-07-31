@@ -1,17 +1,25 @@
-import { MoveBodyItem, ParameterApplication, PercentageProgress } from "farmbot";
+import {
+  ALLOWED_CHANNEL_NAMES,
+  ALLOWED_MESSAGE_TYPES,
+  MoveBodyItem,
+  ParameterApplication,
+  PercentageProgress,
+} from "farmbot";
 import { info } from "../../toast/toast";
 import { store } from "../../redux/store";
 import { Actions } from "../../constants";
 import { TOAST_OPTIONS } from "../../toast/constants";
 import { Action, XyzNumber } from "./interfaces";
-import { edit, initSave, save } from "../../api/crud";
+import { edit, init, initSave, save } from "../../api/crud";
 import { getDeviceAccountSettings } from "../../resources/selectors";
 import { UnknownAction } from "redux";
 import { getFirmwareSettings, getGardenSize } from "./stubs";
-import { clamp } from "lodash";
+import { clamp, random } from "lodash";
 import { validBotLocationData } from "../../util/location";
 import { Point } from "farmbot/dist/resources/api_resources";
 import { calculateMove } from "./calculate_move";
+import { t } from "../../i18next_wrapper";
+import { API } from "../../api";
 
 const almostEqual = (a: XyzNumber, b: XyzNumber) => {
   const epsilon = 0.01;
@@ -97,6 +105,7 @@ export const expandActions = (
       args: [position.x, position.y, position.z],
     });
   };
+  // eslint-disable-next-line complexity
   actions.map(action => {
     switch (action.type) {
       case "move_absolute":
@@ -122,13 +131,94 @@ export const expandActions = (
         const { moves, warnings } = calculateMove(moveItems, current, variables);
         warnings.length > 0 && expanded.push({
           type: "send_message",
-          args: ["warn", `not yet supported: ${warnings.join(", ")}`],
+          args: [
+            "warn",
+            `not yet supported: ${warnings.join(", ")}`,
+            "",
+            JSON.stringify(current),
+          ],
         });
         const actualMoveTargets = moves.map(clampTarget);
         actualMoveTargets.map(actualMoveTarget => {
           movementChunks(current, actualMoveTarget, mmPerTimeStep).map(addPosition);
           setCurrent(actualMoveTarget);
         });
+        break;
+      case "send_message":
+        action.args[3] = JSON.stringify(current);
+        expanded.push({ type: "send_message", args: action.args });
+        break;
+      case "take_photo":
+      case "calibrate_camera":
+      case "detect_weeds":
+      case "measure_soil_height":
+        const MSGS = {
+          "take_photo": "Taking photo",
+          "calibrate_camera": "Calibrating camera",
+          "detect_weeds": "Running weed detector",
+          "measure_soil_height": "Executing Measure Soil Height",
+        };
+        const DELAYS = {
+          "take_photo": 5,
+          "calibrate_camera": 15,
+          "detect_weeds": 15,
+          "measure_soil_height": 15,
+        };
+        expanded.push({
+          type: "send_message",
+          args: [
+            "info",
+            MSGS[action.type],
+            "",
+            JSON.stringify(current),
+            3,
+          ],
+        });
+        expanded.push({
+          type: "wait_ms",
+          args: [(DELAYS[action.type] - 3) * 1000],
+        });
+        expanded.push({
+          type: "take_photo",
+          args: [current.x, current.y, current.z],
+        });
+        expanded.push({
+          type: "send_message",
+          args: [
+            "info",
+            "Uploaded image:",
+            "",
+            JSON.stringify(current),
+            3,
+          ],
+        });
+        if (action.type === "measure_soil_height") {
+          const body: Point = {
+            name: "Soil Height",
+            pointer_type: "GenericPointer",
+            x: current.x,
+            y: current.y,
+            z: -500 + random(-10, 10),
+            meta: { at_soil_level: "true" },
+            radius: 0,
+          };
+          const point = JSON.stringify(body);
+          expanded.push({ type: "create_point", args: [point] });
+        }
+        if (action.type === "detect_weeds") {
+          const body: Point = {
+            name: "Weed",
+            pointer_type: "Weed",
+            x: current.x,
+            y: current.y,
+            z: -500,
+            meta: { color: "red", created_by: "plant-detection" },
+            radius: 50,
+            plant_stage: "pending",
+          };
+          const point = JSON.stringify(body);
+          expanded.push({ type: "create_point", args: [point] });
+        }
         break;
       case "find_home":
       case "go_to_home":
@@ -178,11 +268,19 @@ export const runActions = (
   actions: Action[],
 ) => {
   let delay = 0;
+  let notified = false;
   actions.map(action => {
     // eslint-disable-next-line complexity
     const getFunc = () => {
       const estopped = store.getState().bot.hardware.informational_settings.locked;
       if (estopped && action.type !== "emergency_unlock") {
+        if (!notified) {
+          info(t("Command not available while locked."), {
+            ...TOAST_OPTIONS().error,
+            title: t("Emergency stop active"),
+          });
+          notified = true;
+        }
         return;
       }
       switch (action.type) {
@@ -193,12 +291,44 @@ export const runActions = (
         case "send_message":
           const type = "" + action.args[0];
           const msg = "" + action.args[1];
+          const channelsStr = "" + action.args[2];
+          const channels = channelsStr.split(",") as ALLOWED_CHANNEL_NAMES[];
+          const logPosition = JSON.parse("" + action.args[3]) as XyzNumber;
+          const verbosity = action.args[4] as number;
           return () => {
-            info(msg, TOAST_OPTIONS()[type]);
+            if (channels.includes("toast")) {
+              info(msg, TOAST_OPTIONS()[type]);
+            }
+            const initAction = init("Log", {
+              message: msg,
+              type: type as ALLOWED_MESSAGE_TYPES,
+              ...logPosition,
+              channels,
+              verbosity,
+            });
+            store.dispatch(initAction as unknown as UnknownAction);
+            setTimeout(() => {
+              store.dispatch(
+                save(initAction.payload.uuid) as unknown as UnknownAction);
+            }, 20000);
           };
         case "print":
           return () => {
             console.log(action.args[0]);
+          };
+        case "take_photo":
+          return () => {
+            const timestamp = (new Date()).toISOString();
+            store.dispatch(initSave("Image", {
+              attachment_url: API.current.baseUrl + "/soil.png",
+              created_at: timestamp,
+              meta: {
+                x: action.args[0] as number,
+                y: action.args[1] as number,
+                z: action.args[2] as number,
+                name: "demo.png",
+              },
+            }) as unknown as UnknownAction);
           };
         case "emergency_lock":
           return eStop;

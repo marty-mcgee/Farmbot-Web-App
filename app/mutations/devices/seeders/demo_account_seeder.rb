@@ -99,6 +99,18 @@ module Devices
         add_point_group(name: "Beet plants", openfarm_slug: "beet")
       end
 
+      def add_envs
+        [
+          ["CAMERA_CALIBRATION_coord_scale", "1"],
+          ["CAMERA_CALIBRATION_center_pixel_location_x", "320"],
+          ["CAMERA_CALIBRATION_center_pixel_location_y", "240"],
+        ].each do |key, value|
+          FarmwareEnvs::Create.run(
+            { key: key, value: value },
+            device: device)
+        end
+      end
+
       def marketing_bulletin
         GlobalBulletin.find_or_create_by(slug: "buy-a-farmbot") do |gb|
           gb.href = "https://farm.bot"
@@ -155,6 +167,7 @@ module Devices
         add_point_groups
         tool = device.tools.find_by(name: ToolNames::WATERING_NOZZLE)
         Tools::Update.run(tool: tool, flow_rate_ml_per_s: 100) if tool
+        add_envs
 
         marketing_bulletin
         device.alerts.where(problem_tag: UNUSED_ALERTS).destroy_all
