@@ -19,9 +19,15 @@ export const WateringAnimations = (props: WateringAnimationsProps) => {
   const { x, y, z, bedLengthOuter, bedWidthOuter, bedXOffset, bedYOffset } = config;
   const utmZ = -zDir(config) * z + utmHeight / 2 - 15;
   const nozzleToSoil = getZ(x, y) - utmZ;
-
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(true);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
   return <Group name={"watering-animations"}
-    visible={waterFlow}
+    visible={visible}
     position={[
       threeSpace(x, bedLengthOuter) + bedXOffset,
       threeSpace(y, bedWidthOuter) + bedYOffset,

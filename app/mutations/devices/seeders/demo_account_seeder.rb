@@ -140,7 +140,6 @@ module Devices
           .update!(
             discard_unsaved: true,
             three_d_garden: true,
-            show_points: false
           )
         device
           .fbos_config

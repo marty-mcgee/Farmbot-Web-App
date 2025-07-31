@@ -16,13 +16,14 @@ export const axisOrder = (
 export const AxisOrderInputRow = (props: AxisOrderInputRowProps) =>
   <Row className={"row move-location-grid"}>
     <div className={"row"}>
-      <label className={"axis-order"}>{t("Axis Order")}</label>
+      <label className={"axis-order"}>{t("Order")}</label>
       <Help text={ToolTips.AXIS_ORDER} customClass={"help-icon"} />
     </div>
     <FBSelect
       selectedItem={getSelectedItem(props.safeZ, props.grouping, props.route)}
       list={DDIS()}
       allowEmpty={true}
+      customNullLabel={t("All at once")}
       onChange={props.onChange} />
   </Row>;
 

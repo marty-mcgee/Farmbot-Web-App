@@ -60,7 +60,10 @@ describe("<Bot />", () => {
   it("renders watering animation", () => {
     const p = fakeProps();
     p.config.waterFlow = true;
-    const { container } = render(<Bot {...p} />);
+    jest.useFakeTimers();
+    const { container, rerender } = render(<Bot {...p} />);
+    jest.runAllTimers();
+    rerender(<Bot {...p} />);
     expect(container).toContainHTML("watering-animations");
   });
 

@@ -60,7 +60,7 @@ describe("<MoveToForm />", () => {
   it("changes safe z value", () => {
     render(<MoveToForm {...fakeProps()} />);
     expect(screen.queryByText("Safe Z")).not.toBeInTheDocument();
-    const dropdown = screen.getByRole("button", { name: "None" });
+    const dropdown = screen.getByRole("button", { name: "All at once" });
     fireEvent.click(dropdown);
     expect(screen.getAllByText("Safe Z").length).toEqual(1);
     const item = screen.getByRole("menuitem", { name: "Safe Z" });

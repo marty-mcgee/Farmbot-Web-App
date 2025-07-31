@@ -18,7 +18,7 @@ describe("<AxisOrderInputRow />", () => {
     [false, "x,y,z", "high", "One at a time"],
     [false, "xy,z", "high", "X and Y together"],
     [false, "xyz", "high", "All at once"],
-    [false, undefined, undefined, "None"],
+    [false, undefined, undefined, "All at once"],
     [false, "x", "low", "x;low"],
     [true, "x", "low", "Safe Z"],
   ])("renders order: safe_z=%s %s %s", (safeZ, grouping, route, label) => {

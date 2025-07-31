@@ -14,8 +14,11 @@ describe("<WateringAnimations />", () => {
   });
 
   it("renders", () => {
+    jest.useFakeTimers();
     const p = fakeProps();
-    const { container } = render(<WateringAnimations {...p} />);
+    const { container, rerender } = render(<WateringAnimations {...p} />);
+    jest.runAllTimers();
+    rerender(<WateringAnimations {...p} />);
     const streams = container.querySelectorAll("[name*='water-stream']");
     expect(streams.length).toEqual(16);
 

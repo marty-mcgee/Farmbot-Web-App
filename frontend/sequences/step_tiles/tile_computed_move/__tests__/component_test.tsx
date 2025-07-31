@@ -114,7 +114,7 @@ describe("<ComputedMove />", () => {
   });
 
   it("shows options", () => {
-    const MORE = ["offset", "variance", "axis order"];
+    const MORE = ["offset", "variance", "order"];
     const wrapper = mount<ComputedMove>(<ComputedMove {...fakeProps()} />);
     MORE.map(string =>
       expect(wrapper.text().toLowerCase()).not.toContain(string));
@@ -124,7 +124,7 @@ describe("<ComputedMove />", () => {
   });
 
   it("shows options: axis order", () => {
-    const MORE = ["axis order"];
+    const MORE = ["order"];
     const p = fakeProps();
     p.currentStep = {
       kind: "move", args: {}, body: [{

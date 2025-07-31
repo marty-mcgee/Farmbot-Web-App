@@ -469,9 +469,7 @@ export namespace ToolTips {
 
   export const AXIS_ORDER =
     trim(`If "Safe Z" is chosen, FarmBot will: (1) Move Z to the Safe Z height,
-    (2) Move X and Y to the new location, and (3) Move Z to the new location.
-    If "None" is chosen, FarmBot will move all axes concurrently to the new
-    location.`);
+    (2) Move X and Y to the new location, and (3) Move Z to the new location.`);
 
   export const MOVE_ABSOLUTE =
     trim(`The Move To step instructs FarmBot to move to the specified
