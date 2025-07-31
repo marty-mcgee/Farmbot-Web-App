@@ -114,6 +114,16 @@ describe("expandActions()", () => {
     ]);
   });
 
+  it("doesn't chunk movements", () => {
+    localStorage.setItem("DISABLE_CHUNKING", "true");
+    expect(expandActions([
+      { type: "move_absolute", args: [2000, 0, 0] },
+    ], [])).toEqual([
+      { type: "wait_ms", args: [250] },
+      { type: "expanded_move_absolute", args: [2000, 0, 0] },
+    ]);
+  });
+
   it("chunks movements: warns", () => {
     expect(expandActions([
       { type: "_move", args: [JSON.stringify([{ kind: "foo", args: {} }])] },

@@ -301,9 +301,6 @@
     }
   }
   .inactive {
-    color: $gray;
-  }
-  .fa-eye-slash {
-    color: $gray;
+    color: var(--secondary-bg);
   }
 }

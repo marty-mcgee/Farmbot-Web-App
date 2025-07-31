@@ -241,4 +241,11 @@ describe("botReducer", () => {
     const r = botReducer(state, action);
     expect(r.hardware.informational_settings.locked).toEqual(false);
   });
+
+  it("sets demo queue length", () => {
+    const state = initialState();
+    const action = { type: Actions.DEMO_SET_QUEUE_LENGTH, payload: 5 };
+    const r = botReducer(state, action);
+    expect(r.demoQueueLength).toEqual(5);
+  });
 });

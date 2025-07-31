@@ -75,6 +75,7 @@ export const initialState = (): BotState => ({
   },
   needVersionCheck: true,
   alreadyToldUserAboutMalformedMsg: false,
+  demoQueueLength: 0,
 });
 
 export const botReducer = generateReducer<BotState>(initialState())
@@ -155,6 +156,11 @@ export const botReducer = generateReducer<BotState>(initialState())
   .add<boolean>(Actions.DEMO_SET_ESTOP, (s, { payload }) => {
     s.hardware.informational_settings.locked = payload;
     s.hardware.pins = {};
+    s.demoQueueLength = 0;
+    return s;
+  })
+  .add<number>(Actions.DEMO_SET_QUEUE_LENGTH, (s, { payload }) => {
+    s.demoQueueLength = payload;
     return s;
   })
   .add<PingResultPayload>(Actions.PING_OK, (s) => {

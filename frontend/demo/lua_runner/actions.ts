@@ -46,7 +46,9 @@ const movementChunks = (
     y: dy / length,
     z: dz / length,
   };
-  const steps = Math.floor(length / mmPerTimeStep);
+  const steps = localStorage.getItem("DISABLE_CHUNKING") === "true"
+    ? 0
+    : Math.floor(length / mmPerTimeStep);
   const chunks: XyzNumber[] = [];
   for (let i = 1; i <= steps; i++) {
     const step = {
@@ -171,7 +173,6 @@ let currentTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 export const eStop = () => {
   latestActionMs = 0;
   pending.length = 0;
-  console.log(`Queue length: ${pending.length}`);
   store.dispatch({
     type: Actions.DEMO_SET_ESTOP,
     payload: true,
@@ -305,7 +306,10 @@ const runNext = () => {
     currentTimer = undefined;
     const task = pending.shift();
     task?.func();
-    console.log(`Queue length: ${pending.length}`);
+    store.dispatch({
+      type: Actions.DEMO_SET_QUEUE_LENGTH,
+      payload: pending.length,
+    });
     runNext();
   }, delay);
 };

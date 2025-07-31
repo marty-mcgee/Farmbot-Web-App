@@ -1,3 +1,8 @@
+let mockDev = false;
+jest.mock("../../../../settings/dev/dev_support", () => ({
+  DevSettings: { allOrderOptionsEnabled: () => mockDev },
+}));
+
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import {
@@ -7,6 +12,10 @@ import { AxisGrouping, AxisOrderInputRowProps, AxisRoute } from "../interfaces";
 import { Move } from "farmbot";
 
 describe("<AxisOrderInputRow />", () => {
+  beforeEach(() => {
+    mockDev = false;
+  });
+
   const fakeProps = (): AxisOrderInputRowProps => ({
     grouping: undefined,
     route: undefined,
@@ -41,6 +50,15 @@ describe("<AxisOrderInputRow />", () => {
       label: "X and Y together",
       value: "xy,z;high",
     });
+  });
+
+  it("shows all order options", () => {
+    mockDev = true;
+    const p = fakeProps();
+    render(<AxisOrderInputRow {...p} />);
+    const dropdown = screen.getByRole("button");
+    fireEvent.click(dropdown);
+    expect(screen.getByRole("menuitem", { name: "x,yz;high" })).toBeInTheDocument();
   });
 });
 

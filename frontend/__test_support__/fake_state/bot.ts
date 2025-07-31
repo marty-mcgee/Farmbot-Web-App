@@ -67,4 +67,5 @@ export const bot: Everything["bot"] = {
   },
   needVersionCheck: true,
   alreadyToldUserAboutMalformedMsg: false,
+  demoQueueLength: 0,
 };

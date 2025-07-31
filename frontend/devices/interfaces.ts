@@ -106,6 +106,7 @@ export interface BotState {
   connectivity: ConnectionState;
   needVersionCheck: boolean;
   alreadyToldUserAboutMalformedMsg: boolean;
+  demoQueueLength: number;
 }
 
 /** Status registers for the bot's status */

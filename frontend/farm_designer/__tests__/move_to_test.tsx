@@ -9,6 +9,10 @@ jest.mock("../../ui/popover", () => ({
   Popover: ({ target, content }: PopoverProps) => <div>{target}{content}</div>,
 }));
 
+jest.mock("../../settings/dev/dev_support", () => ({
+  DevSettings: { allOrderOptionsEnabled: () => false },
+}));
+
 import React from "react";
 import { mount, shallow } from "enzyme";
 import { render, screen, fireEvent } from "@testing-library/react";

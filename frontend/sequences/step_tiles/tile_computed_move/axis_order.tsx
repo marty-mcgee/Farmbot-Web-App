@@ -6,6 +6,7 @@ import { Move, AxisOrder } from "farmbot";
 import {
   AxisGrouping, AxisOrderInputRowProps, AxisRoute,
 } from "./interfaces";
+import { DevSettings } from "../../../settings/dev/dev_support";
 
 export const axisOrder = (
   grouping: AxisGrouping,
@@ -21,7 +22,7 @@ export const AxisOrderInputRow = (props: AxisOrderInputRowProps) =>
     </div>
     <FBSelect
       selectedItem={getSelectedItem(props.safeZ, props.grouping, props.route)}
-      list={DDIS()}
+      list={DevSettings.allOrderOptionsEnabled() ? ALL_DDIS() : DDIS()}
       allowEmpty={true}
       customNullLabel={t("All at once")}
       onChange={props.onChange} />
@@ -113,6 +114,9 @@ const DDI_LOOKUP = (): Record<string, DropDownItem> => {
       },
       {} as Record<string, DropDownItem>);
 };
+
+const ALL_DDIS = (): DropDownItem[] =>
+  getAllDdiValues().map(value => DDI_LOOKUP()[value]);
 
 export const getAxisGroupingState = (step: Move) => {
   const axisOrder = step.body?.find(x => x.kind == "axis_order");

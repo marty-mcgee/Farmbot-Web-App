@@ -294,7 +294,7 @@ describe("runDemoSequence()", () => {
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
     expect(info).toHaveBeenCalledWith("text", TOAST_OPTIONS().info);
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(1);
   });
 
   it("runs move sequence step", () => {
@@ -326,7 +326,7 @@ describe("runDemoSequence()", () => {
       type: Actions.DEMO_SET_POSITION,
       payload: { x: 2, y: 4, z: 6 },
     });
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(1);
   });
 
   it("applies sequence variables", () => {
@@ -347,7 +347,7 @@ describe("runDemoSequence()", () => {
     runDemoSequence(ri, sequence.body.id, undefined);
     jest.runAllTimers();
     expect(info).toHaveBeenCalledWith("v", TOAST_OPTIONS().info);
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(error).not.toHaveBeenCalled();
   });
 
@@ -376,7 +376,7 @@ describe("runDemoSequence()", () => {
     runDemoSequence(ri, sequence.body.id, variables);
     jest.runAllTimers();
     expect(info).toHaveBeenCalledWith("abc", TOAST_OPTIONS().info);
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(1);
     expect(error).not.toHaveBeenCalled();
   });
 
@@ -616,7 +616,7 @@ describe("runDemoLuaCode()", () => {
              radius = 5 }}`);
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(0);
     expect(info).not.toHaveBeenCalled();
     expect(initSave).toHaveBeenCalledWith("Point", {
       name: "test", pointer_type: "GenericPointer",
@@ -637,7 +637,7 @@ describe("runDemoLuaCode()", () => {
              radius = 5 }}`);
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(0);
     expect(info).not.toHaveBeenCalled();
     expect(initSave).toHaveBeenCalledWith("Point", {
       name: "test", pointer_type: "GenericPointer",
@@ -1008,7 +1008,7 @@ describe("runDemoLuaCode()", () => {
     runDemoLuaCode("update_device{ mounted_tool_id = 1 }");
     jest.runAllTimers();
     expect(error).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledTimes(0);
     expect(info).not.toHaveBeenCalled();
     expect(edit).toHaveBeenCalledWith(device, { mounted_tool_id: 1 });
     expect(save).toHaveBeenCalledWith(device.uuid);
