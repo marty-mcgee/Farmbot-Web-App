@@ -46,6 +46,7 @@ import { PhotoFooter } from "../photos/images/photos";
 import { Path } from "../internal_urls";
 import { NavigationContext } from "../routes_helpers";
 import { DrawnPointPayl } from "./interfaces";
+import { getFbosConfig } from "../resources/getters";
 
 export const mapStateToProps = (props: Everything): LocationInfoProps => ({
   chosenLocation: props.resources.consumers.farm_designer.chosenLocation,
@@ -67,6 +68,7 @@ export const mapStateToProps = (props: Everything): LocationInfoProps => ({
   timeSettings: maybeGetTimeSettings(props.resources.index),
   arduinoBusy: props.bot.hardware.informational_settings.busy,
   movementState: props.app.movement,
+  defaultAxisOrder: getFbosConfig(props.resources.index)?.body.default_axis_order,
 });
 
 export interface LocationInfoProps {
@@ -87,6 +89,7 @@ export interface LocationInfoProps {
   farmwareEnvs: TaggedFarmwareEnv[];
   arduinoBusy: boolean;
   movementState: MovementState;
+  defaultAxisOrder: string | undefined;
 }
 
 export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
@@ -142,6 +145,7 @@ export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
           graphic={EmptyStateGraphic.points}>
           <div className={"location-info-content"}>
             <LocationActions
+              defaultAxisOrder={this.props.defaultAxisOrder}
               currentBotLocation={this.props.currentBotLocation}
               chosenLocation={this.props.chosenLocation}
               botOnline={this.props.botOnline}
@@ -459,12 +463,14 @@ interface LocationActionsProps {
   botOnline: boolean;
   locked: boolean;
   chosenLocation: BotPosition;
+  defaultAxisOrder: string | undefined;
 }
 
 const LocationActions = (props: LocationActionsProps) => {
   const navigate = useNavigate();
   return <div className={"location-actions"}>
     <MoveToForm
+      defaultAxisOrder={props.defaultAxisOrder}
       chosenLocation={props.chosenLocation}
       currentBotLocation={props.currentBotLocation}
       locked={props.locked}

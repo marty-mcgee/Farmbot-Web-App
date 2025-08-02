@@ -104,6 +104,7 @@ export interface AxisOrderInputRowProps {
   grouping: AxisGrouping;
   route: AxisRoute;
   safeZ: boolean;
+  defaultValue?: string;
 }
 
 export interface OverwriteInputRowProps extends InputRowBase {

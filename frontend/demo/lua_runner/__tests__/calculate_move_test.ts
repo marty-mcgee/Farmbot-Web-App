@@ -32,8 +32,25 @@ jest.mock("../../../three_d_garden/triangle_functions", () => ({
 import {
   AxisAddition, AxisOverwrite, Move, MoveBodyItem, ParameterApplication,
 } from "farmbot";
-import { calculateMove } from "../calculate_move";
+import { addDefaults, calculateMove } from "../calculate_move";
 import { setCurrent } from "../actions";
+
+describe("addDefaults()", () => {
+  it("adds defaults", () => {
+    const config = fakeFbosConfig();
+    config.body.default_axis_order = "safe_z";
+    mockResources = buildResourceIndex([config]);
+    expect(addDefaults([])).toEqual([{ kind: "safe_z", args: {} }]);
+  });
+
+  it("doesn't add defaults", () => {
+    expect(addDefaults([
+      { kind: "axis_order", args: { grouping: "xyz", route: "in_order" } },
+    ])).toEqual([
+      { kind: "axis_order", args: { grouping: "xyz", route: "in_order" } },
+    ]);
+  });
+});
 
 describe("calculateMove()", () => {
   beforeEach(() => {

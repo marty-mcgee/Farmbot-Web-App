@@ -12,8 +12,15 @@ import {
   maybeFindPointById,
   maybeFindSlotByToolId,
 } from "../../resources/selectors";
-import { getSafeZ, getSoilHeight } from "./stubs";
+import { getDefaultAxisOrder, getSafeZ, getSoilHeight } from "./stubs";
 import { clone } from "lodash";
+
+export const addDefaults = (body: MoveBodyItem[]): MoveBodyItem[] => {
+  if (body.some(item => item.kind === "axis_order")) {
+    return body;
+  }
+  return body.concat(getDefaultAxisOrder());
+};
 
 export const calculateMove = (
   body: MoveBodyItem[] | undefined,
@@ -22,7 +29,7 @@ export const calculateMove = (
 ): { moves: XyzNumber[], warnings: string[] } => {
   const pos = clone(current);
   const warnings: string[] = [];
-  const moveBodyItems = body || [];
+  const moveBodyItems = addDefaults(body || []);
   // eslint-disable-next-line complexity
   moveBodyItems.map(item => {
     switch (item.kind) {

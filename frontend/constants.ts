@@ -176,6 +176,9 @@ export namespace ToolTips {
     manually measure the height at various locations in the garden and add
     corresponding soil height points from the points panel. (default: 0)`);
 
+  export const DEFAULT_AXIS_ORDER =
+    trim(`Default axis order for movement. (default: X and Y together)`);
+
   // Hardware Settings: Motors
   export const MAX_SPEED =
     trim(`Maximum travel speed after acceleration in millimeters per second.
@@ -2084,6 +2087,7 @@ export enum DeviceSetting {
   gantryHeight = `Gantry Height`,
   safeHeight = `Safe Height`,
   fallbackSoilHeight = `Fallback Soil Height`,
+  defaultAxisOrder = `Default Axis Order`,
 
   // Motors
   motors = `Motors`,

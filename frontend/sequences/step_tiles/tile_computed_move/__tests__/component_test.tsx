@@ -2,6 +2,7 @@ const mockEditStep = jest.fn();
 jest.mock("../../../../api/crud", () => ({ editStep: mockEditStep }));
 
 import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import { ComputedMove } from "../component";
 import { Move, SpecialValue } from "farmbot";
@@ -16,6 +17,10 @@ import {
 } from "../test_fixtures";
 import { inputEvent } from "../../../../__test_support__/fake_html_events";
 import { StepParams } from "../../../interfaces";
+import {
+  buildResourceIndex,
+} from "../../../../__test_support__/resource_index_builder";
+import { fakeFbosConfig } from "../../../../__test_support__/fake_state/resources";
 
 describe("<ComputedMove />", () => {
   const fakeProps = (): StepParams<Move> => {
@@ -163,6 +168,16 @@ describe("<ComputedMove />", () => {
     expect(wrapper.state().safeZ).toEqual(false);
     expect(wrapper.state().axisGrouping).toEqual("xyz");
     expect(wrapper.state().axisRoute).toEqual("high");
+  });
+
+  it("handles config", () => {
+    const p = fakeProps();
+    const config = fakeFbosConfig();
+    config.body.default_axis_order = "safe_z";
+    p.resources = buildResourceIndex([config]).index;
+    render(<ComputedMove {...p} />);
+    fireEvent.click(screen.getByText("[]"));
+    expect(screen.getByText("Use default (Safe Z)")).toBeInTheDocument();
   });
 
   it("commits number value", () => {

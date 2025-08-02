@@ -27,7 +27,7 @@ describe("<AxisOrderInputRow />", () => {
     [false, "x,y,z", "high", "One at a time"],
     [false, "xy,z", "high", "X and Y together"],
     [false, "xyz", "high", "All at once"],
-    [false, undefined, undefined, "All at once"],
+    [false, undefined, undefined, "Use default"],
     [false, "x", "low", "x;low"],
     [true, "x", "low", "Safe Z"],
   ])("renders order: safe_z=%s %s %s", (safeZ, grouping, route, label) => {
@@ -52,6 +52,16 @@ describe("<AxisOrderInputRow />", () => {
     });
   });
 
+  it("shows default", () => {
+    const p = fakeProps();
+    p.defaultValue = "safe_z";
+    render(<AxisOrderInputRow {...p} />);
+    const dropdown = screen.getByRole("button");
+    fireEvent.click(dropdown);
+    expect(screen.getByRole("menuitem", { name: "Use default (Safe Z)" }))
+      .toBeInTheDocument();
+  });
+
   it("shows all order options", () => {
     mockDev = true;
     const p = fakeProps();
@@ -59,6 +69,8 @@ describe("<AxisOrderInputRow />", () => {
     const dropdown = screen.getByRole("button");
     fireEvent.click(dropdown);
     expect(screen.getByRole("menuitem", { name: "x,yz;high" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Use default" }))
+      .toBeInTheDocument();
   });
 });
 
@@ -76,7 +88,9 @@ describe("getAxisGroupingState()", () => {
     const move: Move = {
       kind: "move",
       args: {},
-      body: [{ kind: "axis_order", args: { grouping: "z,y,x", route: "in_order" } }],
+      body: [
+        { kind: "axis_order", args: { grouping: "z,y,x", route: "in_order" } },
+      ],
     };
     expect(getAxisGroupingState(move)).toEqual("z,y,x");
   });
@@ -91,13 +105,14 @@ describe("getAxisGroupingState()", () => {
   });
 });
 
-
 describe("getAxisRouteState()", () => {
   it("returns state: axis order", () => {
     const move: Move = {
       kind: "move",
       args: {},
-      body: [{ kind: "axis_order", args: { grouping: "z,y,x", route: "in_order" } }],
+      body: [
+        { kind: "axis_order", args: { grouping: "z,y,x", route: "in_order" } },
+      ],
     };
     expect(getAxisRouteState(move)).toEqual("in_order");
   });

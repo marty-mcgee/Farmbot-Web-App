@@ -21,6 +21,7 @@ import {
 } from "../fbos_settings/z_height_inputs";
 import { setAxisLength } from "../../controls/move/bot_position_rows";
 import { validBotLocationData } from "../../util/location";
+import { DefaultAxisOrder } from "../fbos_settings/default_axis_order";
 
 export const AxisSettings = (props: AxisSettingsProps) => {
 
@@ -174,6 +175,9 @@ export const AxisSettings = (props: AxisSettingsProps) => {
         dispatch={dispatch}
         sourceFbosConfig={props.sourceFbosConfig} />
       <SoilHeight
+        dispatch={dispatch}
+        sourceFbosConfig={props.sourceFbosConfig} />
+      <DefaultAxisOrder
         dispatch={dispatch}
         sourceFbosConfig={props.sourceFbosConfig} />
     </Collapse>

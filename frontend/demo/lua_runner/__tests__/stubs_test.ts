@@ -1,3 +1,4 @@
+import { TaggedFbosConfig } from "farmbot";
 import {
   fakeFbosConfig,
   fakeFirmwareConfig,
@@ -6,14 +7,14 @@ import {
 
 let mockFirmwareConfig = fakeFirmwareConfig();
 let mockWebAppConfig = fakeWebAppConfig();
-let mockFbosConfig = fakeFbosConfig();
+let mockFbosConfig: TaggedFbosConfig | undefined = fakeFbosConfig();
 jest.mock("../../../resources/getters", () => ({
   getFirmwareConfig: () => mockFirmwareConfig,
   getWebAppConfig: () => mockWebAppConfig,
   getFbosConfig: () => mockFbosConfig,
 }));
 
-import { getGardenSize, getSafeZ } from "../stubs";
+import { getDefaultAxisOrder, getGardenSize, getSafeZ } from "../stubs";
 
 describe("getGardenSize()", () => {
   it("gets garden size: axis lengths", () => {
@@ -50,5 +51,26 @@ describe("getSafeZ()", () => {
     mockFbosConfig = fakeFbosConfig();
     mockFbosConfig.body.safe_height = -200;
     expect(getSafeZ()).toEqual(-200);
+  });
+});
+
+describe("getDefaultAxisOrder()", () => {
+  it("handles undefined", () => {
+    mockFbosConfig = undefined;
+    expect(getDefaultAxisOrder()).toEqual([]);
+  });
+
+  it("returns safe_z", () => {
+    mockFbosConfig = fakeFbosConfig();
+    mockFbosConfig.body.default_axis_order = "safe_z";
+    expect(getDefaultAxisOrder()).toEqual([{ kind: "safe_z", args: {} }]);
+  });
+
+  it("returns axis_order", () => {
+    mockFbosConfig = fakeFbosConfig();
+    mockFbosConfig.body.default_axis_order = "xyz;high";
+    expect(getDefaultAxisOrder()).toEqual([
+      { kind: "axis_order", args: { grouping: "xyz", route: "high" } },
+    ]);
   });
 });

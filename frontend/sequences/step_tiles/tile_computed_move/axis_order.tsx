@@ -14,21 +14,28 @@ export const axisOrder = (
 ): AxisOrder[] =>
   !(grouping && route) ? [] : [{ kind: "axis_order", args: { grouping, route } }];
 
-export const AxisOrderInputRow = (props: AxisOrderInputRowProps) =>
-  <Row className={"row move-location-grid"}>
+export const AxisOrderInputRow = (props: AxisOrderInputRowProps) => {
+  const defaultLabel = props.defaultValue
+    ? ` (${DDI_LOOKUP()[props.defaultValue].label})`
+    : "";
+  return <Row className={"row move-location-grid"}>
     <div className={"row"}>
       <label className={"axis-order"}>{t("Order")}</label>
       <Help text={ToolTips.AXIS_ORDER} customClass={"help-icon"} />
     </div>
     <FBSelect
-      selectedItem={getSelectedItem(props.safeZ, props.grouping, props.route)}
-      list={DevSettings.allOrderOptionsEnabled() ? ALL_DDIS() : DDIS()}
+      selectedItem={getSelectedAxisOrder(props.safeZ, props.grouping, props.route)}
+      list={getAxisOrderOptions()}
       allowEmpty={true}
-      customNullLabel={t("All at once")}
+      customNullLabel={`${t("Use default")}${defaultLabel}`}
       onChange={props.onChange} />
   </Row>;
+};
 
-const getSelectedItem = (
+export const getAxisOrderOptions = () =>
+  DevSettings.allOrderOptionsEnabled() ? ALL_DDIS() : DDIS();
+
+export const getSelectedAxisOrder = (
   safeZ: boolean,
   grouping: AxisGrouping,
   route: AxisRoute,
@@ -45,6 +52,7 @@ const DDIS = (): DropDownItem[] => [
   DDI_LOOKUP().safe_z,
   DDI_LOOKUP()[ddiValue("x,y,z", "high")],
   DDI_LOOKUP()[ddiValue("xy,z", "high")],
+  DDI_LOOKUP()[ddiValue("xyz", "high")],
 ];
 
 const getLabel = (value: string): string => {

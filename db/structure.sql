@@ -577,7 +577,8 @@ CREATE TABLE public.fbos_configs (
     boot_sequence_id integer,
     safe_height integer DEFAULT 0,
     soil_height integer DEFAULT 0,
-    gantry_height integer DEFAULT 0
+    gantry_height integer DEFAULT 0,
+    default_axis_order character varying(10) DEFAULT 'xy,z;high'::character varying
 );
 
 
@@ -3985,6 +3986,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250221191831'),
 ('20250502201109'),
 ('20250514203443'),
-('20250722234106');
+('20250722234106'),
+('20250802174543');
 
 

@@ -1,5 +1,9 @@
 import { store } from "../../redux/store";
 import {
+  ALLOWED_GROUPING,
+  ALLOWED_ROUTE,
+  AxisOrder,
+  SafeZ,
   TaggedFbosConfig, TaggedFirmwareConfig, TaggedWebAppConfig,
 } from "farmbot";
 import { calculateAxialLengths } from "../../controls/move/direction_axes_props";
@@ -65,4 +69,19 @@ export const getGroupPoints = (resources: ResourceIndex, groupId: number) => {
     .filter(group => group.body.id === groupId)[0];
   const groupPoints = pointsSelectedByGroup(group, allPoints);
   return sortGroupBy(group.body.sort_type, groupPoints);
+};
+
+export const getDefaultAxisOrder = (): (SafeZ | AxisOrder)[] => {
+  const fbosConfig = getFbosConfig(store.getState().resources.index);
+  const defaultAxisOrder = fbosConfig?.body.default_axis_order;
+  switch (defaultAxisOrder) {
+    case "safe_z":
+      return [{ kind: "safe_z", args: {} }];
+    case undefined:
+      return [];
+    default:
+      const [grouping, route] =
+        defaultAxisOrder.split(";") as [ALLOWED_GROUPING, ALLOWED_ROUTE];
+      return [{ kind: "axis_order", args: { grouping, route } }];
+  }
 };

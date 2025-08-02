@@ -16,6 +16,7 @@ import { mount, shallow } from "enzyme";
 import { AxisSettings } from "../axis_settings";
 import { bot } from "../../../__test_support__/fake_state/bot";
 import {
+  fakeFbosConfig,
   fakeFirmwareConfig,
 } from "../../../__test_support__/fake_state/resources";
 import { error, warning } from "../../../toast/toast";
@@ -29,6 +30,7 @@ import {
   buildResourceIndex,
 } from "../../../__test_support__/resource_index_builder";
 import { edit, save } from "../../../api/crud";
+import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
 
 describe("<AxisSettings />", () => {
   const state = fakeState();
@@ -43,7 +45,7 @@ describe("<AxisSettings />", () => {
       value: bot.hardware.mcu_params[x], consistent: true
     }),
     sourceFbosConfig: x => ({
-      value: bot.hardware.configuration[x], consistent: true
+      value: fakeFbosConfig().body[x as keyof FbosConfig], consistent: true,
     }),
     firmwareConfig: fakeConfig.body,
     botOnline: true,

@@ -24,7 +24,9 @@ import { StringSetting } from "../session_keys";
 import { MovementState } from "../interfaces";
 import { getUrlQuery } from "../util";
 import { setPanelOpen } from "./panel_header";
-import { AxisGrouping, AxisRoute } from "../sequences/step_tiles/tile_computed_move/interfaces";
+import {
+  AxisGrouping, AxisRoute,
+} from "../sequences/step_tiles/tile_computed_move/interfaces";
 
 export interface MoveToFormProps {
   chosenLocation: BotPosition;
@@ -32,6 +34,7 @@ export interface MoveToFormProps {
   botOnline: boolean;
   locked: boolean;
   dispatch: Function;
+  defaultAxisOrder: string | undefined;
 }
 
 interface MoveToFormState {
@@ -106,6 +109,7 @@ export class MoveToForm extends React.Component<MoveToFormProps, MoveToFormState
           onChange={speed => this.setState({ speed })} />
       </Row>
       <AxisOrderInputRow
+        defaultValue={this.props.defaultAxisOrder}
         safeZ={this.state.safeZ}
         grouping={this.state.axisGrouping}
         route={this.state.axisRoute}

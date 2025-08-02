@@ -36,6 +36,7 @@ describe("<MoveToForm />", () => {
     botOnline: true,
     locked: false,
     dispatch: jest.fn(),
+    defaultAxisOrder: "safe_z",
   });
 
   it("moves to location: custom z value", () => {
@@ -64,7 +65,7 @@ describe("<MoveToForm />", () => {
   it("changes safe z value", () => {
     render(<MoveToForm {...fakeProps()} />);
     expect(screen.queryByText("Safe Z")).not.toBeInTheDocument();
-    const dropdown = screen.getByRole("button", { name: "All at once" });
+    const dropdown = screen.getByRole("button", { name: "Use default (Safe Z)" });
     fireEvent.click(dropdown);
     expect(screen.getAllByText("Safe Z").length).toEqual(1);
     const item = screen.getByRole("menuitem", { name: "Safe Z" });

@@ -313,7 +313,8 @@ export function fakeFbosConfig(): TaggedFbosConfig {
     sequence_init_log: false,
     firmware_hardware: "arduino",
     os_auto_update: false,
-    arduino_debug_messages: false
+    arduino_debug_messages: false,
+    default_axis_order: "xyz;high",
   });
 }
 

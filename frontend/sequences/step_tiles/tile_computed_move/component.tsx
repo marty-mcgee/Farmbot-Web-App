@@ -33,6 +33,7 @@ import {
   getNewAxisOrderState,
 } from "./axis_order";
 import { StepParams } from "../../interfaces";
+import { getFbosConfig } from "../../../resources/getters";
 
 /**
  * _Computed move_
@@ -313,16 +314,20 @@ export class ComputedMove
         setAxisState={this.setAxisState} />
       : undefined;
 
-  AxisOrderInputRow = () =>
-    ((this.state.axisGrouping && this.state.axisRoute)
+  AxisOrderInputRow = () => {
+    const defaultAxisOrder =
+      getFbosConfig(this.props.resources)?.body.default_axis_order;
+    return ((this.state.axisGrouping && this.state.axisRoute)
       || this.state.safeZ
       || this.state.more)
       ? <AxisOrderInputRow
+        defaultValue={defaultAxisOrder}
         grouping={this.state.axisGrouping}
         route={this.state.axisRoute}
         safeZ={this.state.safeZ}
         onChange={this.setAxisOrder} />
       : undefined;
+  };
 
   render() {
     return <StepWrapper {...this.props}
