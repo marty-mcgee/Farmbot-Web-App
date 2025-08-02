@@ -1,3 +1,4 @@
+/** Warning: This file has been ignored by eslint due to a call stack error. */
 import React from "react";
 import { t } from "../i18next_wrapper";
 import { Collapse } from "@blueprintjs/core";
