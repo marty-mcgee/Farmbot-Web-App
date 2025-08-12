@@ -25,7 +25,7 @@ export const DefaultAxisOrder = (props: DefaultAxisOrderProps) => {
         <label>
           {t(DeviceSetting.defaultAxisOrder)}
         </label>
-        <Help text={ToolTips.FALLBACK_SOIL_HEIGHT} />
+        <Help text={ToolTips.DEFAULT_AXIS_ORDER} />
       </div>
       <FBSelect
         extraClass={modified}
