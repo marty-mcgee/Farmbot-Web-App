@@ -243,6 +243,7 @@ describe("calculateMove()", () => {
     slot.body.x = 1;
     slot.body.y = 2;
     slot.body.z = 3;
+    slot.body.gantry_mounted = true;
     mockResources = buildResourceIndex([tool, slot]);
     const command: Move = {
       kind: "move",
@@ -258,7 +259,7 @@ describe("calculateMove()", () => {
       ],
     };
     expect(calculateMove(command.body, { x: 0, y: 0, z: 0 }, []))
-      .toEqual({ moves: [{ x: 1, y: 2, z: 3 }], warnings: [] });
+      .toEqual({ moves: [{ x: 0, y: 2, z: 3 }], warnings: [] });
   });
 
   it("handles missing tool", () => {

@@ -86,12 +86,14 @@ export const calculateMove = (
             if (!toolSlot) {
               break;
             }
+            const toolSlotBody = clone(toolSlot.body);
+            if (toolSlotBody.gantry_mounted) { toolSlotBody.x = pos.x; }
             if (item.args.axis == "all") {
-              pos.x = toolSlot.body.x;
-              pos.y = toolSlot.body.y;
-              pos.z = toolSlot.body.z;
+              pos.x = toolSlotBody.x;
+              pos.y = toolSlotBody.y;
+              pos.z = toolSlotBody.z;
             } else {
-              pos[item.args.axis] = toolSlot.body[item.args.axis];
+              pos[item.args.axis] = toolSlotBody[item.args.axis];
             }
             break;
           case "identifier":

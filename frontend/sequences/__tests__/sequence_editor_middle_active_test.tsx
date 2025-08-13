@@ -65,6 +65,7 @@ import {
   ImportedBanner,
   AddCommandButtonProps,
 } from "../sequence_editor_middle_active";
+import { render } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import {
   ActiveMiddleProps, SequenceBtnGroupProps, SequenceSettingProps,
@@ -120,6 +121,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       getWebAppConfigValue: jest.fn(),
       sequencesState: emptyState().consumers.sequences,
       showName: true,
+      visualized: undefined,
     };
   };
 
@@ -313,12 +315,22 @@ describe("<SequenceEditorMiddleActive />", () => {
   it("un-visualizes", () => {
     location.pathname = Path.mock(Path.designerSequences("1"));
     const p = fakeProps();
-    p.visualized = true;
+    p.visualized = "uuid";
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
     wrapper.find(".fa-eye").simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.VISUALIZE_SEQUENCE,
       payload: undefined,
+    });
+  });
+
+  it("re-visualizes", () => {
+    const p = fakeProps();
+    p.visualized = "not uuid";
+    render(<SequenceEditorMiddleActive {...p} />);
+    expect(p.dispatch).toHaveBeenCalledWith({
+      type: Actions.VISUALIZE_SEQUENCE,
+      payload: p.sequence.uuid,
     });
   });
 
@@ -587,6 +599,7 @@ describe("<SequenceBtnGroup />", () => {
     toggleViewSequenceCeleryScript: jest.fn(),
     sequencesState: emptyState().consumers.sequences,
     viewCeleryScript: true,
+    visualized: undefined,
   });
 
   it("edits color", () => {

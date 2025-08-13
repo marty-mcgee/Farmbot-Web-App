@@ -265,6 +265,9 @@ export const SequenceBtnGroup = ({
   viewCeleryScript,
   visualized,
 }: SequenceBtnGroupProps) => {
+  if (visualized && sequence.uuid != visualized) {
+    dispatch(visualizeInMap(sequence.uuid));
+  }
   const [processingTitle, setProcessingTitle] = React.useState(false);
   const [processingColor, setProcessingColor] = React.useState(false);
   const isProcessing = processingColor || processingTitle;

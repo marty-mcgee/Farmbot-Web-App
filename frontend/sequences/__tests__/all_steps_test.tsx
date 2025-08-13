@@ -62,7 +62,7 @@ describe("<AllSteps />", () => {
 
   it("displays hover highlight", () => {
     const p = fakeProps();
-    p.visualized = true;
+    p.visualized = "uuid";
     p.sequence.body.body = [{ kind: "wait", args: { milliseconds: 0 } }];
     p.sequence.body.body.map(step => maybeTagStep(step));
     p.hoveredStep = getStepTag(p.sequence.body.body[0]);
@@ -72,7 +72,7 @@ describe("<AllSteps />", () => {
 
   it("doesn't display hover highlight", () => {
     const p = fakeProps();
-    p.visualized = false;
+    p.visualized = undefined;
     p.sequence.body.body = [{ kind: "wait", args: { milliseconds: 0 } }];
     p.sequence.body.body.map(step => maybeTagStep(step));
     p.hoveredStep = getStepTag(p.sequence.body.body[0]);

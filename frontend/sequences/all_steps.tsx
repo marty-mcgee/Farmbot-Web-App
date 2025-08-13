@@ -22,7 +22,7 @@ export interface AllStepsProps {
   farmwareData?: FarmwareData;
   showPins?: boolean;
   expandStepOptions?: boolean;
-  visualized?: boolean;
+  visualized?: string | undefined;
   hoveredStep?: string | undefined;
   sequencesState: SequenceReducerState;
 }

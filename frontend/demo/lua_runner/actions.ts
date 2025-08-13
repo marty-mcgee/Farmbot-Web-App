@@ -90,6 +90,7 @@ export const setCurrent = (position: XyzNumber) => {
 export const expandActions = (
   actions: Action[],
   variables: ParameterApplication[] | undefined,
+  stashedCurrentPosition?: XyzNumber,
 ): Action[] => {
   const expanded: Action[] = [];
   const timeStepMs = parseInt(localStorage.getItem("timeStepMs") || "250");
@@ -239,6 +240,9 @@ export const expandActions = (
         break;
     }
   });
+  if (stashedCurrentPosition) {
+    setCurrent(stashedCurrentPosition);
+  }
   return expanded;
 };
 

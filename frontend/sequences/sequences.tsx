@@ -66,6 +66,7 @@ export class RawSequences extends React.Component<SequencesProps, {}> {
               hardwareFlags={this.props.hardwareFlags}
               farmwareData={this.props.farmwareData}
               getWebAppConfigValue={this.props.getWebAppConfigValue}
+              visualized={undefined}
               sequencesState={sequencesState} />
           </ErrorBoundary>
         </div>

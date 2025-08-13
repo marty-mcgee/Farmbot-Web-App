@@ -72,6 +72,7 @@ describe("<DesignerSequenceList />", () => {
     sequencesState: emptyState().consumers.sequences,
     folderData: mapStateToFolderProps(fakeState()),
     sequencesPanelState: sequencesPanelState(),
+    visualized: undefined,
   });
 
   it("renders", () => {

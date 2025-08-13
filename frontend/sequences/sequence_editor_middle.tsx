@@ -27,6 +27,7 @@ export class SequenceEditorMiddle
         hardwareFlags={this.props.hardwareFlags}
         farmwareData={this.props.farmwareData}
         getWebAppConfigValue={this.props.getWebAppConfigValue}
+        visualized={undefined}
         sequencesState={this.props.sequencesState} />}
     </EmptyStateWrapper>;
   }
