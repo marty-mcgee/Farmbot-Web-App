@@ -19,7 +19,7 @@ module Auth
         whoops! unless maybe_user
         @user = maybe_user
       end
-    rescue OpenSSL::PKey::RSAError => e
+    rescue OpenSSL::PKey::RSAError, JSON::ParserError
       whoops!(BAD_KEY)
     end
 
