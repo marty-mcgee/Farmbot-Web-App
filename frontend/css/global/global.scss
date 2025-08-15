@@ -73,23 +73,19 @@ body {
   .tabs {
     border-radius: 0.5rem;
     display: grid;
-    gap: 0.2rem;
     grid-auto-flow: column;
     justify-content: center;
     margin: 0 auto;
     overflow: hidden;
+    box-shadow: var(--box-shadow);
     label {
       padding: 0.5rem 3rem;
-      background: $light_gray;
-      color: $medium_gray;
       cursor: pointer;
       &.selected {
-        background: $medium_gray;
-        color: $off_white;
+        border-bottom: 3px solid var(--text-color);
       }
       &:hover {
-        background-color: color.adjust($white, $lightness: -40%);
-        color: $off_white;
+        background-color: var(--secondary-bg);
       }
     }
   }
