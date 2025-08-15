@@ -208,14 +208,6 @@
     &.fa-code {
       font-weight: bold;
     }
-    &.fa-thumb-tack,
-    &.fa-font,
-    &.fa-code {
-      color: $placeholder_gray;
-      &.enabled {
-        color: $dark_gray;
-      }
-    }
   }
 }
 

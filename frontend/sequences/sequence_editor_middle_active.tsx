@@ -262,6 +262,7 @@ export const SequenceBtnGroup = ({
   sequencesState,
   getWebAppConfigValue,
   toggleViewSequenceCeleryScript,
+  viewCeleryScript,
   visualized,
 }: SequenceBtnGroupProps) => {
   if (visualized && sequence.uuid != visualized) {
@@ -289,7 +290,9 @@ export const SequenceBtnGroup = ({
         })} />
       {getWebAppConfigValue(BooleanSetting.view_celery_script) &&
         <i title={t("toggle celery script view")}
-          className={"fa fa-code fb-icon-button invert"}
+          className={["fa fa-code fb-icon-button invert",
+            viewCeleryScript ? "active" : "",
+          ].join(" ")}
           onClick={toggleViewSequenceCeleryScript} />}
       <div className={"publish-button"}>
         <Popover position={Position.BOTTOM_RIGHT}
@@ -807,7 +810,9 @@ const PublicCopyToolbar = (props: PublicCopyToolbarProps) => {
     {props.showName && <p>{props.sequencePreview?.body.name}</p>}
     {props.viewCeleryScript &&
       <i title={t("toggle celery script view")}
-        className={"fa fa-code fb-icon-button invert"}
+        className={["fa fa-code fb-icon-button invert",
+          props.viewSequenceCeleryScript ? "active" : "",
+        ].join(" ")}
         onClick={props.toggleViewSequenceCeleryScript} />}
     <button className={"fb-button orange"}
       onClick={upgradeSequence(props.sequence.body.id, previewVersionId)}>

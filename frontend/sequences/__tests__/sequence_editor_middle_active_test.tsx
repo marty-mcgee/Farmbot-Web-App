@@ -423,7 +423,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       view: "public", sequencePreview: previewSequence,
       viewSequenceCeleryScript: true,
     });
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeFalsy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeTruthy();
     expect(wrapper.text()).toContain("upgrade");
   });
 
@@ -438,7 +438,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       view: "public", sequencePreview: previewSequence,
       viewSequenceCeleryScript: false,
     });
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeTruthy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeFalsy();
   });
 
   it("makes selections", () => {
@@ -618,7 +618,7 @@ describe("<SequenceBtnGroup />", () => {
     p.getWebAppConfigValue = () => true;
     p.viewCeleryScript = true;
     const wrapper = shallow(<SequenceBtnGroup {...p} />);
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeFalsy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeTruthy();
   });
 
   it("shows publish menu", () => {
