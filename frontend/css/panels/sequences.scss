@@ -9,6 +9,9 @@
     align-items: stretch;
     gap: 0;
   }
+  .sequence-steps {
+    margin-right: 0;
+  }
 }
 
 .designer-sequence-list-panel {
@@ -40,7 +43,14 @@
       }
     }
     .add-command-button-container {
-      display: inline;
+      display: block;
+      height: auto;
+      .bp6-collapse {
+        padding: 0;
+      }
+      .bp6-collapse-body {
+        padding: 0;
+      }
     }
     .drag-drop-area {
       display: none;
@@ -55,8 +65,7 @@
 }
 
 .sequence-editor-panel {
-  background: $light_gray;
-  padding: 0 1rem;
+  background: var(--main-bg);
   height: calc(100vh - 8.5rem);
   overflow: scroll;
   @media screen and (max-width: 767px) {
@@ -97,11 +106,6 @@
       a {
         text-decoration: underline !important;
       }
-    }
-  }
-  .copy-item {
-    &:hover {
-      background: $lighter_gray !important;
     }
   }
 }
@@ -173,7 +177,6 @@
   }
   .upgrade-compare-banner {
     display: flex;
-    margin-left: -15px;
     box-shadow: 0 5px 10px -5px $translucent;
     .copy-item {
       width: 100%;
@@ -182,7 +185,7 @@
       text-align: center;
       cursor: pointer;
       &:hover {
-        background: $light_gray;
+        background: var(--secondary-bg);
       }
       label {
         cursor: pointer;
@@ -234,13 +237,28 @@
         }
       }
       &.selected {
-        border-bottom: 3px solid $dark_gray;
+        border-bottom: 3px solid var(--text-color);
       }
     }
   }
 }
 
+.designer-sequence-editor-panel-content {
+  padding: 0;
+}
+
+.sequence-actions-grid {
+  grid-template-columns: auto auto 1fr;
+  justify-items: right;
+}
+
 .sequence-editor-sections {
+  .bp6-collapse {
+    padding: 0 1rem;
+    .bp6-collapse-body {
+      padding-bottom: 1rem;
+    }
+  }
   .sequence-description {
     background: var(--secondary-bg);
     border-radius: 0.5rem;
@@ -403,7 +421,6 @@
   .sequence-section-header {
     position: relative;
     cursor: pointer;
-    margin: 0 -1rem;
     padding: 0 1rem;
     height: 4rem;
     line-height: 3.75rem;
@@ -434,17 +451,12 @@
 }
 
 .sequence-editor-tools {
-  input {
-    margin: 0.75rem;
-  }
   .title {
-    padding: 1.25rem;
     font-size: 1.6rem;
     font-weight: bold;
   }
   &.page {
     i {
-      color: $dark_gray;
       &.inactive {
         color: $placeholder_gray;
       }
@@ -478,7 +490,8 @@
 
 .sequence-editor-tools,
 .regimen-editor-tools {
-  border-bottom: 1.5px solid $translucent1;
+  border-bottom: 1.5px solid var(--border-color);
+  padding: 0.5rem 1rem;
 }
 
 .preview-variables {
@@ -529,10 +542,8 @@
 
 .license {
   p {
-    padding-bottom: 1rem;
-    line-height: 1.5rem;
-    margin-right: 1rem;
-    margin-left: 1.5rem;
+    padding-bottom: 0.75rem;
+    line-height: 1.25rem;
   }
 }
 
@@ -560,9 +571,15 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: calc(100vh - 8rem);
+  .text-input-wrapper {
+    input {
+      padding: 0;
+    }
+  }
   .commands, .pinned-sequences {
     display: flex;
     flex-wrap: wrap;
+    align-content: start;
     gap: 0.5rem;
   }
   .step-button {
@@ -596,6 +613,7 @@
       height: 10rem;
       overflow-y: auto;
       overflow-x: hidden;
+      padding: 1rem 0;
     }
     .text-input-wrapper {
       border-bottom-color: $translucent8_white !important;
@@ -1123,12 +1141,11 @@
     margin: auto;
     text-align: center;
     height: 3rem;
-    &.open {
-      margin-left: 1rem;
-      padding-right: 3rem;
-    }
     .add-command {
       display: none;
+    }
+    .step-button-cluster {
+      margin: 0;
     }
   }
   @media screen and (max-width: 767px) {
@@ -1158,27 +1175,11 @@
 
 .imported-banner,
 .import-banner {
-  margin: 0 -15px 0 -15px;
-  padding: 1rem 1.5rem 1rem 2rem;
+  padding: 1rem;
   background: color.adjust($orange, $alpha: -0.4);
-  button {
-    margin-right: 1rem;
-  }
-  label {
-    display: inline-block;
-    padding-left: 1rem;
-  }
   .bp6-popover-wrapper {
-    display: inline-block;
     margin-left: 1rem;
   }
-  p {
-    margin-left: 1rem;
-  }
-}
-
-.import-banner {
-  margin-bottom: 1rem;
 }
 
 .imported-banner {

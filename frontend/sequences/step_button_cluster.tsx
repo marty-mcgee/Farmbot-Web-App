@@ -240,7 +240,7 @@ export class StepButtonCluster
     });
     return <div className={Path.inDesigner() ? "" : "row"}>
       <div className={[
-        "step-button-cluster grid half-gap",
+        "step-button-cluster grid no-gap",
         Path.inDesigner() ? "designer-cluster" : "",
       ].join(" ")}>
         <SearchField nameKey={"commands"}

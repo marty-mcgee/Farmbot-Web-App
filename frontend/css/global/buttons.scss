@@ -295,10 +295,6 @@
   justify-content: right;
   .fa-code {
     font-weight: bold;
-    color: $gray;
-    &.enabled {
-      color: $dark_gray;
-    }
   }
   .inactive {
     color: var(--secondary-bg);

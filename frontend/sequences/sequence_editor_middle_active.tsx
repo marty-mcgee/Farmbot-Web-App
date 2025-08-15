@@ -262,7 +262,6 @@ export const SequenceBtnGroup = ({
   sequencesState,
   getWebAppConfigValue,
   toggleViewSequenceCeleryScript,
-  viewCeleryScript,
   visualized,
 }: SequenceBtnGroupProps) => {
   if (visualized && sequence.uuid != visualized) {
@@ -272,7 +271,7 @@ export const SequenceBtnGroup = ({
   const [processingColor, setProcessingColor] = React.useState(false);
   const isProcessing = processingColor || processingTitle;
   const navigate = useNavigate();
-  return <div className="button-group row">
+  return <div className="button-group row half-gap sequence-actions-grid">
     <div className={"row no-gap"}>
       <Popover position={Position.BOTTOM_RIGHT}
         target={<i className={"fa fa-gear fb-icon-button invert"}
@@ -280,34 +279,6 @@ export const SequenceBtnGroup = ({
         content={<SequenceSettingsMenu
           dispatch={dispatch}
           getWebAppConfigValue={getWebAppConfigValue} />} />
-      {getWebAppConfigValue(BooleanSetting.view_celery_script) &&
-        <i title={t("toggle celery script view")}
-          className={[
-            "fa fa-code fb-icon-button invert",
-            viewCeleryScript ? "" : "inactive",
-          ].join(" ")}
-          onClick={toggleViewSequenceCeleryScript} />}
-      <i title={sequence.body.pinned ? t("unpin sequence") : t("pin sequence")}
-        className={[
-          "fa",
-          "fa-thumb-tack",
-          "fb-icon-button invert",
-          sequence.body.pinned ? "" : "inactive",
-        ].join(" ")}
-        onClick={() => dispatch(pinSequenceToggle(sequence))} />
-      {Path.inDesigner() &&
-        <i
-          className={[
-            "fa",
-            visualized ? "fa-eye" : "fa-eye-slash inactive",
-            "fb-icon-button invert",
-          ].join(" ")}
-          title={visualized ? t("unvisualize") : t("visualize")}
-          onClick={() =>
-            dispatch(visualizeInMap(visualized ? undefined : sequence.uuid))} />}
-      <i className={"fa fa-copy fb-icon-button invert"}
-        title={t("copy sequence")}
-        onClick={() => dispatch(copySequence(navigate, sequence))} />
       <i className={"fa fa-trash fb-icon-button invert"}
         title={t("delete sequence")}
         onClick={deleteSequence({
@@ -316,6 +287,10 @@ export const SequenceBtnGroup = ({
           getWebAppConfigValue,
           dispatch,
         })} />
+      {getWebAppConfigValue(BooleanSetting.view_celery_script) &&
+        <i title={t("toggle celery script view")}
+          className={"fa fa-code fb-icon-button invert"}
+          onClick={toggleViewSequenceCeleryScript} />}
       <div className={"publish-button"}>
         <Popover position={Position.BOTTOM_RIGHT}
           target={<i className={"fa fa-share fb-icon-button invert"}
@@ -324,6 +299,26 @@ export const SequenceBtnGroup = ({
             ? <SequenceShareMenu sequence={sequence} />
             : <SequencePublishMenu sequence={sequence} />} />
       </div>
+      <i title={sequence.body.pinned ? t("unpin sequence") : t("pin sequence")}
+        className={[
+          "fa",
+          "fb-icon-button invert",
+          sequence.body.pinned ? "fa-bookmark" : "fa-bookmark-o",
+        ].join(" ")}
+        onClick={() => dispatch(pinSequenceToggle(sequence))} />
+      <i className={"fa fa-copy fb-icon-button invert"}
+        title={t("copy sequence")}
+        onClick={() => dispatch(copySequence(navigate, sequence))} />
+      {Path.inDesigner() &&
+        <i
+          className={[
+            "fa",
+            visualized ? "fa-eye" : "fa-eye-slash",
+            "fb-icon-button invert",
+          ].join(" ")}
+          title={visualized ? t("unvisualize") : t("visualize")}
+          onClick={() =>
+            dispatch(visualizeInMap(visualized ? undefined : sequence.uuid))} />}
       {!Path.inDesigner() &&
         <Popover className={"color-picker"}
           position={Position.BOTTOM}
@@ -338,21 +333,20 @@ export const SequenceBtnGroup = ({
         dispatch={dispatch}
         sequence={sequence}
         isProcessing={isProcessing}
+        inDesigner={Path.inDesigner()}
         setTitleProcessing={setProcessingTitle}
         setColorProcessing={setProcessingColor} />}
     </div>
-    <div className="row">
-      <TestButton component={"editor"}
-        key={JSON.stringify(sequence)}
-        syncStatus={syncStatus}
-        sequence={sequence}
-        resources={resources}
-        menuOpen={sequencesState.menuOpen}
-        dispatch={dispatch} />
-      <SaveBtn status={sequence.specialStatus}
-        onClick={() => dispatch(save(sequence.uuid)).then(() =>
-          navigate(Path.sequences(urlFriendly(sequence.body.name))))} />
-    </div>
+    <TestButton component={"editor"}
+      key={JSON.stringify(sequence)}
+      syncStatus={syncStatus}
+      sequence={sequence}
+      resources={resources}
+      menuOpen={sequencesState.menuOpen}
+      dispatch={dispatch} />
+    <SaveBtn status={sequence.specialStatus}
+      onClick={() => dispatch(save(sequence.uuid)).then(() =>
+        navigate(Path.sequences(urlFriendly(sequence.body.name))))} />
   </div>;
 };
 
@@ -545,12 +539,13 @@ export class SequenceEditorMiddleActive extends
           showName={this.props.showName} />}
       {view == "local"
         ? <div className={"sequence-editor-sections"}>
-          <Description
-            isOpen={!this.state.descriptionCollapsed}
-            toggleOpen={this.toggleSection("descriptionCollapsed")}
-            key={sequence.uuid + sequence.body.description}
-            dispatch={dispatch}
-            sequence={sequence} />
+          {!viewSequenceCeleryScript &&
+            <Description
+              isOpen={!this.state.descriptionCollapsed}
+              toggleOpen={this.toggleSection("descriptionCollapsed")}
+              key={sequence.uuid + sequence.body.description}
+              dispatch={dispatch}
+              sequence={sequence} />}
           {!viewSequenceCeleryScript &&
             <SectionHeader title={t("Variables")}
               count={Object.values(variableData).length}
@@ -812,9 +807,7 @@ const PublicCopyToolbar = (props: PublicCopyToolbarProps) => {
     {props.showName && <p>{props.sequencePreview?.body.name}</p>}
     {props.viewCeleryScript &&
       <i title={t("toggle celery script view")}
-        className={["fa fa-code fb-icon-button invert",
-          props.viewSequenceCeleryScript ? "" : "inactive",
-        ].join(" ")}
+        className={"fa fa-code fb-icon-button invert"}
         onClick={props.toggleViewSequenceCeleryScript} />}
     <button className={"fb-button orange"}
       onClick={upgradeSequence(props.sequence.body.id, previewVersionId)}>

@@ -339,7 +339,7 @@ describe("<SequenceEditorMiddleActive />", () => {
     const p = fakeProps();
     p.sequence.body.pinned = false;
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
-    wrapper.find(".fa-thumb-tack").simulate("click");
+    wrapper.find(".fa-bookmark-o").simulate("click");
     expect(pinSequenceToggle).toHaveBeenCalledWith(p.sequence);
   });
 
@@ -348,7 +348,7 @@ describe("<SequenceEditorMiddleActive />", () => {
     const p = fakeProps();
     p.sequence.body.pinned = true;
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
-    wrapper.find(".fa-thumb-tack").simulate("click");
+    wrapper.find(".fa-bookmark").simulate("click");
     expect(pinSequenceToggle).toHaveBeenCalledWith(p.sequence);
   });
 
