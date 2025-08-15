@@ -162,3 +162,10 @@ export const csToLua = (command: RpcRequestBodyItem): string => {
       return `toast("celeryscript ${kind} is not implemented", "error")`;
   }
 };
+
+export const clean = (data: Object | undefined): Object | undefined =>
+  data
+    ? Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, value ?? undefined]),
+    )
+    : undefined;

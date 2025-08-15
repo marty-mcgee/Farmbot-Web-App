@@ -374,13 +374,13 @@ export const runActions = (
         case "set_job_progress":
           const job = "" + action.args[0];
           const percent = action.args[1] as number;
-          const status = "" + action.args[2];
+          const status = action.args[2];
           const time = action.args[3];
           const progress: PercentageProgress = {
             unit: "percent",
-            percent,
-            status: status as "working",
-            type: "",
+            percent: percent || 0,
+            status: (status || "Working") as "working",
+            type: "unknown",
             file_type: "",
             updated_at: (new Date()).valueOf() / 1000,
             time: (status == "Complete" ? undefined : time) as string,

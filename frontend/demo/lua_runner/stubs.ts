@@ -3,6 +3,7 @@ import {
   ALLOWED_GROUPING,
   ALLOWED_ROUTE,
   AxisOrder,
+  JobProgress,
   SafeZ,
   TaggedFbosConfig, TaggedFirmwareConfig, TaggedWebAppConfig,
 } from "farmbot";
@@ -84,4 +85,13 @@ export const getDefaultAxisOrder = (): (SafeZ | AxisOrder)[] => {
         defaultAxisOrder.split(";") as [ALLOWED_GROUPING, ALLOWED_ROUTE];
       return [{ kind: "axis_order", args: { grouping, route } }];
   }
+};
+
+export const getJob = (jobName: string): JobProgress | undefined => {
+  const { jobs } = store.getState().bot.hardware;
+  return Object.entries(jobs)
+    .map(([key, value]) =>
+      key === jobName
+        ? value
+        : undefined)[0];
 };

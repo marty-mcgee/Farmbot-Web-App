@@ -1,22 +1,32 @@
 import { lua, lauxlib, lualib, to_luastring } from "fengari-web";
 import {
   getDeviceAccountSettings,
+  selectAllCurves,
+  selectAllGenericPointers,
+  selectAllPlantPointers,
   selectAllPoints, selectAllTools, selectAllToolSlotPointers,
+  selectAllWeedPointers,
 } from "../../resources/selectors";
 import {
-  ParameterApplication, RpcRequest, Xyz,
+  ParameterApplication, PercentageProgress, RpcRequest, TaggedPoint, uuid, Xyz,
 } from "farmbot";
 import { store } from "../../redux/store";
 import { sortGroupBy } from "../../point_groups/point_group_sort";
 import { LUA_HELPERS } from "./lua";
-import { createRecursiveNotImplemented, csToLua, jsToLua, luaToJs } from "./util";
+import {
+  clean, createRecursiveNotImplemented, csToLua, jsToLua, luaToJs,
+} from "./util";
 import { Action, XyzNumber } from "./interfaces";
-import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
+import {
+  DeviceAccountSettings, Point, PointGroupSortType,
+} from "farmbot/dist/resources/api_resources";
 import {
   getFirmwareSettings, getGardenSize, getSafeZ, getSoilHeight,
+  getGroupPoints, getJob,
 } from "./stubs";
 import { error } from "../../toast/toast";
 import { collectDemoSequenceActions } from "./index";
+import { last } from "lodash";
 
 export const runLua =
   (depth: number, luaCode: string, variables: ParameterApplication[]): Action[] => {
@@ -72,6 +82,30 @@ export const runLua =
     lua.lua_setfield(L, envIndex, to_luastring("print"));
 
     lua.lua_pushjsfunction(L, () => {
+      const input = luaToJs(L, 1);
+      const output = JSON.stringify(input);
+      jsToLua(L, output);
+      return 1;
+    });
+    lua.lua_pushjsfunction(L, () => {
+      const input = luaToJs(L, 1) as string;
+      try {
+        const output = JSON.parse(input);
+        jsToLua(L, output);
+      } catch (e) {
+        jsToLua(L, undefined);
+      }
+      return 1;
+    });
+    lua.lua_newtable(L);
+    lua.lua_pushvalue(L, -3);
+    lua.lua_setfield(L, -2, to_luastring("encode"));
+    lua.lua_pushvalue(L, -2);
+    lua.lua_setfield(L, -2, to_luastring("decode"));
+    lua.lua_setfield(L, envIndex, to_luastring("json"));
+    lua.lua_pop(L, 2);
+
+    lua.lua_pushjsfunction(L, () => {
       const variableName = luaToJs(L, 1) as string;
       const n = variables
         .filter(variable => variable.args.label === variableName)
@@ -89,12 +123,12 @@ export const runLua =
         case "point":
           const point = selectAllPoints(store.getState().resources.index)
             .find(p => p.body.id === n.args.pointer_id)?.body;
-          jsToLua(L, point);
+          jsToLua(L, clean(point));
           break;
         case "tool":
           const slot = selectAllToolSlotPointers(store.getState().resources.index)
             .find(ts => ts.body.tool_id === n.args.tool_id)?.body;
-          jsToLua(L, slot);
+          jsToLua(L, clean(slot));
           break;
         default:
           actions.push({
@@ -150,7 +184,8 @@ export const runLua =
       if (url == "/api/points") {
         const points = selectAllPoints(store.getState().resources.index);
         if (method == "GET") {
-          const results = sortGroupBy("yx_alternating", points).map(p => p.body);
+          const results = sortGroupBy("yx_alternating", points)
+            .map(p => p.body).map(clean);
           jsToLua(L, results);
           return 1;
         }
@@ -165,8 +200,15 @@ export const runLua =
         }
       } else if (method == "GET" && url == "/api/tools") {
         const results = selectAllTools(store.getState().resources.index)
-          .map(p => p.body);
+          .map(p => p.body).map(clean);
         jsToLua(L, results);
+        return 1;
+      } else if (method == "GET" && url.startsWith("/api/curves")) {
+        const curveId = parseInt("" + last(url.split("/")));
+        const curve = selectAllCurves(store.getState().resources.index)
+          .map(curve => curve.body)
+          .filter(curve => curve.id == curveId)[0];
+        jsToLua(L, clean(curve));
         return 1;
       } else {
         actions.push({
@@ -181,6 +223,70 @@ export const runLua =
       }
     });
     lua.lua_setfield(L, envIndex, to_luastring("api"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const plants = selectAllPlantPointers(store.getState().resources.index)
+        .map(plant => plant.body).map(clean);
+      jsToLua(L, plants);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("get_plants"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const weeds = selectAllWeedPointers(store.getState().resources.index)
+        .map(weed => weed.body).map(clean);
+      jsToLua(L, weeds);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("get_weeds"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const points = selectAllGenericPointers(store.getState().resources.index)
+        .map(point => point.body).map(clean);
+      jsToLua(L, points);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("get_generic_points"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const groupId = luaToJs(L, 1) as number;
+      const points = getGroupPoints(store.getState().resources.index, groupId)
+        .map(point => point.body).map(clean);
+      jsToLua(L, points);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("get_group"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const groupId = luaToJs(L, 1) as number;
+      const points = getGroupPoints(store.getState().resources.index, groupId)
+        .map(point => point.body.id).map(clean);
+      jsToLua(L, points);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("group"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const points = luaToJs(L, 1) as Point[];
+      const sortMethod = luaToJs(L, 2) as PointGroupSortType;
+      const taggedPoints = points.map(point => ({
+        body: point,
+        uuid: uuid(),
+      })) as TaggedPoint[];
+      const results = sortGroupBy(sortMethod, taggedPoints)
+        .map(p => p.body).map(clean);
+      jsToLua(L, results);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("sort"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const datetimeString = luaToJs(L, 1) as string;
+      const unix = new Date(datetimeString).getTime() / 1000;
+      jsToLua(L, unix);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("to_unix"));
 
     lua.lua_pushjsfunction(L, () => {
       const cmd = (luaToJs(L, 1) as RpcRequest).body?.[0];
@@ -236,6 +342,29 @@ export const runLua =
       return 0;
     });
     lua.lua_setfield(L, envIndex, to_luastring("set_job_progress"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const jobName = luaToJs(L, 1) as string;
+      const job = getJob(jobName);
+      jsToLua(L, job);
+      return 1;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("get_job"));
+
+    lua.lua_pushjsfunction(L, () => {
+      const jobName = luaToJs(L, 1) as string;
+      const params = luaToJs(L, 2) as Partial<PercentageProgress>;
+      const time = Date.now();
+      const prev = getJob(jobName);
+      const existing = prev?.status.toLowerCase() != "complete" ? prev : {};
+      const job = { time, ...existing, ...params };
+      actions.push({
+        type: "set_job_progress",
+        args: [jobName, job.percent, job.status, job.time],
+      });
+      return 0;
+    });
+    lua.lua_setfield(L, envIndex, to_luastring("set_job"));
 
     lua.lua_pushjsfunction(L, () => {
       const args = [];

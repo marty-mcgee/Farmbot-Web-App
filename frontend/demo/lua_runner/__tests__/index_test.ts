@@ -10,9 +10,13 @@ import {
   fakeSequence, fakeTool,
   fakeToolSlot,
   fakePointGroup,
+  fakePlant,
+  fakeWeed,
+  fakeCurve,
 } from "../../../__test_support__/fake_state/resources";
 let mockResources = buildResourceIndex([]);
 let mockLocked = false;
+let mockJobs: Record<string, unknown> = {};
 jest.mock("../../../redux/store", () => ({
   store: {
     dispatch: jest.fn(),
@@ -21,6 +25,7 @@ jest.mock("../../../redux/store", () => ({
       bot: {
         hardware: {
           informational_settings: { locked: mockLocked },
+          jobs: mockJobs,
         },
       },
     }),
@@ -710,6 +715,23 @@ describe("runDemoLuaCode()", () => {
     expect(info).not.toHaveBeenCalled();
   });
 
+  it("runs api: curves", () => {
+    const curve = fakeCurve();
+    curve.body.id = 1;
+    mockResources = buildResourceIndex([curve]);
+    runDemoLuaCode(`
+      local data = api{
+        method = "GET",
+        url = "/api/curves/1"
+      }
+      print(type(data), #data)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith("table	0");
+    expect(info).not.toHaveBeenCalled();
+  });
+
   it("runs api: other", () => {
     mockResources = buildResourceIndex([]);
     runDemoLuaCode(`
@@ -734,6 +756,169 @@ describe("runDemoLuaCode()", () => {
         y: 4,
         z: 6,
       });
+  });
+
+  it("runs get_plants", () => {
+    const point1 = fakePlant();
+    point1.body.id = 1;
+    const point2 = fakePlant();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([point1, point2]);
+    runDemoLuaCode(`
+      local points = get_plants()
+      print(#points)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs get_weeds", () => {
+    const point1 = fakeWeed();
+    point1.body.id = 1;
+    const point2 = fakeWeed();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([point1, point2]);
+    runDemoLuaCode(`
+      local points = get_weeds()
+      print(#points)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs get_generic_points", () => {
+    const point1 = fakePoint();
+    point1.body.id = 1;
+    const point2 = fakePoint();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([point1, point2]);
+    runDemoLuaCode(`
+      local points = get_generic_points()
+      print(#points)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs sort", () => {
+    const point1 = fakePlant();
+    point1.body.id = 1;
+    const point2 = fakePlant();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([point1, point2]);
+    runDemoLuaCode(`
+      local points = sort(get_plants(), "nn")
+      print(#points)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs get_group", () => {
+    const group = fakePointGroup();
+    group.body.id = 1;
+    group.body.point_ids = [1, 2];
+    const point1 = fakePoint();
+    point1.body.id = 1;
+    const point2 = fakePoint();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([group, point1, point2]);
+    runDemoLuaCode(`
+      local points = get_group(1)
+      print(#points)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs group", () => {
+    const group = fakePointGroup();
+    group.body.id = 1;
+    group.body.point_ids = [1, 2];
+    const point1 = fakePoint();
+    point1.body.id = 1;
+    const point2 = fakePoint();
+    point2.body.id = 2;
+    mockResources = buildResourceIndex([group, point1, point2]);
+    runDemoLuaCode(`
+      local point_ids = group(1)
+      print(#point_ids)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("2");
+  });
+
+  it("runs to_unix", () => {
+    runDemoLuaCode(`
+      print(to_unix("2017-05-24T20:41:19.804Z"))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith(expect.any(String));
+  });
+
+  it("runs inspect", () => {
+    runDemoLuaCode(`
+      print(inspect({1, 2, 3}))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("[3,2,1]");
+  });
+
+  it("runs json.encode", () => {
+    runDemoLuaCode(`
+      print(json.encode({1, 2, 3}))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("[3,2,1]");
+  });
+
+  it("runs json.decode", () => {
+    runDemoLuaCode(`
+      print(json.decode("{}"))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("[]");
+  });
+
+  it("runs json.decode: handles bad json", () => {
+    runDemoLuaCode(`
+      print(json.decode("{"))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("undefined");
   });
 
   it("runs cs_eval", () => {
@@ -855,7 +1040,7 @@ describe("runDemoLuaCode()", () => {
         unit: "percent",
         percent: 50,
         status: "working",
-        type: "",
+        type: "unknown",
         file_type: "",
         updated_at: expect.any(Number),
         time: expect.any(Number),
@@ -879,12 +1064,98 @@ describe("runDemoLuaCode()", () => {
         unit: "percent",
         percent: 100,
         status: "Complete",
-        type: "",
+        type: "unknown",
         file_type: "",
         updated_at: expect.any(Number),
         time: undefined,
       }],
     });
+  });
+
+  it("runs complete_job", () => {
+    runDemoLuaCode(`
+      complete_job("job")
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith({
+      type: Actions.DEMO_SET_JOB_PROGRESS,
+      payload: ["job", {
+        unit: "percent",
+        percent: 100,
+        status: "Complete",
+        type: "unknown",
+        file_type: "",
+        updated_at: expect.any(Number),
+        time: undefined,
+      }],
+    });
+  });
+
+  it("runs set_job", () => {
+    mockJobs.job = { percent: 0, status: "Farming" };
+    runDemoLuaCode(`
+      set_job("job", {percent = 50})
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith({
+      type: Actions.DEMO_SET_JOB_PROGRESS,
+      payload: ["job", {
+        unit: "percent",
+        percent: 50,
+        status: "Farming",
+        type: "unknown",
+        file_type: "",
+        updated_at: expect.any(Number),
+        time: expect.any(Number),
+      }],
+    });
+  });
+
+  it("runs set_job: existing job is complete", () => {
+    mockJobs.job = { percent: 100, status: "Complete" };
+    runDemoLuaCode(`
+      set_job("job", {time = 1000})
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledWith({
+      type: Actions.DEMO_SET_JOB_PROGRESS,
+      payload: ["job", {
+        unit: "percent",
+        percent: 0,
+        status: "Working",
+        type: "unknown",
+        file_type: "",
+        updated_at: expect.any(Number),
+        time: expect.any(Number),
+      }],
+    });
+  });
+
+  it("runs get_job", () => {
+    mockJobs.job = { percent: 50 };
+    runDemoLuaCode(`
+      print(get_job("job").percent)
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("50");
+  });
+
+  it("runs get_job: handles missing", () => {
+    mockJobs = { "not": {} };
+    runDemoLuaCode(`
+      print(get_job("job"))
+    `);
+    jest.runAllTimers();
+    expect(error).not.toHaveBeenCalled();
+    expect(info).not.toHaveBeenCalled();
+    expect(store.dispatch).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("undefined");
   });
 
   it("runs find_home: all", () => {
@@ -1419,7 +1690,7 @@ describe("csToLua()", () => {
  * [   ] base64.encode
  * [ y ] calibrate_camera
  * [   ] check_position
- * [   ] complete_job
+ * [ y ] complete_job
  * [   ] coordinate
  * [ y ] cs_eval
  * [ y ] current_hour
@@ -1441,19 +1712,23 @@ describe("csToLua()", () => {
  * [ y ] get_device
  * [   ] get_fbos_config
  * [   ] get_firmware_config
- * [   ] get_job
- * [   ] get_job_progress
+ * [ y ] get_job
+ * [ y ] get_job_progress
  * [   ] get_position
  * [ y ] get_seed_tray_cell
  * [   ] get_xyz
  * [ y ] get_tool
+ * [ y ] get_plants
+ * [ y ] get_weeds
+ * [ y ] get_generic_points
+ * [ y ] get_group
  * [ y ] go_to_home
  * [ y ] grid
- * [   ] group
+ * [ y ] group
  * [   ] http
- * [   ] inspect
- * [   ] json.decode
- * [   ] json.encode
+ * [ y ] inspect
+ * [ y ] json.decode
+ * [ y ] json.encode
  * [ y ] measure_soil_height
  * [ y ] mount_tool
  * [ y ] dismount_tool
@@ -1469,12 +1744,12 @@ describe("csToLua()", () => {
  * [ y ] debug
  * [ y ] toast
  * [ y ] safe_z
- * [   ] set_job
+ * [ y ] set_job
  * [ y ] set_job_progress
  * [   ] set_pin_io_mode
  * [   ] soft_stop
  * [ y ] soil_height
- * [   ] sort
+ * [ y ] sort
  * [   ] take_photo_raw
  * [ y ] take_photo
  * [ y ] toggle_pin
@@ -1485,7 +1760,7 @@ describe("csToLua()", () => {
  * [   ] update_firmware_config
  * [ y ] utc
  * [   ] local_time
- * [   ] to_unix
+ * [ y ] to_unix
  * [ y ] verify_tool
  * [ y ] wait_ms
  * [ y ] wait

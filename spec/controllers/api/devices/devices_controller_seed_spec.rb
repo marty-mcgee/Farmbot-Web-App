@@ -171,6 +171,14 @@ describe Api::DevicesController do
       device.sequences.find_by(name: PublicSequenceNames::PICK_FROM_SEED_TRAY)
     end
 
+    def sequences_pick_from_seed_trough?(device)
+      device.sequences.find_by(name: PublicSequenceNames::PICK_FROM_SEED_TROUGH)
+    end
+
+    def sequences_pick_from_seed_bin?(device)
+      device.sequences.find_by(name: PublicSequenceNames::PICK_FROM_SEED_BIN)
+    end
+
     def sequences_pickup_seed?(device)
       device.sequences.find_by(name: "Pick up seed")
     end
@@ -365,7 +373,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -387,6 +395,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -439,7 +449,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -461,6 +471,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -513,7 +525,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -535,6 +547,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -589,7 +603,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -611,6 +625,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -666,7 +682,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -688,6 +704,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -742,7 +760,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to_not be
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -764,6 +782,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -818,7 +838,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to_not be
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -840,6 +860,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(1230)
     end
@@ -892,7 +914,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -914,6 +936,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2730)
     end
@@ -968,7 +992,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to_not be
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -990,6 +1014,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2730)
     end
@@ -1044,7 +1070,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to_not be
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -1066,6 +1092,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2730)
     end
@@ -1120,7 +1148,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to_not be
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -1142,6 +1170,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2730)
     end
@@ -1197,7 +1227,7 @@ describe Api::DevicesController do
       expect(tools_watering_nozzle?(device)).to be_kind_of(Tool)
       expect(tools_weeder?(device)).to be_kind_of(Tool)
       expect(tools_rotary?(device)).to be_kind_of(Tool)
-      expect(sequences_pickup_seed?(device)).to be
+      expect(sequences_pickup_seed?(device)).to_not be
       expect(sequences_plant_seed?(device)).to be_kind_of(Sequence)
       expect(sequences_take_photo_of_plant?(device)).to be_kind_of(Sequence)
       expect(sequences_water_plant?(device)).to be_kind_of(Sequence)
@@ -1219,6 +1249,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to be_kind_of(Sequence)
       expect(sequences_mow_all_weeds?(device)).to be_kind_of(Sequence)
       expect(sequences_pick_from_seed_tray?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_trough?(device)).to be_kind_of(Sequence)
+      expect(sequences_pick_from_seed_bin?(device)).to be_kind_of(Sequence)
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2730)
     end
@@ -1289,6 +1321,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(930)
     end
@@ -1359,6 +1393,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(930)
     end
@@ -1429,6 +1465,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(2900)
       expect(settings_default_map_size_y?(device)).to eq(930)
     end
@@ -1499,6 +1537,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2130)
     end
@@ -1569,6 +1609,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2130)
     end
@@ -1639,6 +1681,8 @@ describe Api::DevicesController do
       expect(sequences_dismount_tool?(device)).to_not be
       expect(sequences_mow_all_weeds?(device)).to_not be
       expect(sequences_pick_from_seed_tray?(device)).to_not be
+      expect(sequences_pick_from_seed_trough?(device)).to_not be
+      expect(sequences_pick_from_seed_bin?(device)).to_not be
       expect(settings_default_map_size_x?(device)).to eq(5900)
       expect(settings_default_map_size_y?(device)).to eq(2130)
     end

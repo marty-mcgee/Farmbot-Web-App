@@ -27,7 +27,24 @@ module Devices
         end
       end
 
+      def add_curves
+        Curves::Create.run!(
+          device: device,
+          name: "Spinach water curve",
+          type: "water",
+          data: { 1 => 50, 30 => 130, 40 => 130, 45 => 100, 60 => 100 },
+        )
+        Curves::Create.run!(
+          device: device,
+          name: "Broccoli water curve",
+          type: "water",
+          data: { 1 => 300, 45 => 1200, 60 => 1200, 65 => 900, 75 => 900 },
+        )
+      end
+
       def add_plants(product_line)
+        spinach_curve = device.curves.find_by!(name: "Spinach water curve")
+        broccoli_curve = device.curves.find_by!(name: "Broccoli water curve")
         spinach_row_count = product_line.include?("xl") ? 28 : 13
         spinach_col_count = product_line.include?("genesis_xl") ? 4 : 2
         (0..(spinach_row_count - 1)).map do |i|
@@ -36,7 +53,9 @@ module Devices
                                 pointer_type: "Plant",
                                 name: "Spinach",
                                 openfarm_slug: "spinach",
-                                plant_stage: "planned",
+                                plant_stage: "planted",
+                                planted_at: Time.now,
+                                water_curve_id: spinach_curve.id,
                                 x: 400 + i * 200,
                                 y: 100 + j * 200 + (j > 1 ? 2100 : 0),
                                 z: 0)
@@ -56,7 +75,9 @@ module Devices
                                 pointer_type: "Plant",
                                 name: "Broccoli",
                                 openfarm_slug: "broccoli",
-                                plant_stage: "planned",
+                                plant_stage: "planted",
+                                planted_at: Time.now,
+                                water_curve_id: broccoli_curve.id,
                                 x: 600 + i * 600,
                                 y: 700 + j * 600 + (j > 0 ? 300 : 0),
                                 z: 0)
@@ -158,6 +179,7 @@ module Devices
           .update!(
             safe_height: -150,
           )
+          add_curves
       end
 
       def after_product_line_seeder(product_line)

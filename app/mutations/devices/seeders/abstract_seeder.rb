@@ -78,6 +78,8 @@ module Devices
         :sequences_dispense_water,
         :sequences_mow_all_weeds,
         :sequences_pick_from_seed_tray,
+        :sequences_pick_from_seed_trough,
+        :sequences_pick_from_seed_bin,
       ]
 
       def initialize(device)
@@ -114,6 +116,8 @@ module Devices
       def sequences_plant_seed; end
       def sequences_mow_all_weeds; end
       def sequences_pick_from_seed_tray; end
+      def sequences_pick_from_seed_trough; end
+      def sequences_pick_from_seed_bin; end
 
       def sequences_take_photo_of_plant
         s = SequenceSeeds::TAKE_PHOTO_OF_PLANT.deep_dup
@@ -317,10 +321,6 @@ module Devices
                                    number_gt: {},
                                    day: { op: "<", days_ago: 0 },
                                  })
-      end
-
-      def seeder_id
-        @seeder_id ||= device.tools.find_by!(name: ToolNames::SEEDER).id
       end
 
       def water_plant_id

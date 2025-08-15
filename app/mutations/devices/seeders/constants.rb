@@ -44,7 +44,6 @@ module Devices
       module SequenceSeeds
         ALL = YAML.load(File.read(SEQUENCE_FIXTURE_PATH))
         PICK_UP_SEED_EXPRESS = ALL.fetch(:PICK_UP_SEED_EXPRESS)
-        PICK_UP_SEED_GENESIS = ALL.fetch(:PICK_UP_SEED_GENESIS)
         PLANT_SEED_GENESIS = ALL.fetch(:PLANT_SEED_GENESIS)
         PLANT_SEED_EXPRESS = ALL.fetch(:PLANT_SEED_EXPRESS)
         TAKE_PHOTO_OF_PLANT = ALL.fetch(:TAKE_PHOTO_OF_PLANT)
@@ -62,19 +61,23 @@ module Devices
         WEED_DETECTION_GRID = ALL.fetch(:WEED_DETECTION_GRID)
         MOW_ALL_WEEDS = ALL.fetch(:MOW_ALL_WEEDS)
         PICK_FROM_SEED_TRAY = ALL.fetch(:PICK_FROM_SEED_TRAY)
+        PICK_FROM_SEED_TROUGH = ALL.fetch(:PICK_FROM_SEED_TROUGH)
+        PICK_FROM_SEED_BIN = ALL.fetch(:PICK_FROM_SEED_BIN)
       end
 
       module PublicSequenceNames
         DISPENSE_WATER = "Dispense Water"
         SOIL_HEIGHT_GRID = "Soil Height Grid"
         GRID = "Grid"
-        WATER_ALL = "Water All"
+        WATER_ALL = "Water all"
         PHOTO_GRID = "Photo Grid"
         WEED_DETECTION_GRID = "Weed Detection Grid"
         MOUNT_TOOL = "Mount Tool"
         DISMOUNT_TOOL = "Dismount Tool"
         MOW_ALL_WEEDS = "Mow All Weeds"
         PICK_FROM_SEED_TRAY = "Pick from Seed Tray"
+        PICK_FROM_SEED_TROUGH = "Pick from Seed Trough"
+        PICK_FROM_SEED_BIN = "Pick from Seed Bin"
       end
     end
   end

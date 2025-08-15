@@ -815,6 +815,18 @@ function get_tool(params)
   end
   return nil
 end
+
+function inspect(input)
+  return json.encode(input)
+end
+
+function complete_job(name)
+  set_job(name, { status = "Complete", percent = 100 })
+end
+
+function get_job_progress(name)
+  get_job(name)
+end
 `;
 
 export const LUA_HELPERS = [
