@@ -14,7 +14,7 @@ import { store } from "../../redux/store";
 import { sortGroupBy } from "../../point_groups/point_group_sort";
 import { LUA_HELPERS } from "./lua";
 import {
-  clean, createRecursiveNotImplemented, csToLua, jsToLua, luaToJs,
+  clean, createRecursiveNotImplemented, csToLua, filterPoint, jsToLua, luaToJs,
 } from "./util";
 import { Action, XyzNumber } from "./interfaces";
 import {
@@ -225,24 +225,33 @@ export const runLua =
     lua.lua_setfield(L, envIndex, to_luastring("api"));
 
     lua.lua_pushjsfunction(L, () => {
+      const params = luaToJs(L, 1) as Partial<Record<string, string | number>>;
       const plants = selectAllPlantPointers(store.getState().resources.index)
-        .map(plant => plant.body).map(clean);
+        .map(plant => plant.body)
+        .filter(filterPoint(params, "planted"))
+        .map(clean);
       jsToLua(L, plants);
       return 1;
     });
     lua.lua_setfield(L, envIndex, to_luastring("get_plants"));
 
     lua.lua_pushjsfunction(L, () => {
+      const params = luaToJs(L, 1) as Partial<Record<string, string | number>>;
       const weeds = selectAllWeedPointers(store.getState().resources.index)
-        .map(weed => weed.body).map(clean);
+        .map(weed => weed.body)
+        .filter(filterPoint(params, "active"))
+        .map(clean);
       jsToLua(L, weeds);
       return 1;
     });
     lua.lua_setfield(L, envIndex, to_luastring("get_weeds"));
 
     lua.lua_pushjsfunction(L, () => {
+      const params = luaToJs(L, 1) as Partial<Record<string, string | number>>;
       const points = selectAllGenericPointers(store.getState().resources.index)
-        .map(point => point.body).map(clean);
+        .map(point => point.body)
+        .filter(filterPoint(params, undefined))
+        .map(clean);
       jsToLua(L, points);
       return 1;
     });

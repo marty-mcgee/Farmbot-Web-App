@@ -761,8 +761,10 @@ describe("runDemoLuaCode()", () => {
   it("runs get_plants", () => {
     const point1 = fakePlant();
     point1.body.id = 1;
+    point1.body.plant_stage = "planted";
     const point2 = fakePlant();
     point2.body.id = 2;
+    point2.body.plant_stage = "planted";
     mockResources = buildResourceIndex([point1, point2]);
     runDemoLuaCode(`
       local points = get_plants()
@@ -812,8 +814,10 @@ describe("runDemoLuaCode()", () => {
   it("runs sort", () => {
     const point1 = fakePlant();
     point1.body.id = 1;
+    point1.body.plant_stage = "planted";
     const point2 = fakePlant();
     point2.body.id = 2;
+    point2.body.plant_stage = "planted";
     mockResources = buildResourceIndex([point1, point2]);
     runDemoLuaCode(`
       local points = sort(get_plants(), "nn")

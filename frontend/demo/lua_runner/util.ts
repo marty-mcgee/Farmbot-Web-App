@@ -3,6 +3,10 @@ import { Action } from "./interfaces";
 import { RpcRequestBodyItem } from "farmbot";
 import { maybeFindPeripheralById } from "../../resources/selectors_by_id";
 import { store } from "../../redux/store";
+import {
+  GenericPointer, PlantPointer, Point, ToolSlotPointer, WeedPointer,
+} from "farmbot/dist/resources/api_resources";
+import moment from "moment";
 
 export const createRecursiveNotImplemented = (
   L: unknown,
@@ -169,3 +173,49 @@ export const clean = (data: Object | undefined): Object | undefined =>
       Object.entries(data).map(([key, value]) => [key, value ?? undefined]),
     )
     : undefined;
+
+type AllPoint = Omit<GenericPointer, "pointer_type">
+  & Omit<PlantPointer, "pointer_type">
+  & Omit<ToolSlotPointer, "pointer_type">
+  & Omit<WeedPointer, "pointer_type">;
+
+export const filterPoint = (
+  params: Partial<Record<string, string | number>>,
+  stage: string | undefined,
+  // eslint-disable-next-line complexity
+) => (p: Point) => {
+  const point = p as unknown as AllPoint;
+  const plantStage = (params.plant_stage || stage) as string | undefined;
+  const openfarmSlug = params.openfarm_slug as string | undefined;
+  const minRadius = params.min_radius as number | undefined;
+  const maxRadius = params.max_radius as number | undefined;
+  const minAge = params.min_age as number | undefined;
+  const maxAge = params.max_age as number | undefined;
+  const color = params.color as string | undefined;
+  const atSoilLevel = params.at_soil_level as string | undefined;
+  const age = () => {
+    if (!point.planted_at) { return 0; }
+    return Math.ceil(moment().diff(moment(point.planted_at), "days"));
+  };
+
+  const stageFilter = plantStage == undefined || point.plant_stage == plantStage;
+  const slugFilter = openfarmSlug ==
+    undefined || point.openfarm_slug == openfarmSlug;
+  const minRadiusFilter = minRadius == undefined || point.radius >= minRadius;
+  const maxRadiusFilter = maxRadius == undefined || point.radius <= maxRadius;
+  const minAgeFilter = minAge == undefined || age() >= minAge;
+  const maxAgeFilter = maxAge == undefined || age() <= maxAge;
+  const colorFilter = color == undefined || point.meta.color == color;
+  const soilLevelFilter = atSoilLevel == undefined
+    || point.meta.at_soil_level == atSoilLevel
+    || (atSoilLevel == "false" && point.meta.at_soil_level == undefined);
+
+  return stageFilter
+    && slugFilter
+    && minRadiusFilter
+    && maxRadiusFilter
+    && minAgeFilter
+    && maxAgeFilter
+    && colorFilter
+    && soilLevelFilter;
+};
