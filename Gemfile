@@ -32,6 +32,7 @@ gem "drb"
 gem "benchmark"
 gem "ostruct"
 gem "bigdecimal"
+gem "mutex_m"
 
 group :development, :test do
   gem "climate_control"
