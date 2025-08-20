@@ -33,6 +33,7 @@ jest.mock("../../messages/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import { bot } from "../../__test_support__/fake_state/bot";
 import {
@@ -74,6 +75,8 @@ import {
   SelectMapOrigin,
   SensorsCheck,
   SetHome,
+  SlotCoordinateRows,
+  SlotCoordinateRowsProps,
   SoilHeightMeasurementCheck,
   SwapJogButton,
   SwitchCameraCalibrationMethod,
@@ -85,6 +88,7 @@ import {
   fakeAlert,
   fakeFarmwareEnv, fakeFarmwareInstallation, fakeFbosConfig,
   fakeFirmwareConfig, fakeImage, fakeLog, fakePinBinding, fakeTool,
+  fakeToolSlot,
   fakeUser,
   fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
@@ -94,7 +98,9 @@ import { calibrate } from "../../photos/camera_calibration/actions";
 import { FarmwareName } from "../../sequences/step_tiles/tile_execute_script";
 import { ExternalUrl } from "../../external_urls";
 import { PLACEHOLDER_FARMBOT } from "../../photos/images/image_flipper";
-import { changeBlurableInput, clickButton } from "../../__test_support__/helpers";
+import {
+  changeBlurableInput, changeBlurableInputRTL, clickButton,
+} from "../../__test_support__/helpers";
 import { Actions } from "../../constants";
 import { tourPath } from "../../help/tours";
 import { FBSelect } from "../../ui";
@@ -779,6 +785,25 @@ describe("<CameraReplacement />", () => {
   it("renders camera replacement text and link", () => {
     const wrapper = mount(<CameraReplacement />);
     expect(wrapper.text().toLowerCase()).toContain("replacement");
+  });
+});
+
+describe("<SlotCoordinateRows />", () => {
+  const fakeProps = (): SlotCoordinateRowsProps => ({
+    resources: buildResourceIndex([fakeDevice(), fakeToolSlot()]).index,
+    bot: bot,
+    dispatch: jest.fn(),
+    indexValues: [0],
+  });
+
+  it("updates slot", () => {
+    const p = fakeProps();
+    render(<SlotCoordinateRows {...p} />);
+    const inputs = screen.getAllByDisplayValue(0);
+    expect(inputs.length).toEqual(3);
+    changeBlurableInputRTL(inputs[0], "100");
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { x: 100 });
+    expect(save).toHaveBeenCalledWith(expect.any(String));
   });
 });
 

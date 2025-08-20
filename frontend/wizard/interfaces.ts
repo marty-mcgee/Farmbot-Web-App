@@ -75,6 +75,7 @@ export interface WizardStep {
   componentOptions?: ComponentOptions;
   warning?: string;
   controlsCheckOptions?: ControlsCheckOptions;
+  slotInputRows?: number[];
   pinBindingOptions?: PinBindingOptions;
   question: string;
   outcomes: WizardStepOutcome[];
@@ -97,7 +98,6 @@ export type WizardSteps = WizardStep[];
 export type WizardResults = Partial<Record<WizardStepSlug, WizardStepResult>>;
 
 export type WizardSectionsOpen = Record<WizardSectionSlug, boolean>;
-
 
 export interface WizardStepDataProps {
   firmwareHardware: FirmwareHardware | undefined;

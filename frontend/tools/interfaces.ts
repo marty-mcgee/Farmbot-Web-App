@@ -152,11 +152,11 @@ export interface SlotLocationInputRowProps {
   gantryMounted: boolean;
   onChange(update: Partial<Record<Xyz, number>>): void;
   botPosition: BotPosition;
-  botOnline: boolean;
-  defaultAxes: string;
-  arduinoBusy: boolean;
-  dispatch: Function;
-  movementState: MovementState;
+  botOnline?: boolean;
+  defaultAxes?: string;
+  arduinoBusy?: boolean;
+  dispatch?: Function;
+  movementState?: MovementState;
 }
 
 export interface SlotEditRowsProps {

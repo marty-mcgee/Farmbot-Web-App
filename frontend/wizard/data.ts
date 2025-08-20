@@ -1,5 +1,5 @@
 import { t } from "../i18next_wrapper";
-import { round } from "lodash";
+import { range, round } from "lodash";
 import { SetupWizardContent, ToolTips } from "../constants";
 import {
   WizardSection, WizardStepDataProps, WizardSteps, WizardToC, WizardToCSection,
@@ -83,6 +83,7 @@ export enum WizardSectionSlug {
   peripherals = "peripherals",
   camera = "camera",
   tools = "tools",
+  slots = "slots",
   tours = "tours",
 }
 
@@ -104,6 +105,7 @@ const WIZARD_TOC =
         title: hasUTM(props.firmwareHardware) ? t("UTM and TOOLS") : t("TOOLS"),
         steps: [],
       },
+      [WizardSectionSlug.slots]: { title: t("SLOT COORDINATES"), steps: [] },
       [WizardSectionSlug.tours]: { title: t("TOURS"), steps: [] },
     };
     return toc;
@@ -172,6 +174,13 @@ export enum WizardStepSlug {
   rotaryTool = "rotaryTool",
   rotaryToolForward = "rotaryToolForward",
   rotaryToolReverse = "rotaryToolReverse",
+  slotsSetup = "slotsSetup",
+  slot1Coordinates = "slot1Coordinates",
+  slot2Coordinates = "slot2Coordinates",
+  remainingSlotCoordinates = "remainingSlotCoordinates",
+  loadTools = "loadTools",
+  seedTrough1 = "seedTrough1",
+  seedTrough2 = "seedTrough2",
   appTour = "appTour",
   gardenTour = "gardenTour",
   toolsTour = "toolsTour",
@@ -1594,6 +1603,88 @@ export const WIZARD_STEPS = (props: WizardStepDataProps): WizardSteps => {
         ],
       }]
       : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.slotsSetup,
+        title: t("Setup"),
+        content: t(SetupWizardContent.SLOTS_SETUP),
+        question: t("Is the watering nozzle in the toolbay?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.slot1Coordinates,
+        title: t("Slot 1 coordinates"),
+        content: t(SetupWizardContent.SLOTS_1_COORDINATES),
+        controlsCheckOptions: {},
+        slotInputRows: [0],
+        question: t("Have you saved the current position to the slot?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.slot2Coordinates,
+        title: t("Slot 2 coordinates"),
+        content: t(SetupWizardContent.SLOTS_2_COORDINATES),
+        controlsCheckOptions: {},
+        slotInputRows: [1],
+        question: t("Have you saved the current position to the slot?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.remainingSlotCoordinates,
+        title: t("Remaining slot coordinates"),
+        content: t(SetupWizardContent.SLOTS_REMAINING_COORDINATES),
+        controlsCheckOptions: {},
+        slotInputRows: range(6),
+        question: t("Have you saved coordinate locations for all of the slots?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.loadTools,
+        title: t("Load tools"),
+        content: t(SetupWizardContent.SLOTS_LOAD_TOOLS),
+        controlsCheckOptions: {},
+        slotInputRows: range(6),
+        question: t("Are the physical and virtual configurations matching?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.seedTrough1,
+        title: t("Seed trough 1"),
+        content: t(SetupWizardContent.SLOTS_SEED_TROUGH_1),
+        controlsCheckOptions: {},
+        slotInputRows: [6],
+        question: t("Have you saved the current position to the slot?"),
+        outcomes: [],
+      }]
+      : []),
+    ...(hasUTM(firmwareHardware)
+      ? [{
+        section: WizardSectionSlug.slots,
+        slug: WizardStepSlug.seedTrough2,
+        title: t("Seed trough 2"),
+        content: t(SetupWizardContent.SLOTS_SEED_TROUGH_2),
+        controlsCheckOptions: {},
+        slotInputRows: [7],
+        question: t("Have you saved the current position to the slot?"),
+        outcomes: [],
+      }]
+      : []),
     {
       section: WizardSectionSlug.tours,
       slug: WizardStepSlug.appTour,
@@ -1634,6 +1725,7 @@ export const WIZARD_SECTIONS = (props: WizardStepDataProps): WizardSection[] => 
   const toC = WIZARD_TOC(props);
   WIZARD_STEPS(props).map(step => toC[step.section].steps.push(step));
   return Object.entries(toC)
+    .filter(([_sectionSlug, sectionData]) => sectionData.steps.length > 0)
     .map(([sectionSlug, sectionData]: [WizardSectionSlug, WizardToCSection]) =>
       ({ slug: sectionSlug, ...sectionData }));
 };
