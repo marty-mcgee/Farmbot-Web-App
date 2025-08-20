@@ -707,7 +707,7 @@ end
 
 function water(plant, params)
     local plant_name_xy = plant.name .. " at (" .. plant.x .. ", " .. plant.y .. ")"
-    local job_name = "Watering " .. plant_name_xy
+    local job_name = "Watering " .. plant.name
 
     if not plant.age and not plant.planted_at then
         toast(plant_name_xy .. " has not been planted yet. Skipping.", "warn")
@@ -736,7 +736,7 @@ function water(plant, params)
 
     -- Water the plant
     set_job(job_name, { status = "Watering", percent = 50 })
-    send_message("info", "Watering " .. plant_age .. " day old " .. plant_name_xy .. " " .. water_ml .. "mL")
+    send_message("info", "Watering " .. plant_age .. " day old " .. plant.name .. " " .. water_ml .. "mL")
     dispense(water_ml, params)
     complete_job(job_name)
 end
