@@ -257,12 +257,8 @@ const FirmwareMissing = (props: FirmwareMissingProps) =>
   </AlertCardTemplate>;
 
 export const SEED_DATA_OPTIONS = (displayAll = false): DropDownItem[] => [
-  ...((shouldDisplayFeature(Feature.farmduino_k18) || displayAll)
-    ? [{ label: "Genesis v1.8", value: "genesis_1.8" }]
-    : []),
-  ...((shouldDisplayFeature(Feature.farmduino_k18) || displayAll)
-    ? [{ label: "Genesis v1.8 XL", value: "genesis_xl_1.8" }]
-    : []),
+  { label: "Genesis v1.8", value: "genesis_1.8" },
+  { label: "Genesis v1.8 XL", value: "genesis_xl_1.8" },
   { label: "Genesis v1.7", value: "genesis_1.7" },
   { label: "Genesis v1.7 XL", value: "genesis_xl_1.7" },
   { label: "Genesis v1.6", value: "genesis_1.6" },
