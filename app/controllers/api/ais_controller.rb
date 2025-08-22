@@ -147,6 +147,15 @@ module Api
               missed = true
             end
             boundary = buffer.index("\n\n")
+            begin
+              err_msg = JSON.parse(buffer)["error"]
+              puts "AI #{context_key} error:" \
+                  " (#{err_msg})" unless Rails.env.test?
+              current_device.tell("Please try again", ["toast"], "error")
+              return {"error" => {"message" => err_msg}}
+            rescue JSON::ParserError
+              nil
+            end
             while not boundary.nil?
               data_str = buffer.slice(0, boundary)
               buffer = buffer.slice(boundary + 2, buffer.length)
