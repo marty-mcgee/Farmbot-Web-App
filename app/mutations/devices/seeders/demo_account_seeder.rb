@@ -32,7 +32,7 @@ module Devices
           device: device,
           name: "Spinach water curve",
           type: "water",
-          data: { 1 => 50, 30 => 130, 40 => 130, 45 => 100, 60 => 100 },
+          data: { 1 => 200, 30 => 500, 40 => 500, 45 => 300, 60 => 300 },
         )
         Curves::Create.run!(
           device: device,
