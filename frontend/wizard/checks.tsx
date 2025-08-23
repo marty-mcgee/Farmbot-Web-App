@@ -817,14 +817,14 @@ export interface SlotCoordinateRowsProps {
 export const SlotCoordinateRows = (props: SlotCoordinateRowsProps) => {
   const locationData = validBotLocationData(props.bot.hardware.location_data);
   const slots = selectAllToolSlotPointers(props.resources);
-  return <div className={"slot-coordinates"}>
+  return <div className={"slot-coordinates grid"}>
     {props.indexValues.map(index => {
       const slot = slots[index];
       const updateSlot = (update: Partial<TaggedToolSlotPointer["body"]>) => {
         props.dispatch(edit(slot, update));
         props.dispatch(save(slot.uuid));
       };
-      return <div className={"row"} key={index}>
+      return <div className={"row double-gap align-baseline info-box"} key={index}>
         <label>{`${t("Slot")} ${index + 1}`}</label>
         <SlotLocationInputRow
           slotLocation={slot.body}

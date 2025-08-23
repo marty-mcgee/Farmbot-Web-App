@@ -85,7 +85,7 @@ export const WizardStepContainer = (props: WizardStepContainerProps) => {
         {step.video && <Video url={step.video} />}
         {step.images && <Image imageFilenames={step.images} />}
         <div className={[
-          "wizard-components",
+          "wizard-components grid double-gap",
           step.componentOptions?.border ?? true ? "" : "no-border",
           step.componentOptions?.fullWidth ? "full-width" : "",
           step.componentOptions?.background ?? true ? "" : "no-background",
