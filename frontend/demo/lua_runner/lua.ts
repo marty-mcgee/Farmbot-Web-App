@@ -113,13 +113,48 @@ function fwe(key)
 end
 
 function photo_grid()
-  local cam_rotation = fwe("total_rotation_angle") or 0
-  local scale = fwe("coord_scale") or 1
-  local z = fwe("camera_z") or 0
-  local x_offset_mm = fwe("camera_offset_x") or 0
-  local y_offset_mm = fwe("camera_offset_y") or 0
-  local center_pixel_location_x = fwe("center_pixel_location_x") or 320
-  local center_pixel_location_y = fwe("center_pixel_location_y") or 240
+  local cam_rotation
+  if is_demo() then
+    cam_rotation = 0
+  else
+    cam_rotation = fwe("total_rotation_angle")
+  end
+  local scale
+  if is_demo() then
+    scale = 1
+  else
+    scale = fwe("coord_scale")
+  end
+  local z
+  if is_demo() then
+    z = 0
+  else
+    z = fwe("camera_z")
+  end
+  local x_offset_mm
+  if is_demo() then
+    x_offset_mm = 0
+  else
+    x_offset_mm = fwe("camera_offset_x")
+  end
+  local y_offset_mm
+  if is_demo() then
+    y_offset_mm = 0
+  else
+    y_offset_mm = fwe("camera_offset_y")
+  end
+  local center_pixel_location_x
+  if is_demo() then
+    center_pixel_location_x = 320
+  else
+    center_pixel_location_x = fwe("center_pixel_location_x")
+  end
+  local center_pixel_location_y
+  if is_demo() then
+    center_pixel_location_y = 240
+  else
+    center_pixel_location_y = fwe("center_pixel_location_y")
+  end
   local full_grid, x_spacing_mm, y_spacing_mm, x_grid_start_mm, y_grid_start_mm
   local x_grid_size_mm, y_grid_size_mm, x_grid_points, y_grid_points
   if cam_rotation and scale and z and x_offset_mm and
@@ -275,19 +310,24 @@ function dismount_tool()
     -- Put the tool in the slot
     job(80, "Putting tool in slot")
     move_absolute(slot.x, slot.y, slot.z, 50)
-    update_device({mounted_tool_id = 0})
+    if is_demo() then
+      update_device({mounted_tool_id = 0})
+    end
 
     -- Dismount tool
     job(90, "Dismounting tool")
     move{z = slot.z + 50}
 
     -- Check verification pin
-    if read_pin(63) == 0 and false then
+    if read_pin(63) == 0 and not is_demo() then
         job(90, "Failed")
         toast("Tool dismounting failed - there is still an electrical connection between UTM pins B and C.", "error")
         return
     else
         job(100, "Complete")
+        if not is_demo() then
+          update_device({mounted_tool_id = 0})
+        end
         toast(tool_name .. " dismounted", "success")
     end
 end
@@ -554,7 +594,9 @@ function mount_tool(input)
     -- Mount the tool
     job(60, "Mounting tool")
     move{z=slot.z}
-    update_device({mounted_tool_id = slot.tool_id})
+    if is_demo() then
+      update_device({mounted_tool_id = slot.tool_id})
+    end
 
     -- Pull the tool out of the slot at 50% speed
     job(80, "Pulling tool out")
@@ -569,12 +611,15 @@ function mount_tool(input)
     end
 
     -- Check verification pin
-    if read_pin(63) == 1 and false then
+    if read_pin(63) == 1 and not is_demo() then
         job(80, "Failed")
         toast("Tool mounting failed - no electrical connection between UTM pins B and C.", "error")
         return
     else
         job(100, "Complete")
+        if not is_demo() then
+          update_device({mounted_tool_id = slot.tool_id})
+        end
         toast(tool.name .. " mounted", "success")
     end
 end
@@ -826,6 +871,10 @@ end
 
 function get_job_progress(name)
   get_job(name)
+end
+
+function is_demo()
+  return true
 end
 `;
 
