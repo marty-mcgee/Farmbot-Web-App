@@ -221,12 +221,16 @@ nav {
     position: relative;
     .nav-job-info {
       display: inline;
+      max-width: 15rem;
     }
     .fa-history,
     .nav-job-info {
       position: relative;
       z-index: 1;
       margin-right: 0;
+    }
+    .title {
+      max-width: 10rem;
     }
     .jobs-button-progress-text,
     .title {

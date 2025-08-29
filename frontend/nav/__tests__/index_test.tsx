@@ -190,6 +190,15 @@ describe("<NavBar />", () => {
     expect(wrapper.find(".setup-button").length).toEqual(0);
   });
 
+  it("displays time travel button", () => {
+    const p = fakeProps();
+    p.getConfigValue = () => true;
+    p.device.body.lat = 1;
+    p.device.body.lng = 1;
+    const wrapper = mount(<NavBar {...p} />);
+    expect(wrapper.find(".time-travel-button").length).toEqual(1);
+  });
+
   it("displays navbar visual warning for support tokens", () => {
     const p = fakeProps();
     p.authAud = "staff";

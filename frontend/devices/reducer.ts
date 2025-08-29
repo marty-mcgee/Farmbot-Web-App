@@ -156,6 +156,7 @@ export const botReducer = generateReducer<BotState>(initialState())
   .add<boolean>(Actions.DEMO_SET_ESTOP, (s, { payload }) => {
     s.hardware.informational_settings.locked = payload;
     s.hardware.pins = {};
+    s.hardware.jobs = {};
     s.demoQueueLength = 0;
     return s;
   })

@@ -26,10 +26,9 @@
     p {
       padding: 1rem;
     }
+    .job-status,
     .job-name {
-      max-width: 20rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      width: 20rem;
     }
     thead {
       position: sticky;
@@ -42,7 +41,6 @@
     }
     th,
     td {
-      white-space: nowrap;
       font-size: 1.2rem;
       padding: 0.75rem;
     }
@@ -51,6 +49,7 @@
     }
     .right-align {
       text-align: right;
+      width: 0;
     }
     .progress {
       position: absolute;

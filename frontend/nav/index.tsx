@@ -34,7 +34,9 @@ import { movementPercentRemaining } from "../farm_designer/move_to";
 import { isMobile } from "../screen_size";
 import { NavigationContext } from "../routes_helpers";
 import { NavigateFunction } from "react-router";
-import { TimeTravelContent, TimeTravelTarget } from "../three_d_garden/time_travel";
+import {
+  showTimeTravelButton, TimeTravelContent, TimeTravelTarget,
+} from "../three_d_garden/time_travel";
 
 export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   state: NavBarState = {
@@ -85,6 +87,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
       threeDGarden,
       designer: this.props.designer,
     };
+    if (!showTimeTravelButton(threeDGarden, common.device)) { return; }
     return <div className={"nav-popup-button-wrapper"}>
       <Popover position={Position.BOTTOM_RIGHT}
         isOpen={isOpen}
@@ -331,9 +334,9 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
                   <this.EstopButton />
                   <this.ConnectionStatus />
                   <this.SetupButton />
-                  <this.JobsButton />
-                  <this.Coordinates />
                   <this.TimeTravel />
+                  <this.Coordinates />
+                  <this.JobsButton />
                 </ErrorBoundary>
               </div>
             </div>

@@ -22,6 +22,12 @@ export const get3DTime = (threeDTime: string | undefined) => {
 const calc3DTime = (threeDTime: string | undefined, offset: number) =>
   get3DTime(threeDTime).add(offset, "hour").format("HH:mm");
 
+export const showTimeTravelButton = (
+  threeDGarden: boolean,
+  device: DeviceAccountSettings,
+) =>
+  threeDGarden && latLng(device).valid;
+
 export interface TimeTravelTargetProps {
   isOpen: boolean;
   click(): void;
@@ -32,7 +38,6 @@ export interface TimeTravelTargetProps {
 }
 
 export const TimeTravelTarget = (props: TimeTravelTargetProps) => {
-  if (!props.threeDGarden || !latLng(props.device).valid) { return <div />; }
   const { threeDTime } = props.designer;
   return <div
     className={[
