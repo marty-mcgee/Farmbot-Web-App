@@ -232,6 +232,7 @@ export const ToolSlotInventoryItem = (props: ToolSlotInventoryItemProps) => {
   return <div
     className={`tool-slot-search-item ${props.hovered ? "hovered" : ""}`}
     onClick={() => {
+      if (props.disableNavigate) { return; }
       if (getMode() == Mode.boxSelect) {
         mapPointClickAction(navigate, props.dispatch, props.toolSlot.uuid)();
         props.dispatch(setToolHover(undefined));

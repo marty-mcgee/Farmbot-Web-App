@@ -1656,7 +1656,7 @@ export const WIZARD_STEPS = (props: WizardStepDataProps): WizardSteps => {
         title: t("Load tools"),
         content: t(SetupWizardContent.SLOTS_LOAD_TOOLS),
         controlsCheckOptions: {},
-        slotInputRows: range(6),
+        slotDropdownRows: range(6),
         question: t("Are the physical and virtual configurations matching?"),
         outcomes: [],
       }]

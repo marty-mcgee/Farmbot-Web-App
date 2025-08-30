@@ -99,12 +99,13 @@ import { BotState } from "../devices/interfaces";
 import {
   reduceToolName, ToolName,
 } from "../farm_designer/map/tool_graphics/all_tools";
-import { WaterFlowRateInput } from "../tools/edit_tool";
+import { isActive, WaterFlowRateInput } from "../tools/edit_tool";
 import { RPI_OPTIONS } from "../settings/fbos_settings/rpi_model";
 import { BoxTop } from "../settings/pin_bindings/box_top";
 import { OtaTimeSelector } from "../settings/fbos_settings/ota_time_selector";
 import { useNavigate } from "react-router";
 import { SlotLocationInputRow } from "../tools/tool_slot_edit_components";
+import { ToolSlotInventoryItem } from "../tools";
 
 export const Language = (props: WizardStepComponentProps) => {
   const user = getUserAccountSettings(props.resources);
@@ -820,6 +821,7 @@ export const SlotCoordinateRows = (props: SlotCoordinateRowsProps) => {
   return <div className={"slot-coordinates grid"}>
     {props.indexValues.map(index => {
       const slot = slots[index];
+      if (!slot) { return; }
       const updateSlot = (update: Partial<TaggedToolSlotPointer["body"]>) => {
         props.dispatch(edit(slot, update));
         props.dispatch(save(slot.uuid));
@@ -831,6 +833,36 @@ export const SlotCoordinateRows = (props: SlotCoordinateRowsProps) => {
           gantryMounted={slot.body.gantry_mounted}
           botPosition={locationData.position}
           onChange={updateSlot} />
+      </div>;
+    })}
+  </div>;
+};
+
+export interface SlotDropdownRowsProps {
+  dispatch: Function;
+  resources: ResourceIndex;
+  bot: BotState;
+  indexValues: number[];
+}
+
+export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
+  const slots = selectAllToolSlotPointers(props.resources);
+  const tools = selectAllTools(props.resources);
+  return <div className={"slot-coordinates grid"}>
+    {props.indexValues.map(index => {
+      const slot = slots[index];
+      if (!slot) { return; }
+      return <div className={"row double-gap align-baseline info-box"} key={index}>
+        <label>{`${t("Slot")} ${index + 1}`}</label>
+        <ToolSlotInventoryItem key={slot.uuid}
+          hovered={false}
+          dispatch={props.dispatch}
+          toolSlot={slot}
+          isActive={isActive(selectAllToolSlotPointers(props.resources))}
+          tools={tools}
+          noUTM={false}
+          disableNavigate={true}
+          toolTransformProps={{ quadrant: 2, xySwap: false }} />
       </div>;
     })}
   </div>;

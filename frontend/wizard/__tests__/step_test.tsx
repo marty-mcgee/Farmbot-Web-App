@@ -9,6 +9,7 @@ import { buildResourceIndex } from "../../__test_support__/resource_index_builde
 import { bot } from "../../__test_support__/fake_state/bot";
 import { WizardSectionSlug, WizardStepSlug } from "../data";
 import {
+  fakeTool,
   fakeToolSlot, fakeWizardStepResult,
 } from "../../__test_support__/fake_state/resources";
 
@@ -199,6 +200,14 @@ describe("<WizardStepContainer />", () => {
     const p = fakeProps();
     p.resources = buildResourceIndex([fakeToolSlot()]).index;
     p.step.slotInputRows = [0];
+    const wrapper = mount(<WizardStepContainer {...p} />);
+    expect(wrapper.find(".slot-coordinates").length).toEqual(1);
+  });
+
+  it("renders slot tool dropdown rows", () => {
+    const p = fakeProps();
+    p.resources = buildResourceIndex([fakeToolSlot(), fakeTool()]).index;
+    p.step.slotDropdownRows = [0];
     const wrapper = mount(<WizardStepContainer {...p} />);
     expect(wrapper.find(".slot-coordinates").length).toEqual(1);
   });

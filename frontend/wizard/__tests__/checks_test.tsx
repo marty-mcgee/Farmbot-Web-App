@@ -77,6 +77,8 @@ import {
   SetHome,
   SlotCoordinateRows,
   SlotCoordinateRowsProps,
+  SlotDropdownRows,
+  SlotDropdownRowsProps,
   SoilHeightMeasurementCheck,
   SwapJogButton,
   SwitchCameraCalibrationMethod,
@@ -804,6 +806,36 @@ describe("<SlotCoordinateRows />", () => {
     changeBlurableInputRTL(inputs[0], "100");
     expect(edit).toHaveBeenCalledWith(expect.any(Object), { x: 100 });
     expect(save).toHaveBeenCalledWith(expect.any(String));
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+
+  it("handles missing slots", () => {
+    const p = fakeProps();
+    p.indexValues = [0, 1];
+    render(<SlotCoordinateRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+});
+
+describe("<SlotDropdownRows />", () => {
+  const fakeProps = (): SlotDropdownRowsProps => ({
+    resources: buildResourceIndex([fakeDevice(), fakeToolSlot(), fakeTool()]).index,
+    bot: bot,
+    dispatch: jest.fn(),
+    indexValues: [0],
+  });
+
+  it("shows slots", () => {
+    const p = fakeProps();
+    render(<SlotDropdownRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+
+  it("handles missing slots", () => {
+    const p = fakeProps();
+    p.indexValues = [0, 1];
+    render(<SlotDropdownRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
   });
 });
 

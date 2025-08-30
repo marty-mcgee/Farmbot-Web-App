@@ -11,7 +11,9 @@ import { Feedback } from "../help/support";
 import moment from "moment";
 import { FirmwareNumberSettings, Video } from "./step_components";
 import { formatTime } from "../util";
-import { ControlsCheck, PinBinding, SlotCoordinateRows } from "./checks";
+import {
+  ControlsCheck, PinBinding, SlotCoordinateRows, SlotDropdownRows,
+} from "./checks";
 import { SetupWizardContent } from "../constants";
 import { ExternalUrl } from "../external_urls";
 import { FilePath } from "../internal_urls";
@@ -103,6 +105,12 @@ export const WizardStepContainer = (props: WizardStepContainerProps) => {
           {step.slotInputRows &&
             <SlotCoordinateRows
               indexValues={step.slotInputRows}
+              bot={props.bot}
+              dispatch={props.dispatch}
+              resources={props.resources} />}
+          {step.slotDropdownRows &&
+            <SlotDropdownRows
+              indexValues={step.slotDropdownRows}
               bot={props.bot}
               dispatch={props.dispatch}
               resources={props.resources} />}

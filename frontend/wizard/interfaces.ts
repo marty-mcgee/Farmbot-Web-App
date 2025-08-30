@@ -76,6 +76,7 @@ export interface WizardStep {
   warning?: string;
   controlsCheckOptions?: ControlsCheckOptions;
   slotInputRows?: number[];
+  slotDropdownRows?: number[];
   pinBindingOptions?: PinBindingOptions;
   question: string;
   outcomes: WizardStepOutcome[];

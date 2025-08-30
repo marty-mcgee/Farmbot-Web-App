@@ -80,6 +80,7 @@ export interface ToolSlotInventoryItemProps {
   hideDropdown?: boolean;
   toolTransformProps: ToolTransformProps;
   noUTM: boolean;
+  disableNavigate?: boolean;
 }
 
 export interface ToolInventoryItemProps {
