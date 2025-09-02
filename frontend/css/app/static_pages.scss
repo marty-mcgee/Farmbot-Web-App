@@ -35,6 +35,11 @@
   .all-content-wrapper {
     max-width: 60rem;
   }
+  @media screen and (max-width: 1075px) {
+    .all-content-wrapper {
+      overflow: scroll;
+    }
+  }
   .widget-wrapper {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
@@ -113,7 +118,6 @@
   }
 }
 
-.featured-sequences-page,
 .os-download-page {
   text-align: center;
   .all-content-wrapper {
@@ -328,35 +332,5 @@
       font-family: "Inknut Antiqua" !important;
       font-weight: 600 !important;
     }
-  }
-}
-
-.featured-sequences-page {
-  summary {
-    color: $light_gray;
-    cursor: pointer;
-  }
-  .sequence-description {
-    margin-left: -1.5rem;
-    margin-right: -5rem;
-  }
-  .markdown {
-    p {
-      color: $white !important;
-    }
-  }
-  details {
-    max-width: calc(min(70vw, 370px));
-  }
-  summary {
-    margin-bottom: 0.5rem;
-  }
-  h1,
-  h2 {
-    margin-bottom: 0;
-  }
-  li,
-  p {
-    white-space: pre-wrap;
   }
 }
