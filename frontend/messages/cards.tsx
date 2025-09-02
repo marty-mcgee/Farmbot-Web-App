@@ -167,12 +167,11 @@ const FirmwareChoiceTable = () =>
       </tr>
     </thead>
     <tbody>
-      {shouldDisplayFeature(Feature.farmduino_k18) &&
-        <tr>
-          <td>{"Genesis v1.8"}</td>
-          <td>{"Farmduino"}</td>
-          <td><code>{FIRMWARE_CHOICES_DDI["farmduino_k18"].label}</code></td>
-        </tr>}
+      <tr>
+        <td>{"Genesis v1.8"}</td>
+        <td>{"Farmduino"}</td>
+        <td><code>{FIRMWARE_CHOICES_DDI["farmduino_k18"].label}</code></td>
+      </tr>
       <tr>
         <td>{"Genesis v1.7"}</td>
         <td>{"Farmduino"}</td>

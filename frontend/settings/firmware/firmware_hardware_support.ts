@@ -207,7 +207,7 @@ export const FIRMWARE_CHOICES_DDI = {
 };
 
 export const getFirmwareChoices = () => ([
-  ...(shouldDisplayFeature(Feature.farmduino_k18) ? [FARMDUINO_K18] : []),
+  FARMDUINO_K18,
   FARMDUINO_K17,
   FARMDUINO_K16,
   FARMDUINO_K15,
