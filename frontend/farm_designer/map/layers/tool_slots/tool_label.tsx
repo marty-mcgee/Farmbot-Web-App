@@ -15,7 +15,7 @@ export const textAnchorPosition = (
   quadrant: BotOriginQuadrant,
   xySwap: boolean,
   gantryMounted: boolean,
-): { x: number, y: number, anchor: string } => {
+): { x: number, y: number, anchor: "start" | "middle" | "end" } => {
   const rawAnchor = () => {
     const noDirection = !pulloutDirection || gantryMounted;
     const noDirectionXY = xySwap

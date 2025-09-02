@@ -62,7 +62,10 @@ export function getTextPosition(
 }
 
 export function nodeLabel(
-  label: string, node: DiagramNodes, anchor = "middle"): React.ReactNode {
+  label: string,
+  node: DiagramNodes,
+  anchor: "start" | "middle" | "end" = "middle",
+): React.ReactNode {
   const position = getTextPosition(node);
   return <text x={position.x} y={position.y} textAnchor={anchor}>
     {label}
