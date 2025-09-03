@@ -125,6 +125,7 @@ export function fakeTool(): TaggedTool {
   return fakeResource("Tool", {
     name: "Foo",
     flow_rate_ml_per_s: 0,
+    seeder_tip_z_offset: 80,
   });
 }
 
@@ -312,7 +313,8 @@ export function fakeFbosConfig(): TaggedFbosConfig {
     sequence_init_log: false,
     firmware_hardware: "arduino",
     os_auto_update: false,
-    arduino_debug_messages: false
+    arduino_debug_messages: false,
+    default_axis_order: "xyz;high",
   });
 }
 

@@ -577,7 +577,8 @@ CREATE TABLE public.fbos_configs (
     boot_sequence_id integer,
     safe_height integer DEFAULT 0,
     soil_height integer DEFAULT 0,
-    gantry_height integer DEFAULT 0
+    gantry_height integer DEFAULT 0,
+    default_axis_order character varying(10) DEFAULT 'xy,z;high'::character varying
 );
 
 
@@ -1003,7 +1004,8 @@ CREATE TABLE public.tools (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     device_id integer,
-    flow_rate_ml_per_s integer DEFAULT 0
+    flow_rate_ml_per_s integer DEFAULT 0,
+    seeder_tip_z_offset double precision DEFAULT 80.0
 );
 
 
@@ -3983,6 +3985,8 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20241203211516'),
 ('20250221191831'),
 ('20250502201109'),
-('20250514203443');
+('20250514203443'),
+('20250722234106'),
+('20250802174543');
 
 

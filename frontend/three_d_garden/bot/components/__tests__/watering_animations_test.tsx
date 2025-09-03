@@ -3,17 +3,22 @@ import { render } from "@testing-library/react";
 import {
   WateringAnimations, WateringAnimationsProps,
 } from "../watering_animations";
+import { clone } from "lodash";
+import { INITIAL } from "../../../config";
 
 describe("<WateringAnimations />", () => {
   const fakeProps = (): WateringAnimationsProps => ({
     waterFlow: true,
-    botPosition: { x: 0, y: 0, z: 0 },
+    config: clone(INITIAL),
     getZ: () => 0,
   });
 
   it("renders", () => {
+    jest.useFakeTimers();
     const p = fakeProps();
-    const { container } = render(<WateringAnimations {...p} />);
+    const { container, rerender } = render(<WateringAnimations {...p} />);
+    jest.runAllTimers();
+    rerender(<WateringAnimations {...p} />);
     const streams = container.querySelectorAll("[name*='water-stream']");
     expect(streams.length).toEqual(16);
 

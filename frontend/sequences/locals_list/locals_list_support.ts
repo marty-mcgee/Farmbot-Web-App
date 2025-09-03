@@ -72,3 +72,7 @@ export enum VariableType {
   Text = "Text",
   Resource = "Resource",
 }
+
+export const isParameterDeclaration =
+  (x: VariableNode): x is ParameterDeclaration =>
+    x.kind === "parameter_declaration";

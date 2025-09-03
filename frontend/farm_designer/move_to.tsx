@@ -8,7 +8,10 @@ import { isNumber, isUndefined, sum } from "lodash";
 import { Actions, Content } from "../constants";
 import { AxisNumberProperty } from "./map/interfaces";
 import { t } from "../i18next_wrapper";
-import { SafeZCheckbox } from "../sequences/step_tiles/tile_computed_move/safe_z";
+import {
+  AxisOrderInputRow,
+  getNewAxisOrderState,
+} from "../sequences/step_tiles/tile_computed_move/axis_order";
 import { Position, Slider } from "@blueprintjs/core";
 import { Path } from "../internal_urls";
 import { setMovementStateFromPosition } from "../connectivity/log_handlers";
@@ -21,6 +24,9 @@ import { StringSetting } from "../session_keys";
 import { MovementState } from "../interfaces";
 import { getUrlQuery } from "../util";
 import { setPanelOpen } from "./panel_header";
+import {
+  AxisGrouping, AxisRoute,
+} from "../sequences/step_tiles/tile_computed_move/interfaces";
 
 export interface MoveToFormProps {
   chosenLocation: BotPosition;
@@ -28,16 +34,25 @@ export interface MoveToFormProps {
   botOnline: boolean;
   locked: boolean;
   dispatch: Function;
+  defaultAxisOrder: string | undefined;
 }
 
 interface MoveToFormState {
   z: number | undefined;
   safeZ: boolean;
+  axisGrouping: AxisGrouping;
+  axisRoute: AxisRoute;
   speed: number;
 }
 
 export class MoveToForm extends React.Component<MoveToFormProps, MoveToFormState> {
-  state = { z: this.props.chosenLocation.z, safeZ: false, speed: 100 };
+  state = {
+    z: this.props.chosenLocation.z,
+    safeZ: false,
+    axisGrouping: undefined,
+    axisRoute: undefined,
+    speed: 100,
+  };
 
   get vector(): { x: number, y: number, z: number } {
     const { chosenLocation } = this.props;
@@ -93,8 +108,13 @@ export class MoveToForm extends React.Component<MoveToFormProps, MoveToFormState
           value={this.state.speed}
           onChange={speed => this.setState({ speed })} />
       </Row>
-      <SafeZCheckbox checked={this.state.safeZ}
-        onChange={() => this.setState({ safeZ: !this.state.safeZ })} />
+      <AxisOrderInputRow
+        defaultValue={this.props.defaultAxisOrder}
+        safeZ={this.state.safeZ}
+        grouping={this.state.axisGrouping}
+        route={this.state.axisRoute}
+        onChange={ddi =>
+          this.setState({ ...this.state, ...getNewAxisOrderState(ddi) })} />
     </div>;
   }
 }

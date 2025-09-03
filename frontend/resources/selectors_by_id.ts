@@ -105,6 +105,32 @@ export const findSlotByToolId = (index: ResourceIndex, tool_id: number) => {
   }
 };
 
+/** Maybe find a Tool's corresponding Slot. */
+export const maybeFindSlotByToolId = (
+  index: ResourceIndex,
+  tool_id: number,
+) => {
+  const tool = maybeFindToolById(index, tool_id);
+  if (!tool) { return undefined; }
+  const query = { body: { tool_id: tool.body.id } };
+  const every = Object
+    .keys(index.references)
+    .map(x => index.references[x]);
+  const tts = find(every, query);
+  if (tts && !isNumber(tts) && isTaggedToolSlotPointer(tts)) {
+    return tts;
+  } else {
+    return undefined;
+  }
+};
+
+/** Unlike other findById methods, this one allows undefined (missed) values */
+export function maybeFindPointById(index: ResourceIndex, id: number) {
+  const uuid = index.byKindAndId[joinKindAndId("Point", id)];
+  const resource = index.references[uuid || "nope"];
+  if (resource?.kind === "Point") { return resource; }
+}
+
 /** Unlike other findById methods, this one allows undefined (missed) values */
 export function maybeFindPlantById(index: ResourceIndex, id: number) {
   const uuid = index.byKindAndId[joinKindAndId("Point", id)];

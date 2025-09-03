@@ -1,10 +1,16 @@
 import {
   Identifier, Point, Tool, TaggedSequence, Move, Xyz, AxisOverwrite,
+  ALLOWED_GROUPING,
+  ALLOWED_ROUTE,
 } from "farmbot";
 import { ResourceIndex, UUID } from "../../../resources/interfaces";
 import { BotPosition } from "../../../devices/interfaces";
+import { DropDownItem } from "../../../ui";
 
 export type LocationNode = Identifier | Point | Tool;
+
+export type AxisGrouping = ALLOWED_GROUPING | undefined;
+export type AxisRoute = ALLOWED_ROUTE | undefined;
 
 export interface ComputedMoveState {
   locationSelection: LocSelection | undefined;
@@ -16,6 +22,8 @@ export interface ComputedMoveState {
   variance: Record<Xyz, number | undefined>;
   speed: Record<Xyz, number | string | undefined>;
   safeZ: boolean;
+  axisGrouping: AxisGrouping;
+  axisRoute: AxisRoute;
   viewRaw?: boolean;
 }
 
@@ -68,11 +76,6 @@ export interface LocationSelectionProps {
   sequenceUuid: UUID;
 }
 
-export interface SafeZCheckboxProps {
-  checked: boolean;
-  onChange(): void;
-}
-
 interface InputRowBase {
   disabledAxes: Record<Xyz, boolean>;
   onCommit: CommitMoveField;
@@ -94,6 +97,14 @@ export interface OffsetInputRowProps extends InputRowBase {
 export interface SpeedInputRowProps extends InputRowBase {
   speed: Record<Xyz, number | string | undefined>;
   setAxisState: SetAxisState;
+}
+
+export interface AxisOrderInputRowProps {
+  onChange(ddi: DropDownItem): void;
+  grouping: AxisGrouping;
+  route: AxisRoute;
+  safeZ: boolean;
+  defaultValue?: string;
 }
 
 export interface OverwriteInputRowProps extends InputRowBase {

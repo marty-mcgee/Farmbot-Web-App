@@ -13,6 +13,7 @@ namespace devStorage {
     QUICK_DELETE_MODE = "QUICK_DELETE_MODE",
     SHOW_INTERNAL_ENVS = "SHOW_INTERNAL_ENVS",
     CAMERA3D = "CAMERA3D",
+    ALL_ORDER_OPTIONS = "ALL_ORDER_OPTIONS",
   }
   type Storage = { [K in Key]: string };
 
@@ -88,4 +89,12 @@ export namespace DevSettings {
   export const set3dCamera = (details: string) =>
     devStorage.setItem(CAMERA3D, details);
   export const remove3dCamera = () => devStorage.removeItem(CAMERA3D);
+
+  export const ALL_ORDER_OPTIONS = devStorage.Key.ALL_ORDER_OPTIONS;
+  export const allOrderOptionsEnabled = () =>
+    !!devStorage.getItem(ALL_ORDER_OPTIONS);
+  export const enableAllOrderOptions = () =>
+    devStorage.setItem(ALL_ORDER_OPTIONS, "true");
+  export const disableAllOrderOptions = () =>
+    devStorage.removeItem(ALL_ORDER_OPTIONS);
 }

@@ -8,7 +8,10 @@ import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import { bot } from "../../__test_support__/fake_state/bot";
 import { WizardSectionSlug, WizardStepSlug } from "../data";
-import { fakeWizardStepResult } from "../../__test_support__/fake_state/resources";
+import {
+  fakeTool,
+  fakeToolSlot, fakeWizardStepResult,
+} from "../../__test_support__/fake_state/resources";
 
 const fakeWizardStep = (): WizardStep => ({
   section: WizardSectionSlug.controls,
@@ -191,6 +194,22 @@ describe("<WizardStepContainer />", () => {
     p.step.outcomes[0].controlsCheckOptions = {};
     const wrapper = mount(<WizardStepContainer {...p} />);
     expect(wrapper.find(".controls-check").length).toEqual(2);
+  });
+
+  it("renders slot rows", () => {
+    const p = fakeProps();
+    p.resources = buildResourceIndex([fakeToolSlot()]).index;
+    p.step.slotInputRows = [0];
+    const wrapper = mount(<WizardStepContainer {...p} />);
+    expect(wrapper.find(".slot-coordinates").length).toEqual(1);
+  });
+
+  it("renders slot tool dropdown rows", () => {
+    const p = fakeProps();
+    p.resources = buildResourceIndex([fakeToolSlot(), fakeTool()]).index;
+    p.step.slotDropdownRows = [0];
+    const wrapper = mount(<WizardStepContainer {...p} />);
+    expect(wrapper.find(".slot-coordinates").length).toEqual(1);
   });
 
   it("renders pin bindings", () => {

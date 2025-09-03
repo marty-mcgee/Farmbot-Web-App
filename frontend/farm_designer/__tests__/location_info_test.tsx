@@ -9,6 +9,7 @@ import { BooleanSetting } from "../../session_keys";
 import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import {
+  fakeFbosConfig,
   fakeImage, fakePlant, fakePoint, fakeSensor, fakeSensorReading, fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
 import { tagAsSoilHeight } from "../../points/soil_height";
@@ -37,6 +38,7 @@ describe("<LocationInfo />", () => {
     farmwareEnvs: [],
     arduinoBusy: false,
     movementState: fakeMovementState(),
+    defaultAxisOrder: "safe_z",
   });
 
   it("renders empty panel", () => {
@@ -163,9 +165,16 @@ describe("<LocationInfo />", () => {
 describe("mapStateToProps()", () => {
   it("returns props", () => {
     const state = fakeState();
-    state.resources = buildResourceIndex([fakeWebAppConfig()]);
+    state.resources = buildResourceIndex([fakeWebAppConfig(), fakeFbosConfig()]);
     const props = mapStateToProps(state);
     expect(props.getConfigValue(BooleanSetting.xy_swap)).toEqual(false);
+  });
+
+  it("handles missing config", () => {
+    const state = fakeState();
+    state.resources = buildResourceIndex([]);
+    const props = mapStateToProps(state);
+    expect(props.getConfigValue(BooleanSetting.xy_swap)).toEqual(undefined);
   });
 });
 

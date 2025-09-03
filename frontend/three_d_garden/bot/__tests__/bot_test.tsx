@@ -1,5 +1,6 @@
 import React from "react";
 import { mount } from "enzyme";
+import { render } from "@testing-library/react";
 import { Bot, FarmbotModelProps } from "../bot";
 import { INITIAL } from "../../config";
 import { clone } from "lodash";
@@ -28,7 +29,7 @@ describe("<Bot />", () => {
     expect(wrapper.html()).toContain("bot");
     expect(wrapper.html()).toContain("water-tube");
     expect(wrapper.find({ name: "slot" }).last().props().position)
-      .toEqual([-1350, 200, 60]);
+      .toEqual([-1345, 200, 51]);
   });
 
   it("renders: Jr", () => {
@@ -39,7 +40,7 @@ describe("<Bot />", () => {
     const wrapper = mount(<Bot {...p} />);
     expect(wrapper.html()).toContain("bot");
     expect(wrapper.find({ name: "slot" }).last().props().position)
-      .toEqual([-1350, 100, 60]);
+      .toEqual([-1345, 100, 51]);
   });
 
   it("renders: v1.7", () => {
@@ -56,9 +57,19 @@ describe("<Bot />", () => {
     expect(wrapper.find({ name: "button-group" }).length).toEqual(9); // 3 * 3
   });
 
+  it("renders watering animation", () => {
+    const p = fakeProps();
+    p.config.waterFlow = true;
+    jest.useFakeTimers();
+    const { container, rerender } = render(<Bot {...p} />);
+    jest.runAllTimers();
+    rerender(<Bot {...p} />);
+    expect(container).toContainHTML("watering-animations");
+  });
+
   it("loads shapes", () => {
     const p = fakeProps();
-    mount(<Bot {...p} />);
+    render(<Bot {...p} />);
     expect(SVGLoader.createShapes).toHaveBeenCalledTimes(15);
   });
 });

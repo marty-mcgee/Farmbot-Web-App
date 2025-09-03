@@ -59,7 +59,7 @@ export function mapStateToProps(props: Everything): SequencesProps {
     getWebAppConfigValue: getConfig,
     sequencesState: props.resources.consumers.sequences,
     folderData: mapStateToFolderProps(props),
-    visualized: !!props.resources.consumers.farm_designer.visualizedSequence,
+    visualized: props.resources.consumers.farm_designer.visualizedSequence,
     hoveredStep: props.resources.consumers.farm_designer.hoveredSequenceStep,
     sequencesPanelState: props.app.sequencesPanelState,
   };

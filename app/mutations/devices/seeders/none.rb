@@ -20,6 +20,8 @@ module Devices
       def sequences_water_plant; end
       def sequences_mow_all_weeds; end
       def sequences_pick_from_seed_tray; end
+      def sequences_pick_from_seed_trough; end
+      def sequences_pick_from_seed_bin; end
       def point_groups_all_plants; end
       def point_groups_all_points; end
       def point_groups_all_weeds; end

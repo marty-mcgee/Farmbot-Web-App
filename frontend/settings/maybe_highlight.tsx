@@ -50,6 +50,7 @@ const AXES_PANEL = [
   DeviceSetting.axisLength,
   DeviceSetting.safeHeight,
   DeviceSetting.fallbackSoilHeight,
+  DeviceSetting.defaultAxisOrder,
 ];
 const MOTORS_PANEL = [
   DeviceSetting.motors,

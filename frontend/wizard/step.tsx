@@ -1,3 +1,4 @@
+/** Warning: This file has been ignored by eslint due to a call stack error. */
 import React from "react";
 import { t } from "../i18next_wrapper";
 import { Collapse } from "@blueprintjs/core";
@@ -10,7 +11,9 @@ import { Feedback } from "../help/support";
 import moment from "moment";
 import { FirmwareNumberSettings, Video } from "./step_components";
 import { formatTime } from "../util";
-import { ControlsCheck, PinBinding } from "./checks";
+import {
+  ControlsCheck, PinBinding, SlotCoordinateRows, SlotDropdownRows,
+} from "./checks";
 import { SetupWizardContent } from "../constants";
 import { ExternalUrl } from "../external_urls";
 import { FilePath } from "../internal_urls";
@@ -23,7 +26,12 @@ export const WizardStepHeader = (props: WizardStepHeaderProps) => {
   const normalStepColor = stepDone ? "green" : "gray";
   const stepColor = stepFail ? "red" : normalStepColor;
 
-  return <div className={`wizard-step-header row grid-exp-2 ${stepOpen ? "open" : ""}`}
+  return <div
+    className={[
+      "wizard-step-header",
+      "row grid-exp-2",
+      stepOpen ? "open" : "",
+    ].join(" ")}
     onClick={props.openStep(props.step.slug)}>
     <Saucer color={stepColor}>
       <div className={"step-icon"}>
@@ -79,7 +87,7 @@ export const WizardStepContainer = (props: WizardStepContainerProps) => {
         {step.video && <Video url={step.video} />}
         {step.images && <Image imageFilenames={step.images} />}
         <div className={[
-          "wizard-components",
+          "wizard-components grid double-gap",
           step.componentOptions?.border ?? true ? "" : "no-border",
           step.componentOptions?.fullWidth ? "full-width" : "",
           step.componentOptions?.background ?? true ? "" : "no-background",
@@ -94,6 +102,18 @@ export const WizardStepContainer = (props: WizardStepContainerProps) => {
             <ControlsCheck
               dispatch={props.dispatch}
               controlsCheckOptions={step.controlsCheckOptions} />}
+          {step.slotInputRows &&
+            <SlotCoordinateRows
+              indexValues={step.slotInputRows}
+              bot={props.bot}
+              dispatch={props.dispatch}
+              resources={props.resources} />}
+          {step.slotDropdownRows &&
+            <SlotDropdownRows
+              indexValues={step.slotDropdownRows}
+              bot={props.bot}
+              dispatch={props.dispatch}
+              resources={props.resources} />}
           {step.pinBindingOptions &&
             <PinBinding
               getConfigValue={props.getConfigValue}
@@ -187,7 +207,12 @@ const TroubleshootingTips = (props: TroubleshootingTipsProps) => {
               resources={props.resources} />}
         </div>;
       })}
-    <div className={`troubleshooting-tip grid half-gap ${otherSelected ? "selected" : ""}`}
+    <div
+      className={[
+        "troubleshooting-tip",
+        "grid half-gap",
+        otherSelected ? "selected" : "",
+      ].join(" ")}
       onClick={props.setSuccess(false, "other")}>
       <p>{t("Something else happened and I need additional help")}</p>
       {otherSelected && <p>

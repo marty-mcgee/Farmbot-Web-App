@@ -29,15 +29,6 @@ describe("<TimeTravelTarget />", () => {
     };
   };
 
-  it("renders without lat/lng", () => {
-    const p = fakeProps();
-    p.isOpen = true;
-    p.device.lat = undefined;
-    p.device.lng = undefined;
-    const { container } = render(<TimeTravelTarget {...p} />);
-    expect(container).not.toContainHTML("time-travel-button");
-  });
-
   it("renders open", () => {
     const p = fakeProps();
     p.isOpen = true;

@@ -33,9 +33,11 @@ import { maybeOpenPanel } from "../maybe_highlight";
 import { SettingsPanelState } from "../../interfaces";
 import { settingsPanelState } from "../../__test_support__/panel_state";
 import {
+  fakeFbosConfig,
   fakeUser, fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
 import { API } from "../../api";
+import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
 
 const getSetting =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +58,9 @@ describe("<DesignerSettings />", () => {
     getConfigValue: () => 0,
     firmwareConfig: undefined,
     sourceFwConfig: () => ({ value: 10, consistent: true }),
-    sourceFbosConfig: () => ({ value: 10, consistent: true }),
+    sourceFbosConfig: x => ({
+      value: fakeFbosConfig().body[x as keyof FbosConfig], consistent: true,
+    }),
     resources: buildResourceIndex([]).index,
     deviceAccount: fakeDevice(),
     alerts: [],

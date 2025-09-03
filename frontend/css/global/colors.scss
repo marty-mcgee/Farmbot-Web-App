@@ -88,6 +88,7 @@ body:has(.app.light) {
   --text-color: #{$dark_gray};
   --border-color: #{$translucent2};
   --box-shadow: inset 0 0 5px 1px rgba(255, 255, 255, 0.25), inset 0 0 2px 1px rgba(255, 255, 255, 0.25), 0 0 5px 2px rgba(0, 0, 0, 0.05);
+  --highlight: inset 0px 0px 5px 5px #{$yellow};
 }
 
 body:has(.app.dark) {
@@ -96,6 +97,7 @@ body:has(.app.dark) {
   --text-color: #{$gray};
   --border-color: #{$translucent3_white};
   --box-shadow: inset 0 0 5px 1px #{$translucent1_white}, inset 0 0 2px 1px #{$translucent2_white}, 0 0 5px 2px #{$translucent1};
+  --highlight: inset 0px 0px 5px 5px #{$yellow};
 }
 
 .dark-gray {

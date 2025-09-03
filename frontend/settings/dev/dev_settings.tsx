@@ -1,6 +1,7 @@
 import React from "react";
 import { Row, BlurableInput, ToggleButton } from "../../ui";
 import { DevSettings } from "./dev_support";
+import { store } from "../../redux/store";
 
 export const DevWidgetFERow = () =>
   <Row className="grid-exp-1">
@@ -77,6 +78,30 @@ export const DevWidgetShowInternalEnvsRow = () =>
         : DevSettings.enableShowInternalEnvs} />
   </Row>;
 
+export const DevWidgetAllOrderOptionsRow = () =>
+  <Row className="grid-exp-1">
+    <label>
+      {"Show all axis order options"}
+    </label>
+    <ToggleButton
+      toggleValue={DevSettings.allOrderOptionsEnabled()}
+      toggleAction={DevSettings.allOrderOptionsEnabled()
+        ? DevSettings.disableAllOrderOptions
+        : DevSettings.enableAllOrderOptions} />
+  </Row>;
+
+export const DevWidgetChunkingDisabledRow = () =>
+  <Row className="grid-exp-1">
+    <label>
+      {"Demo movement chunking"}
+    </label>
+    <ToggleButton
+      toggleValue={localStorage.getItem("DISABLE_CHUNKING") !== "true"}
+      toggleAction={localStorage.getItem("DISABLE_CHUNKING") === "true"
+        ? () => localStorage.removeItem("DISABLE_CHUNKING")
+        : () => localStorage.setItem("DISABLE_CHUNKING", "true")} />
+  </Row>;
+
 export const DevSettingsRows = () =>
   <div className={"dev-settings-rows grid"}>
     <DevWidgetFERow />
@@ -84,4 +109,7 @@ export const DevSettingsRows = () =>
     <DevWidgetDelModeRow />
     <DevWidgetShowInternalEnvsRow />
     <DevWidgetFBOSRow />
+    <DevWidgetAllOrderOptionsRow />
+    <DevWidgetChunkingDisabledRow />
+    <p>Demo Queue Length: {store.getState().bot.demoQueueLength}</p>
   </div>;

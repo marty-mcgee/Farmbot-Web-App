@@ -78,6 +78,7 @@ export class RawDesignerSequenceEditor
               dispatch={this.props.dispatch}
               sequence={sequence}
               isProcessing={this.isProcessing}
+              inDesigner={true}
               setTitleProcessing={processingTitle =>
                 this.setState({ processingTitle })}
               setColorProcessing={processingColor =>
@@ -169,18 +170,20 @@ interface AutoGenerateButtonProps {
   dispatch: Function;
   sequence: TaggedSequence;
   isProcessing: boolean;
+  inDesigner: boolean;
   setTitleProcessing(state: boolean): void;
   setColorProcessing(state: boolean): void;
 }
 
 export const AutoGenerateButton = (props: AutoGenerateButtonProps) => {
   const {
-    dispatch, sequence, isProcessing, setTitleProcessing, setColorProcessing,
+    dispatch, sequence, isProcessing, inDesigner, setTitleProcessing, setColorProcessing,
   } = props;
   return <i title={t("auto-generate sequence title and color")}
     className={[
       "fa",
       isProcessing ? "fa-spinner fa-pulse" : "fa-magic",
+      inDesigner ? "" : "invert",
       "fb-icon-button",
     ].join(" ")}
     onClick={() => {

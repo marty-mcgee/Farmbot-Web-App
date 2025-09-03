@@ -4,26 +4,41 @@ import { Group } from "../../components";
 import { ASSETS } from "../../constants";
 import { Cloud, Clouds } from "@react-three/drei";
 import { WaterStream } from "./water_stream";
-import { easyCubicBezierCurve3 } from "../../helpers";
-import { BotPosition } from "../../../devices/interfaces";
+import { easyCubicBezierCurve3, threeSpace, zDir, zZero } from "../../helpers";
+import { Config } from "../../config";
+import { utmHeight } from "../bot";
 
 export interface WateringAnimationsProps {
   waterFlow: boolean;
-  botPosition: BotPosition;
+  config: Config;
   getZ(x: number, y: number): number;
 }
 
 export const WateringAnimations = (props: WateringAnimationsProps) => {
-  const { waterFlow, botPosition, getZ } = props;
-  const nozzleToSoil = (botPosition.z || 0)
-    + getZ(botPosition.x || 0, botPosition.y || 0);
-
-  return <Group name={"watering-animations"} visible={waterFlow}>
+  const { waterFlow, getZ, config } = props;
+  const { x, y, z, bedLengthOuter, bedWidthOuter, bedXOffset, bedYOffset } = config;
+  const utmZ = -zDir(config) * z + utmHeight / 2 - 15;
+  const nozzleToSoil = getZ(x, y) - utmZ;
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(true);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+  return <Group name={"watering-animations"}
+    visible={visible}
+    position={[
+      threeSpace(x, bedLengthOuter) + bedXOffset,
+      threeSpace(y, bedWidthOuter) + bedYOffset,
+      zZero(config),
+    ]}>
     {range(16).map(i => {
       const angle = (i * Math.PI * 2) / 16;
       return <WaterStream key={i}
         name={`water-stream-${i}`}
         waterFlow={waterFlow}
+        position={[0, 0, utmZ]}
         args={[easyCubicBezierCurve3(
           [12.5 * Math.sin(angle), 12.5 * Math.cos(angle), 0],
           [10 * Math.sin(angle), 0, -10],
@@ -34,9 +49,9 @@ export const WateringAnimations = (props: WateringAnimationsProps) => {
     <Clouds name={"waterfall-mist"}
       texture={ASSETS.textures.cloud}>
       <Cloud name={"waterfall-mist-cloud"}
-        position={[0, 0, (nozzleToSoil) / 2 - 40]}
+        position={[0, 0, utmZ + nozzleToSoil / 2 - 40]}
         seed={0}
-        bounds={[15, 15, (nozzleToSoil) / 2]}
+        bounds={[15, 15, nozzleToSoil / 2]}
         segments={30}
         volume={15}
         smallestVolume={0.1}
@@ -50,7 +65,7 @@ export const WateringAnimations = (props: WateringAnimationsProps) => {
     <Clouds name={"water-spot-mist"}
       texture={ASSETS.textures.cloud}>
       <Cloud name={"waterfall-mist-cloud"}
-        position={[0, 0, nozzleToSoil + 40]}
+        position={[0, 0, getZ(x, y)]}
         seed={0}
         bounds={[30, 30, 30]}
         segments={25}

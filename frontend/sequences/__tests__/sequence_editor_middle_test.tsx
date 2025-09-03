@@ -21,6 +21,7 @@ describe("<SequenceEditorMiddle/>", () => {
       farmwareData: fakeFarmwareData(),
       getWebAppConfigValue: jest.fn(),
       sequencesState: emptyState().consumers.sequences,
+      visualized: undefined,
     };
   }
 

@@ -53,7 +53,7 @@ describe Api::AisController do
     expect(response.body).to eq("red")
   end
 
-  it "handles errors" do
+  it "handles timeout" do
     sign_in user
     payload = {
       prompt: "write code",
@@ -64,6 +64,23 @@ describe Api::AisController do
       body: "---\n---# section\ncontent```lua\n```")
 
     stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+
+    post :create, body: payload.to_json
+    expect(response.status).to eq(422)
+  end
+
+  it "handles error" do
+    sign_in user
+    payload = {
+      prompt: "write code",
+      context_key: "lua",
+      sequence_id: nil,
+    }
+    stub_request(:get, URL_PATTERN).to_return(
+      body: "{---\n---# section\ncontent```lua\n```}")
+
+    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+      body: "{\"error\":\"Invalid request\"}")
 
     post :create, body: payload.to_json
     expect(response.status).to eq(422)

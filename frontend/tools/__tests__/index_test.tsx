@@ -321,6 +321,21 @@ describe("<ToolSlotInventoryItem />", () => {
     });
   });
 
+  it("doesn't open tool slot: disabled", () => {
+    location.pathname = Path.mock(Path.toolSlots());
+    const p = fakeProps();
+    p.disableNavigate = true;
+    p.toolSlot.body.id = 1;
+    const wrapper = shallow(<ToolSlotInventoryItem {...p} />);
+    wrapper.find("div").first().simulate("click");
+    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(selectPoint).not.toHaveBeenCalled();
+    expect(p.dispatch).not.toHaveBeenCalledWith({
+      type: Actions.HOVER_TOOL_SLOT, payload: undefined,
+    });
+  });
+
   it("removes item in box select mode", () => {
     location.pathname = Path.mock(Path.plants("select"));
     const p = fakeProps();

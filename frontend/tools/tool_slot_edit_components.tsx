@@ -132,14 +132,19 @@ export const SlotLocationInputRow = (props: SlotLocationInputRowProps) => {
         </div>)}
       <UseCurrentLocation botPosition={props.botPosition}
         onChange={props.onChange} />
-      <GoToThisLocationButton
-        dispatch={props.dispatch}
-        locationCoordinate={{ x, y, z }}
-        botOnline={props.botOnline}
-        arduinoBusy={props.arduinoBusy}
-        currentBotLocation={props.botPosition}
-        movementState={props.movementState}
-        defaultAxes={props.defaultAxes} />
+      {props.dispatch != undefined
+        && props.botOnline != undefined
+        && props.arduinoBusy != undefined
+        && props.defaultAxes != undefined
+        && props.movementState != undefined &&
+        <GoToThisLocationButton
+          dispatch={props.dispatch}
+          locationCoordinate={{ x, y, z }}
+          botOnline={props.botOnline}
+          arduinoBusy={props.arduinoBusy}
+          currentBotLocation={props.botPosition}
+          movementState={props.movementState}
+          defaultAxes={props.defaultAxes} />}
     </Row>
   </div>;
 };

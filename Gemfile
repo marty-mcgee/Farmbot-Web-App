@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-ruby "~> 3.4.4"
+ruby "~> 3.4.5"
 
 gem "rails", "~> 6"
 gem "active_model_serializers"
@@ -32,6 +32,7 @@ gem "drb"
 gem "benchmark"
 gem "ostruct"
 gem "bigdecimal"
+gem "mutex_m"
 
 group :development, :test do
   gem "climate_control"

@@ -74,7 +74,7 @@ export function StepIconGroup(props: StepIconBarProps) {
         title={t("open linked sequence")}
         onClick={onSequenceLinkNav(props.executeSequenceName)} />}
     {monaco &&
-      <i className={`fa fa-font ${monaco.enabled ? "enabled" : ""} fb-icon-button`}
+      <i className={`fa fa-font ${monaco.enabled ? "" : "active"} fb-icon-button`}
         title={t("toggle fancy editor")}
         onClick={monaco.toggle} />}
     {expanded &&
@@ -86,7 +86,7 @@ export function StepIconGroup(props: StepIconBarProps) {
         ].join(" ")}
         onClick={expanded.toggle} />}
     {props.toggleViewRaw &&
-      <i className={`fa fa-code ${props.viewRaw ? "enabled" : ""} fb-icon-button`}
+      <i className={`fa fa-code ${props.viewRaw ? "active" : ""} fb-icon-button`}
         title={t("toggle code view")}
         onClick={props.toggleViewRaw} />}
     <Help iconButton={true}

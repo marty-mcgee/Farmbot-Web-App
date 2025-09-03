@@ -116,17 +116,6 @@ describe("<Tools />", () => {
     expect(container).not.toContainHTML("toolbay3");
   });
 
-  it("renders watering animations when not in toolbay and water flowing", () => {
-    const p = fakeProps();
-    p.config.waterFlow = true;
-    const tool = fakeTool();
-    tool.body.name = "watering nozzle";
-    p.toolSlots = [];
-    p.mountedToolName = "watering nozzle";
-    render(<Tools {...p} />);
-    expect(WateringAnimations).toHaveBeenCalled();
-  });
-
   it("renders vacuum animation when not in toolbay and vacuum", () => {
     const p = fakeProps();
     p.config.vacuum = true;

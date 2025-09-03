@@ -8,7 +8,7 @@ body {
 
 .panel-container::before,
 .menu-content::before,
-.bp5-popover-transition-container::before,
+.bp6-popover-transition-container::before,
 .ticker-list::before {
   content: "";
   position: absolute;
@@ -22,7 +22,7 @@ body {
 }
 
 .app,
-.bp5-portal {
+.bp6-portal {
   background: var(--main-bg);
   color: var(--text-color);
 }
@@ -73,23 +73,19 @@ body {
   .tabs {
     border-radius: 0.5rem;
     display: grid;
-    gap: 0.2rem;
     grid-auto-flow: column;
     justify-content: center;
     margin: 0 auto;
     overflow: hidden;
+    box-shadow: var(--box-shadow);
     label {
       padding: 0.5rem 3rem;
-      background: $light_gray;
-      color: $medium_gray;
       cursor: pointer;
       &.selected {
-        background: $medium_gray;
-        color: $off_white;
+        border-bottom: 3px solid var(--text-color);
       }
       &:hover {
-        background-color: color.adjust($white, $lightness: -40%);
-        color: $off_white;
+        background-color: var(--secondary-bg);
       }
     }
   }
@@ -119,19 +115,17 @@ a {
 
 .drag-drop-area {
   &.visible {
-    margin: 0.75rem 0;
-    margin-right: 25px;
-    margin-left: 10px;
+    background: var(--secondary-bg);
+    border-color: var(--border-color);
+    border-radius: 0.5rem;
     border-style: dashed;
     border-width: 2px;
-    border-color: $light_gray;
-    color: $gray;
+    color: var(--text-color);
     font-weight: bold;
+    font-weight: bold;
+    margin: 1rem 0;
     padding: 1.25rem;
-    background: $off_white;
     text-align: center;
-    color: $gray;
-    font-weight: bold;
   }
 }
 
@@ -371,8 +365,8 @@ a {
     position: relative;
     margin-right: 1rem;
   }
-  .bp5-popover-wrapper,
-  .bp5-popover-target {
+  .bp6-popover-wrapper,
+  .bp6-popover-target {
     margin-left: 1rem;
   }
 }
@@ -398,7 +392,7 @@ a {
   button {
     float: none !important;
   }
-  .bp5-popover-wrapper {
+  .bp6-popover-wrapper {
     display: inline;
     margin-left: 0.5rem;
     font-size: 1.3rem;
@@ -441,7 +435,7 @@ textarea:focus {
 }
 
 .beacon-transition {
-  transition: border 1s, border-radius 1s;
+  transition: border 1s, border-radius 1s, box-shadow 1s;
 }
 
 .beacon {
@@ -449,7 +443,7 @@ textarea:focus {
     box-shadow: 0 0 0 4px $yellow !important;
   }
   &.soft {
-    background: #ffe53e52 !important;
+    box-shadow: var(--highlight) !important;
   }
 }
 

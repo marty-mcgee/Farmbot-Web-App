@@ -25,7 +25,7 @@ import { Path } from "../internal_urls";
 import {
   reduceToolName, ToolName,
 } from "../farm_designer/map/tool_graphics/all_tools";
-import { WaterFlowRateInput } from "./edit_tool";
+import { TipZOffsetInput, WaterFlowRateInput } from "./edit_tool";
 import { NavigationContext } from "../routes_helpers";
 
 export const mapStateToProps = (props: Everything): AddToolProps => ({
@@ -38,7 +38,13 @@ export const mapStateToProps = (props: Everything): AddToolProps => ({
 });
 
 export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
-  state: AddToolState = { toolName: "", toAdd: [], uuid: undefined, flowRate: 0 };
+  state: AddToolState = {
+    toolName: "",
+    toAdd: [],
+    uuid: undefined,
+    flowRate: 0,
+    tipZOffset: 80,
+  };
 
   filterExisting = (n: string) => !this.props.existingToolNames.includes(n);
 
@@ -66,6 +72,7 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
     const initTool = init("Tool", {
       name: this.state.toolName,
       flow_rate_ml_per_s: this.state.flowRate,
+      seeder_tip_z_offset: this.state.tipZOffset,
     });
     this.props.dispatch(initTool);
     const { uuid } = initTool.payload;
@@ -167,6 +174,7 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
   };
 
   changeFlowRate = (flowRate: number) => this.setState({ flowRate });
+  changeTipZOffset = (tipZOffset: number) => this.setState({ tipZOffset });
 
   render() {
     const { toolName, uuid } = this.state;
@@ -199,10 +207,13 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
               name="toolName"
               onChange={e =>
                 this.setState({ toolName: e.currentTarget.value })} />
-            {reduceToolName(toolName) == ToolName.wateringNozzle &&
-              <WaterFlowRateInput value={this.state.flowRate}
-                onChange={this.changeFlowRate} />}
           </div>
+          {reduceToolName(toolName) == ToolName.wateringNozzle &&
+            <WaterFlowRateInput value={this.state.flowRate}
+              onChange={this.changeFlowRate} />}
+          {reduceToolName(toolName) == ToolName.seeder &&
+            <TipZOffsetInput value={this.state.tipZOffset}
+              onChange={this.changeTipZOffset} />}
           <p className="name-error">
             {alreadyAdded ? t("Already added.") : ""}
           </p>

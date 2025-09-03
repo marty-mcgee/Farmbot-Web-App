@@ -115,6 +115,7 @@ commands:
 workflows:
   version: 2
   build_and_test:
+    max_auto_reruns: 1
     jobs:
       #- build
       - all

@@ -176,6 +176,9 @@ export namespace ToolTips {
     manually measure the height at various locations in the garden and add
     corresponding soil height points from the points panel. (default: 0)`);
 
+  export const DEFAULT_AXIS_ORDER =
+    trim(`Default axis order for movement. (default: X and Y together)`);
+
   // Hardware Settings: Motors
   export const MAX_SPEED =
     trim(`Maximum travel speed after acceleration in millimeters per second.
@@ -467,9 +470,9 @@ export namespace ToolTips {
     trim(`The Move step instructs FarmBot to move to the specified
     coordinate or distance from its current location.`);
 
-  export const SAFE_Z =
-    trim(`If enabled, FarmBot will: (1) Move Z to the Safe Z height,
-    (2) Move X and Y to the new location, and (3) Move Z to the new location`);
+  export const AXIS_ORDER =
+    trim(`If "Safe Z" is chosen, FarmBot will: (1) Move Z to the Safe Z height,
+    (2) Move X and Y to the new location, and (3) Move Z to the new location.`);
 
   export const MOVE_ABSOLUTE =
     trim(`The Move To step instructs FarmBot to move to the specified
@@ -1917,6 +1920,54 @@ export namespace SetupWizardContent {
     Be mindful of debris that may be projected and use appropriate
     protective equipment. Disconnect the rotary tool when not in use.`);
 
+  export const SLOTS_SETUP =
+    trim(`In real life, manually (by hand) load the watering nozzle tool
+    into the toolbay slot nearest the home position.`);
+
+  export const SLOTS_1_COORDINATES =
+    trim(`Using the manual controls, instruct FarmBot to move towards the
+    slot with the watering nozzle in it. As you get closer, change the
+    MOVE AMOUNT to a smaller value for finer movements. Your goal is to
+    position the UTM just above the tool and then descend down onto it
+    (mounting it). Once the UTM has fully mounted the tool, click the blue
+    button next to the slot's X, Y, and Z fields to save FarmBot's current
+    position to the slot.`);
+
+  export const SLOTS_2_COORDINATES =
+    trim(`Using the manual controls, move the UTM up 100mm in the +Z
+    direction to dismount the watering nozzle. Then move the UTM 100mm
+    in the +Y direction to roughly align with the next slot in the toolbay.
+    Manually (by hand) move the watering nozzle tool into the next slot.
+    Using the manual controls, move the UTM to descend down onto the tool.
+    Take your time, you may need to make fine +/- 1mm adjustments to the
+    X and Y position as you are descending. Once the tool is mounted,
+    click the blue button to save FarmBot's current position to the slot.`);
+
+  export const SLOTS_REMAINING_COORDINATES =
+    trim(`Repeat the process for all of the remaining toolbay slots.`);
+
+  export const SLOTS_LOAD_TOOLS =
+    trim(`Using the manual controls, instruct FarmBot to go to home.
+    Then manually (by hand) load the tools and seed containers into the
+    toolbays according to the virtual configuration shown in the table
+    below. You may optionally load the tools in a different configuration
+    and use the dropdown menus to change each slot's assignment accordingly.`);
+
+  export const SLOTS_SEED_TROUGH_1 =
+    trim(`Using the manual controls, move the UTM towards the gantry
+    mounted seed trough nearest the electronics box. As you get closer,
+    change the MOVE AMOUNT to a smaller value for finer movements.
+    Your goal is to position the UTM just above the seed trough such
+    that the middle liquid/gas port on the bottom of the UTM (the one
+    centered below the FarmBot logo) is about 1mm above the center of
+    the trough. Then click the blue button to save FarmBot's current
+    position to the trough slot.`);
+
+  export const SLOTS_SEED_TROUGH_2 =
+    trim(`Using the manual controls, move the UTM 22mm in the +Y direction.
+    Then click the blue button to save FarmBot's current position to the
+    trough slot.`);
+
   export const ESTOP_BUTTON =
     trim(`Press the physical E-Stop button on top of the electronics box.`);
 
@@ -2084,6 +2135,7 @@ export enum DeviceSetting {
   gantryHeight = `Gantry Height`,
   safeHeight = `Safe Height`,
   fallbackSoilHeight = `Fallback Soil Height`,
+  defaultAxisOrder = `Default Axis Order`,
 
   // Motors
   motors = `Motors`,
@@ -2421,7 +2473,6 @@ export enum Actions {
   TOGGLE_POPUP = "TOGGLE_POPUP",
   OPEN_POPUP = "OPEN_POPUP",
   CLOSE_POPUP = "CLOSE_POPUP",
-  TOGGLE_HOTKEY_GUIDE = "TOGGLE_HOTKEY_GUIDE",
 
   // Devices
   CHANGE_STEP_SIZE = "CHANGE_STEP_SIZE",
@@ -2437,6 +2488,12 @@ export enum Actions {
   SET_NEEDS_VERSION_CHECK = "SET_NEEDS_VERSION_CHECK",
   SET_MALFORMED_NOTIFICATION_SENT = "SET_MALFORMED_NOTIFICATION_SENT",
   DEMO_TOGGLE_PIN = "DEMO_TOGGLE_PIN",
+  DEMO_WRITE_PIN = "DEMO_WRITE_PIN",
+  DEMO_SET_POSITION = "DEMO_SET_POSITION",
+  DEMO_SET_JOB_PROGRESS = "DEMO_SET_JOB_PROGRESS",
+  DEMO_SET_ESTOP = "DEMO_SET_ESTOP",
+  DEMO_SET_MOUNTED_TOOL_ID = "DEMO_SET_MOUNTED_TOOL_ID",
+  DEMO_SET_QUEUE_LENGTH = "DEMO_SET_QUEUE_LENGTH",
 
   // Draggable
   PUT_DATA_XFER = "PUT_DATA_XFER",

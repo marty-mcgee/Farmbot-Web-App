@@ -28,7 +28,6 @@ const mockCB = jest.fn();
 jest.mock("../locals_list/locals_list", () => ({
   LocalsList: () => <div />,
   localListCallback: jest.fn(() => jest.fn(() => mockCB)),
-  isParameterDeclaration: jest.fn(),
   removeVariable: jest.fn(),
   generateNewVariableLabel: jest.fn(),
 }));
@@ -66,6 +65,7 @@ import {
   ImportedBanner,
   AddCommandButtonProps,
 } from "../sequence_editor_middle_active";
+import { render } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import {
   ActiveMiddleProps, SequenceBtnGroupProps, SequenceSettingProps,
@@ -121,6 +121,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       getWebAppConfigValue: jest.fn(),
       sequencesState: emptyState().consumers.sequences,
       showName: true,
+      visualized: undefined,
     };
   };
 
@@ -314,7 +315,7 @@ describe("<SequenceEditorMiddleActive />", () => {
   it("un-visualizes", () => {
     location.pathname = Path.mock(Path.designerSequences("1"));
     const p = fakeProps();
-    p.visualized = true;
+    p.visualized = "uuid";
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
     wrapper.find(".fa-eye").simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
@@ -323,12 +324,22 @@ describe("<SequenceEditorMiddleActive />", () => {
     });
   });
 
+  it("re-visualizes", () => {
+    const p = fakeProps();
+    p.visualized = "not uuid";
+    render(<SequenceEditorMiddleActive {...p} />);
+    expect(p.dispatch).toHaveBeenCalledWith({
+      type: Actions.VISUALIZE_SEQUENCE,
+      payload: p.sequence.uuid,
+    });
+  });
+
   it("pins sequence", () => {
     location.pathname = Path.mock(Path.sequences("1"));
     const p = fakeProps();
     p.sequence.body.pinned = false;
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
-    wrapper.find(".fa-thumb-tack").simulate("click");
+    wrapper.find(".fa-bookmark-o").simulate("click");
     expect(pinSequenceToggle).toHaveBeenCalledWith(p.sequence);
   });
 
@@ -337,7 +348,7 @@ describe("<SequenceEditorMiddleActive />", () => {
     const p = fakeProps();
     p.sequence.body.pinned = true;
     const wrapper = mount(<SequenceEditorMiddleActive {...p} />);
-    wrapper.find(".fa-thumb-tack").simulate("click");
+    wrapper.find(".fa-bookmark").simulate("click");
     expect(pinSequenceToggle).toHaveBeenCalledWith(p.sequence);
   });
 
@@ -412,7 +423,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       view: "public", sequencePreview: previewSequence,
       viewSequenceCeleryScript: true,
     });
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeFalsy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeTruthy();
     expect(wrapper.text()).toContain("upgrade");
   });
 
@@ -427,7 +438,7 @@ describe("<SequenceEditorMiddleActive />", () => {
       view: "public", sequencePreview: previewSequence,
       viewSequenceCeleryScript: false,
     });
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeTruthy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeFalsy();
   });
 
   it("makes selections", () => {
@@ -588,6 +599,7 @@ describe("<SequenceBtnGroup />", () => {
     toggleViewSequenceCeleryScript: jest.fn(),
     sequencesState: emptyState().consumers.sequences,
     viewCeleryScript: true,
+    visualized: undefined,
   });
 
   it("edits color", () => {
@@ -606,7 +618,7 @@ describe("<SequenceBtnGroup />", () => {
     p.getWebAppConfigValue = () => true;
     p.viewCeleryScript = true;
     const wrapper = shallow(<SequenceBtnGroup {...p} />);
-    expect(wrapper.find(".fa-code").hasClass("inactive")).toBeFalsy();
+    expect(wrapper.find(".fa-code").hasClass("active")).toBeTruthy();
   });
 
   it("shows publish menu", () => {

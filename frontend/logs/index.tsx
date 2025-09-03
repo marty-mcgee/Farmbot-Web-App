@@ -13,8 +13,6 @@ import { setWebAppConfigValue } from "../config_storage/actions";
 import { NumberConfigKey } from "farmbot/dist/resources/configs/web_app";
 import { t } from "../i18next_wrapper";
 import { SearchField } from "../ui/search_field";
-import { forceOnline } from "../devices/must_be_online";
-import { demoAccountLog } from "../nav/ticker_list";
 import { Actions } from "../constants";
 import { Navigate } from "react-router";
 import { Path } from "../internal_urls";
@@ -118,8 +116,7 @@ export class LogsPanel extends React.Component<LogsProps, Partial<LogsState>> {
         </div>
       </div>
       <LogsTable
-        logs={this.props.logs.
-          concat(forceOnline() ? [demoAccountLog()] : [])}
+        logs={this.props.logs}
         dispatch={dispatch}
         state={this.state}
         fbosVersion={bot.hardware.informational_settings.controller_version

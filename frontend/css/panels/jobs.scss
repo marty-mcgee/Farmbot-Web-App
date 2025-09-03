@@ -18,7 +18,7 @@
 .jobs-tab {
   overflow-y: scroll;
   max-height: 26rem;
-  &.bp5-popover {
+  &.bp6-popover {
     margin-top: 1.5rem;
   }
   table {
@@ -26,10 +26,9 @@
     p {
       padding: 1rem;
     }
+    .job-status,
     .job-name {
-      max-width: 20rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      width: 20rem;
     }
     thead {
       position: sticky;
@@ -42,7 +41,6 @@
     }
     th,
     td {
-      white-space: nowrap;
       font-size: 1.2rem;
       padding: 0.75rem;
     }
@@ -51,6 +49,7 @@
     }
     .right-align {
       text-align: right;
+      width: 0;
     }
     .progress {
       position: absolute;
@@ -68,7 +67,7 @@
 }
 
 .jobs-panel-portal {
-  .bp5-popover-content {
+  .bp6-popover-content {
     padding: 0;
     width: min(500px, 100vw - 1rem);
     max-height: calc(100vh - 10rem);

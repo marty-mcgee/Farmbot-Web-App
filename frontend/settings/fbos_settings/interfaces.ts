@@ -102,3 +102,8 @@ export interface ZHeightInputProps {
   dispatch: Function;
   sourceFbosConfig: SourceFbosConfig;
 }
+
+export interface DefaultAxisOrderProps {
+  dispatch: Function;
+  sourceFbosConfig: SourceFbosConfig;
+}

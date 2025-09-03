@@ -2,7 +2,7 @@ import { PointGroupSortType } from "farmbot/dist/resources/api_resources";
 import { t } from "../i18next_wrapper";
 import { shuffle, sortBy } from "lodash";
 import { TaggedPoint } from "farmbot";
-import { alternating, nn } from "./paths";
+import { alternating, nn } from "./other_sort_methods";
 
 export const sortOptionsTable = (): Record<PointGroupSortType, string> => ({
   random: t("Random Order"),

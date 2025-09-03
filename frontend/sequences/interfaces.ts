@@ -42,7 +42,7 @@ interface SequencePropsBase {
   resources: ResourceIndex;
   sequencesState: SequenceReducerState;
   getWebAppConfigValue: GetWebAppConfigValue;
-  visualized?: boolean;
+  visualized: string | undefined;
 }
 
 export interface SequencesProps extends SequencePropsBase {

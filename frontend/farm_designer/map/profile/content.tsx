@@ -131,7 +131,7 @@ const LabeledHorizontalLine = (props: LabeledHorizontalLineProps) =>
       strokeDasharray={props.dashed ? 10 : undefined}
       x1={0} y1={props.y} x2={props.width} y2={props.y} />
     {props.expanded && <text x={props.width - 5} y={props.y - 5}
-      dominantBaseline={"bottom"} textAnchor={"end"}
+      dominantBaseline={"auto"} textAnchor={"end"}
       stroke={"none"} fill={props.color} fontWeight={"bold"}>
       {props.label}
     </text>}

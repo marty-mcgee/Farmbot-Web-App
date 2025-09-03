@@ -26,6 +26,7 @@ export interface AddToolState {
   toAdd: string[];
   uuid: UUID | undefined;
   flowRate: number;
+  tipZOffset: number;
 }
 
 export interface EditToolProps {
@@ -41,6 +42,7 @@ export interface EditToolProps {
 export interface EditToolState {
   toolName: string;
   flowRate: number;
+  tipZOffset: number;
 }
 
 export interface ToolTransformProps {
@@ -78,6 +80,7 @@ export interface ToolSlotInventoryItemProps {
   hideDropdown?: boolean;
   toolTransformProps: ToolTransformProps;
   noUTM: boolean;
+  disableNavigate?: boolean;
 }
 
 export interface ToolInventoryItemProps {
@@ -150,11 +153,11 @@ export interface SlotLocationInputRowProps {
   gantryMounted: boolean;
   onChange(update: Partial<Record<Xyz, number>>): void;
   botPosition: BotPosition;
-  botOnline: boolean;
-  defaultAxes: string;
-  arduinoBusy: boolean;
-  dispatch: Function;
-  movementState: MovementState;
+  botOnline?: boolean;
+  defaultAxes?: string;
+  arduinoBusy?: boolean;
+  dispatch?: Function;
+  movementState?: MovementState;
 }
 
 export interface SlotEditRowsProps {

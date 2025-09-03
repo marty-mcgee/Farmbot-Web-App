@@ -21,7 +21,6 @@ import {
 } from "../../../farm_designer/map/tool_graphics/all_tools";
 import { Xyz } from "farmbot";
 import { ToolPulloutDirection } from "farmbot/dist/resources/api_resources";
-import { WateringAnimations } from "./watering_animations";
 import { useNavigate } from "react-router";
 import { Path } from "../../../internal_urls";
 import { setPanelOpen } from "../../../farm_designer/panel_header";
@@ -169,9 +168,9 @@ export const Tools = (props: ToolsProps) => {
     const navigate = useNavigate();
     return <Group name={slotProps.inToolbay ? "slot" : "utm-tool"}
       position={[
-        position.x,
+        position.x + 5,
         position.y,
-        position.z,
+        position.z - 9,
       ]}
       onClick={() => {
         if (slotProps.id && !isUndefined(props.dispatch) &&
@@ -227,13 +226,13 @@ export const Tools = (props: ToolsProps) => {
         rotaryToolImplementRef.current.rotation.z = time * speed;
       }
     });
-
+    const X = 5.5;
     switch (toolProps.toolName) {
       case ToolName.rotaryTool:
         return <ToolbaySlot {...common}>
           <Group name={"rotaryTool"}
             position={[
-              0,
+              X,
               0,
               10,
             ]}
@@ -253,7 +252,7 @@ export const Tools = (props: ToolsProps) => {
         return <ToolbaySlot {...common}>
           <Mesh name={"wateringNozzle"}
             position={[
-              7.5,
+              X + 7.5,
               10.5,
               15,
             ]}
@@ -261,17 +260,12 @@ export const Tools = (props: ToolsProps) => {
             scale={1000}
             geometry={wateringNozzle.nodes[PartName.wateringNozzle].geometry}
             material={wateringNozzle.materials.PaletteMaterial001} />
-          {!inToolbay && props.config.waterFlow &&
-            <WateringAnimations
-              waterFlow={props.config.waterFlow}
-              botPosition={botPosition}
-              getZ={props.getZ} />}
         </ToolbaySlot>;
       case ToolName.seedBin:
         return <ToolbaySlot {...common}>
           <Mesh name={"seedBin"}
             position={[
-              0,
+              X,
               0,
               -4,
             ]}
@@ -285,7 +279,7 @@ export const Tools = (props: ToolsProps) => {
         return <ToolbaySlot {...common}>
           <Mesh name={"seedTray"}
             position={[
-              0,
+              X,
               0,
               -4,
             ]}
@@ -299,7 +293,7 @@ export const Tools = (props: ToolsProps) => {
         return <ToolbaySlot {...common}>
           <SoilSensorComponent name={"soilSensor"}
             position={[
-              0,
+              X,
               0,
               10,
             ]}
@@ -310,7 +304,7 @@ export const Tools = (props: ToolsProps) => {
         return <ToolbaySlot {...common}>
           <Mesh name={"seeder"}
             position={[
-              0,
+              X,
               0,
               -5,
             ]}
@@ -328,7 +322,7 @@ export const Tools = (props: ToolsProps) => {
         return <ToolbaySlot {...common}>
           <Mesh name={"weeder"}
             position={[
-              -25,
+              X - 25,
               20,
               10,
             ]}
@@ -342,7 +336,7 @@ export const Tools = (props: ToolsProps) => {
           position={[
             position.x - 30,
             position.y - 15,
-            position.z,
+            position.z - 40,
           ]}
           rotation={[0, 0, Math.PI / 2]}>
           {toolProps.firstTrough
@@ -374,9 +368,9 @@ export const Tools = (props: ToolsProps) => {
 
   return <Group name={"tools"}>
     <Tool
-      x={botPosition.x + (isUndefined(props.toolSlots) ? 10 : 12)}
+      x={botPosition.x}
       y={botPosition.y}
-      z={botPosition.z + (isUndefined(props.toolSlots) ? 10 : -12)}
+      z={botPosition.z + (isUndefined(props.toolSlots) ? 1 : -2)}
       toolName={mountedToolName}
       toolPulloutDirection={ToolPulloutDirection.NONE}
       inToolbay={false} />
@@ -391,7 +385,7 @@ export const Tools = (props: ToolsProps) => {
               position={[
                 threeSpace(105 + bedWallThickness, bedLengthOuter),
                 threeSpace(yPosition + bedWidthOuter / 2, bedWidthOuter),
-                60,
+                50,
               ]}
               rotation={[0, 0, -Math.PI / 2]}
               scale={1000}

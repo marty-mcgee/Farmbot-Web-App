@@ -131,27 +131,23 @@ module Devices
         end
       end
 
-      def sequences_pick_up_seed
-        s = SequenceSeeds::PICK_UP_SEED_GENESIS.deep_dup
-
-        seed_bin_id = device.tools.find_by!(name: ToolNames::SEED_BIN).id
-        mount_tool_id = device.sequences.find_by!(name: PublicSequenceNames::MOUNT_TOOL).id
-
-        s.dig(:body, 0, :args)[:sequence_id] = mount_tool_id
-        s.dig(:body, 0, :body, 0, :args, :data_value, :args)[:tool_id] = seeder_id
-        s.dig(:body, 1, :body, 0, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 1, :body, 1, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 1, :body, 2, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 2, :args, :pin_number, :args)[:pin_id] = vacuum_id
-        s.dig(:body, 3, :body, 0, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 3, :body, 1, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 3, :body, 2, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 4, :body, 0, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 4, :body, 1, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-        s.dig(:body, 4, :body, 2, :args, :axis_operand, :args)[:tool_id] = seed_bin_id
-
-        Sequences::Create.run!(s, device: device)
+      def sequences_pick_from_seed_trough
+        success = install_sequence_version_by_name(PublicSequenceNames::PICK_FROM_SEED_TROUGH)
+        if !success
+          s = SequenceSeeds::PICK_FROM_SEED_TROUGH.deep_dup
+          Sequences::Create.run!(s, device: device)
+        end
       end
+
+      def sequences_pick_from_seed_bin
+        success = install_sequence_version_by_name(PublicSequenceNames::PICK_FROM_SEED_BIN)
+        if !success
+          s = SequenceSeeds::PICK_FROM_SEED_BIN.deep_dup
+          Sequences::Create.run!(s, device: device)
+        end
+      end
+
+      def sequences_pick_up_seed; end
 
       def sequences_plant_seed
         s = SequenceSeeds::PLANT_SEED_GENESIS.deep_dup

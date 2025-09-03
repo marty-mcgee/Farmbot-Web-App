@@ -53,7 +53,6 @@ describe("<Logs />", () => {
       .map(string =>
         expect(wrapper.text().toLowerCase()).toContain(string.toLowerCase()));
     verifyFilterState(wrapper, true);
-    expect(wrapper.text().toLowerCase()).not.toContain("demo");
   });
 
   it("handles unknown log type", () => {
@@ -65,7 +64,6 @@ describe("<Logs />", () => {
       .map(string =>
         expect(wrapper.text().toLowerCase()).toContain(string.toLowerCase()));
     verifyFilterState(wrapper, true);
-    expect(wrapper.text().toLowerCase()).not.toContain("demo");
   });
 
   it("shows message when logs are loading", () => {
@@ -210,14 +208,6 @@ describe("<Logs />", () => {
     const wrapper = shallow<Logs>(<Logs {...p} />);
     wrapper.find(SearchField).first().simulate("change", "one");
     expect(wrapper.state().searchTerm).toEqual("one");
-  });
-
-  it("shows demo account log", () => {
-    localStorage.setItem("myBotIs", "online");
-    const p = fakeProps();
-    const wrapper = mount(<Logs {...p} />);
-    expect(wrapper.text().toLowerCase()).toContain("demo");
-    localStorage.setItem("myBotIs", "");
   });
 
   it("shows current logs", () => {

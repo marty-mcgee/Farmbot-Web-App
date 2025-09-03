@@ -77,8 +77,8 @@ export const PointInventoryItem = (props: PointInventoryItemProps) => {
     </span>
     <p className="point-search-item-info">
       <i>{colorOverride
-        ? `(${point.x}, ${point.y}) z${point.z}`
-        : `(${point.x}, ${point.y}) r${point.radius}`}</i>
+        ? `(${round(point.x)}, ${round(point.y)}) z${round(point.z)}`
+        : `(${round(point.x)}, ${round(point.y)}) r${round(point.radius)}`}</i>
       {!isUndefined(props.distance) &&
         <i>{` ${round(props.distance)}mm ${t("away")}`}</i>}
     </p>

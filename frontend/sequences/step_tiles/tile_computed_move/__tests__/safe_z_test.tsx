@@ -1,16 +1,7 @@
-import React from "react";
-import { mount } from "enzyme";
-import { SafeZCheckboxProps } from "../interfaces";
-import { SafeZCheckbox } from "../safe_z";
+import { SAFE_Z } from "../safe_z";
 
-describe("<SafeZCheckbox />", () => {
-  const fakeProps = (): SafeZCheckboxProps => ({
-    checked: false,
-    onChange: jest.fn(),
-  });
-
-  it("renders", () => {
-    const wrapper = mount(<SafeZCheckbox {...fakeProps()} />);
-    expect(wrapper.text().toLowerCase()).toContain("safe z");
+describe("SAFE_Z", () => {
+  it("returns node", () => {
+    expect(SAFE_Z).toEqual({ kind: "safe_z", args: {} });
   });
 });

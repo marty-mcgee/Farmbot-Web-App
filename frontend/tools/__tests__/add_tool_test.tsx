@@ -38,11 +38,24 @@ describe("<AddTool />", () => {
     expect(wrapper.text().toLowerCase()).toContain("flow rate");
   });
 
+  it("renders seeder", () => {
+    const wrapper = mount(<AddTool {...fakeProps()} />);
+    wrapper.setState({ toolName: "seeder" });
+    expect(wrapper.text().toLowerCase()).toContain("tip z offset");
+  });
+
   it("changes flow rate", () => {
     const wrapper = shallow<AddTool>(<AddTool {...fakeProps()} />);
     expect(wrapper.state().flowRate).toEqual(0);
     wrapper.instance().changeFlowRate(1);
     expect(wrapper.state().flowRate).toEqual(1);
+  });
+
+  it("changes tip z offset", () => {
+    const wrapper = shallow<AddTool>(<AddTool {...fakeProps()} />);
+    expect(wrapper.state().tipZOffset).toEqual(80);
+    wrapper.instance().changeTipZOffset(1);
+    expect(wrapper.state().tipZOffset).toEqual(1);
   });
 
   it("edits tool name", () => {
@@ -80,7 +93,9 @@ describe("<AddTool />", () => {
     wrapper.instance().navigate = navigate;
     await wrapper.find(SaveBtn).simulate("click");
     expect(init).toHaveBeenCalledWith("Tool", {
-      name: "Foo", flow_rate_ml_per_s: 0,
+      name: "Foo",
+      flow_rate_ml_per_s: 0,
+      seeder_tip_z_offset: 80,
     });
     expect(wrapper.state().uuid).toEqual(undefined);
     expect(navigate).toHaveBeenCalledWith(Path.tools());
@@ -96,7 +111,9 @@ describe("<AddTool />", () => {
     wrapper.instance().navigate = navigate;
     await wrapper.find(SaveBtn).simulate("click");
     expect(init).toHaveBeenCalledWith("Tool", {
-      name: "Foo", flow_rate_ml_per_s: 0,
+      name: "Foo",
+      flow_rate_ml_per_s: 0,
+      seeder_tip_z_offset: 80,
     });
     expect(wrapper.state().uuid).toEqual("fake uuid");
     expect(navigate).not.toHaveBeenCalled();

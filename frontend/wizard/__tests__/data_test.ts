@@ -51,13 +51,13 @@ describe("data check", () => {
     expect(expressSteps.length).toBeLessThan(steps.length);
   });
 
-  it("has the same number of sections for express", () => {
+  it("has the correct number of sections for express", () => {
     const sections = WIZARD_SECTIONS({
       firmwareHardware: undefined,
     });
     const expressSections = WIZARD_SECTIONS({
       firmwareHardware: "express_k10",
     });
-    expect(expressSections.length).toEqual(sections.length);
+    expect(expressSections.length).toEqual(sections.length - 1);
   });
 });

@@ -14,6 +14,7 @@ import {
   selectAllImages, selectAllLogs, selectAllPeripherals, selectAllSensors,
   selectAllTools,
   maybeGetTimeSettings,
+  selectAllToolSlotPointers,
 } from "../resources/selectors";
 import { last, some, uniq } from "lodash";
 import {
@@ -40,7 +41,7 @@ import {
   changeFirmwareHardware, SEED_DATA_OPTIONS, SEED_DATA_OPTIONS_DDI,
 } from "../messages/cards";
 import { seedAccount } from "../messages/actions";
-import { FirmwareHardware, TaggedLog, Xyz } from "farmbot";
+import { FirmwareHardware, TaggedLog, TaggedToolSlotPointer, Xyz } from "farmbot";
 import { ConnectivityDiagram } from "../devices/connectivity/diagram";
 import { Diagnosis } from "../devices/connectivity/diagnosis";
 import { connectivityData } from "../devices/connectivity/generate_data";
@@ -98,11 +99,13 @@ import { BotState } from "../devices/interfaces";
 import {
   reduceToolName, ToolName,
 } from "../farm_designer/map/tool_graphics/all_tools";
-import { WaterFlowRateInput } from "../tools/edit_tool";
+import { isActive, WaterFlowRateInput } from "../tools/edit_tool";
 import { RPI_OPTIONS } from "../settings/fbos_settings/rpi_model";
 import { BoxTop } from "../settings/pin_bindings/box_top";
 import { OtaTimeSelector } from "../settings/fbos_settings/ota_time_selector";
 import { useNavigate } from "react-router";
+import { SlotLocationInputRow } from "../tools/tool_slot_edit_components";
+import { ToolSlotInventoryItem } from "../tools";
 
 export const Language = (props: WizardStepComponentProps) => {
   const user = getUserAccountSettings(props.resources);
@@ -804,6 +807,66 @@ export const CameraReplacement = () =>
       </a>
     </p>
   </div>;
+
+export interface SlotCoordinateRowsProps {
+  dispatch: Function;
+  resources: ResourceIndex;
+  bot: BotState;
+  indexValues: number[];
+}
+
+export const SlotCoordinateRows = (props: SlotCoordinateRowsProps) => {
+  const locationData = validBotLocationData(props.bot.hardware.location_data);
+  const slots = selectAllToolSlotPointers(props.resources);
+  return <div className={"slot-coordinates grid"}>
+    {props.indexValues.map(index => {
+      const slot = slots[index];
+      if (!slot) { return; }
+      const updateSlot = (update: Partial<TaggedToolSlotPointer["body"]>) => {
+        props.dispatch(edit(slot, update));
+        props.dispatch(save(slot.uuid));
+      };
+      return <div className={"row double-gap align-baseline info-box"} key={index}>
+        <label>{`${t("Slot")} ${index + 1}`}</label>
+        <SlotLocationInputRow
+          slotLocation={slot.body}
+          gantryMounted={slot.body.gantry_mounted}
+          botPosition={locationData.position}
+          onChange={updateSlot} />
+      </div>;
+    })}
+  </div>;
+};
+
+export interface SlotDropdownRowsProps {
+  dispatch: Function;
+  resources: ResourceIndex;
+  bot: BotState;
+  indexValues: number[];
+}
+
+export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
+  const slots = selectAllToolSlotPointers(props.resources);
+  const tools = selectAllTools(props.resources);
+  return <div className={"slot-coordinates grid"}>
+    {props.indexValues.map(index => {
+      const slot = slots[index];
+      if (!slot) { return; }
+      return <div className={"row double-gap align-baseline info-box grid-exp-2"} key={index}>
+        <label>{`${t("Slot")} ${index + 1}`}</label>
+        <ToolSlotInventoryItem key={slot.uuid}
+          hovered={false}
+          dispatch={props.dispatch}
+          toolSlot={slot}
+          isActive={isActive(selectAllToolSlotPointers(props.resources))}
+          tools={tools}
+          noUTM={false}
+          disableNavigate={true}
+          toolTransformProps={{ quadrant: 2, xySwap: false }} />
+      </div>;
+    })}
+  </div>;
+};
 
 export const Tour = (tourSlug: string) => {
   const navigate = useNavigate();

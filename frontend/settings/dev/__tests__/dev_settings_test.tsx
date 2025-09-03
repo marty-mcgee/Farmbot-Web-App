@@ -5,11 +5,14 @@ jest.mock("../../../config_storage/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import {
   DevWidgetFERow, DevWidgetFBOSRow, DevWidgetDelModeRow,
   DevWidgetShowInternalEnvsRow,
   DevWidget3dCameraRow,
+  DevWidgetAllOrderOptionsRow,
+  DevWidgetChunkingDisabledRow,
 } from "../dev_settings";
 import { DevSettings } from "../dev_support";
 import { setWebAppConfigValue } from "../../../config_storage/actions";
@@ -120,5 +123,40 @@ describe("<DevWidgetShowInternalEnvsRow />", () => {
     wrapper.find("button").simulate("click");
     expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
     delete mockDevSettings[DevSettings.SHOW_INTERNAL_ENVS];
+  });
+});
+
+describe("<DevWidgetAllOrderOptionsRow />", () => {
+  it("enables all order options", () => {
+    render(<DevWidgetAllOrderOptionsRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use",
+      JSON.stringify({ [DevSettings.ALL_ORDER_OPTIONS]: "true" }));
+    delete mockDevSettings[DevSettings.ALL_ORDER_OPTIONS];
+  });
+
+  it("disables all order options", () => {
+    mockDevSettings[DevSettings.ALL_ORDER_OPTIONS] = "true";
+    render(<DevWidgetAllOrderOptionsRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
+    delete mockDevSettings[DevSettings.ALL_ORDER_OPTIONS];
+  });
+});
+
+describe("<DevWidgetChunkingDisabledRow />", () => {
+  it("enables chunking disabled", () => {
+    render(<DevWidgetChunkingDisabledRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(localStorage.getItem("DISABLE_CHUNKING")).toEqual("true");
+    localStorage.removeItem("DISABLE_CHUNKING");
+  });
+
+  it("disables chunking disabled", () => {
+    localStorage.setItem("DISABLE_CHUNKING", "true");
+    render(<DevWidgetChunkingDisabledRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(localStorage.getItem("DISABLE_CHUNKING")).toBeFalsy();
+    localStorage.removeItem("DISABLE_CHUNKING");
   });
 });
