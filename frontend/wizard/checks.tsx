@@ -852,7 +852,7 @@ export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
     {props.indexValues.map(index => {
       const slot = slots[index];
       if (!slot) { return; }
-      return <div className={"row double-gap align-baseline info-box"} key={index}>
+      return <div className={"row double-gap align-baseline info-box grid-exp-2"} key={index}>
         <label>{`${t("Slot")} ${index + 1}`}</label>
         <ToolSlotInventoryItem key={slot.uuid}
           hovered={false}
