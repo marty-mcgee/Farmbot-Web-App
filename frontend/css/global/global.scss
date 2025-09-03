@@ -435,7 +435,7 @@ textarea:focus {
 }
 
 .beacon-transition {
-  transition: border 1s, border-radius 1s;
+  transition: border 1s, border-radius 1s, box-shadow 1s;
 }
 
 .beacon {
@@ -443,7 +443,7 @@ textarea:focus {
     box-shadow: 0 0 0 4px $yellow !important;
   }
   &.soft {
-    background: #ffe53e52 !important;
+    box-shadow: var(--highlight) !important;
   }
 }
 
