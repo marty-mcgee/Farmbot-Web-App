@@ -231,6 +231,9 @@
 }
 
 .bot-position-rows {
+  .axis-display-group-item {
+    position: relative;
+  }
   .missed-step-indicator-wrapper {
     position: absolute;
     top: -1.5rem;

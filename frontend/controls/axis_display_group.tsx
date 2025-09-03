@@ -8,7 +8,7 @@ import { DevSettings } from "../settings/dev/dev_support";
 
 const Axis = (props: AxisProps) => {
   const { axis, val, missedSteps, axisState, index, detectionEnabled } = props;
-  return <div className={"index-" + index}>
+  return <div className={"axis-display-group-item index-" + index}>
     {isNumber(missedSteps) && missedSteps >= 0 && detectionEnabled &&
       <MissedStepIndicator
         missedSteps={axisState == "idle" ? 0 : missedSteps}
