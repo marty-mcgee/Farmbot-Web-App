@@ -176,6 +176,9 @@ export namespace ToolTips {
     manually measure the height at various locations in the garden and add
     corresponding soil height points from the points panel. (default: 0)`);
 
+  export const DEFAULT_AXIS_ORDER =
+    trim(`Default axis order for movement. (default: X and Y together)`);
+
   // Hardware Settings: Motors
   export const MAX_SPEED =
     trim(`Maximum travel speed after acceleration in millimeters per second.
@@ -467,9 +470,9 @@ export namespace ToolTips {
     trim(`The Move step instructs FarmBot to move to the specified
     coordinate or distance from its current location.`);
 
-  export const SAFE_Z =
-    trim(`If enabled, FarmBot will: (1) Move Z to the Safe Z height,
-    (2) Move X and Y to the new location, and (3) Move Z to the new location`);
+  export const AXIS_ORDER =
+    trim(`If "Safe Z" is chosen, FarmBot will: (1) Move Z to the Safe Z height,
+    (2) Move X and Y to the new location, and (3) Move Z to the new location.`);
 
   export const MOVE_ABSOLUTE =
     trim(`The Move To step instructs FarmBot to move to the specified
@@ -605,6 +608,50 @@ export namespace ToolTips {
 
   export const UNKNOWN_STEP =
     trim(`Unable to properly display this step.`);
+
+  // 3D
+  export const THREE_D_BED_WALL_THICKNESS =
+    trim(`Bed wood thickness. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BED_HEIGHT =
+    trim(`Bed height. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_CC_SUPPORT_SIZE =
+    trim(`Cable carrier support size. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BEAM_LENGTH =
+    trim(`Gantry beam extrusion length. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_COLUMN_LENGTH =
+    trim(`Gantry column extrusion length. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_Z_AXIS_LENGTH =
+    trim(`Z axis extrusion length. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BED_X_OFFSET =
+    trim(`Bed X offset. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BED_Y_OFFSET =
+    trim(`Bed Y offset. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BED_Z_OFFSET =
+    trim(`Bed Z offset. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_LEG_SIZE =
+    trim(`Leg size. (default: {{ defaultConfigValue }}mm)`);
+
+  export const THREE_D_BOUNDS =
+    trim(`Display bounds. (default: 0)`);
+
+  export const THREE_D_GRID =
+    trim(`Display grid. (default: 0)`);
+
+  export const THREE_D_HEADING =
+    trim(`Direction your device is facing, as an offset in degrees from
+    north. (default: 0)`);
+
+  export const THREE_D_ENVIRONMENT =
+    trim(`3D Scene. (default: "Outdoor")`);
 
   // Tools
   export const WATER_FLOW_RATE =
@@ -819,6 +866,9 @@ export namespace Content {
     trim(`Disallow account data changes. This does
     not prevent Farmwares or FarmBot OS from changing settings.`);
 
+  export const DARK_MODE =
+    trim(`Enable a dark interface theme.`);
+
   // Sequence Settings
   export const CONFIRM_STEP_DELETION =
     trim(`Show a confirmation dialog when deleting a sequence step.`);
@@ -1024,6 +1074,17 @@ export namespace Content {
     trim(`Are you sure you want to delete all logs? A page refresh will be
     required.`);
 
+  export const SHOW_3D_VIEW_DESCRIPTION_DESKTOP =
+    (`**3D Controls**
+      - Scroll to zoom
+      - Click and drag to rotate
+      - Right-click and drag to pan`);
+
+  export const SHOW_3D_VIEW_DESCRIPTION_MOBILE =
+    (`**3D Controls**
+        - Pinch to zoom and pan
+        - Touch and drag to rotate`);
+
   // Front Page
   export const TOS_UPDATE =
     trim(`The terms of service have recently changed. You must accept the
@@ -1154,22 +1215,22 @@ export namespace Content {
     Try leaving the saved garden first.`);
 
   export const NO_PLANTS =
-    trim(`Press "+" to add a plant to your garden.`);
+    trim(`Press + to add a plant to your garden`);
 
   export const NO_GARDENS =
-    trim(`Press "+" to add a garden.`);
+    trim(`Press + to add a garden`);
 
   export const NO_POINTS =
-    trim(`Press "+" to add a point to your garden.`);
+    trim(`Press + to add a point to your garden`);
 
   export const NO_GROUPS =
-    trim(`Press "+" to add a group.`);
+    trim(`Press + to add a group`);
 
   export const NO_WEEDS =
-    trim(`Press "+" to add a weed.`);
+    trim(`Press + to add a weed`);
 
   export const NO_FARMWARE =
-    trim(`Press "+" to add a Farmware.`);
+    trim(`Press + to add a Farmware`);
 
   export const NO_PERIPHERALS =
     trim(`Press "edit" to add a peripheral.`);
@@ -1178,25 +1239,19 @@ export namespace Content {
     trim(`Press "edit" to add a sensor.`);
 
   export const NO_ZONES =
-    trim(`Press "+" to add a zone.`);
+    trim(`Press + to add a zone`);
 
   export const NO_CURVES =
-    trim(`Press "+" to add a curve.`);
+    trim(`Press + to add a curve`);
 
   export const ENTER_CROP_SEARCH_TERM =
     trim(`Search for a crop to add to your garden.`);
 
-  export const CROP_NOT_FOUND_INTRO =
-    trim(`Would you like to`);
-
-  export const CROP_NOT_FOUND_LINK =
-    trim(`add this crop on OpenFarm?`);
-
   export const NO_TOOLS =
-    trim(`Press "+" to add a new tool or seed container.`);
+    trim(`Press + to add a new tool or seed container`);
 
   export const NO_SEED_CONTAINERS =
-    trim(`Press "+" to add a seed container.`);
+    trim(`Press + to add a seed container`);
 
   export const MOUNTED_TOOL =
     trim(`The tool currently mounted to the UTM can be set here or by using
@@ -1205,7 +1260,7 @@ export namespace Content {
 
   // Farm Events
   export const NOTHING_SCHEDULED =
-    trim(`Press "+" to schedule an event.`);
+    trim(`Press + to schedule an event`);
 
   export const REGIMEN_TODAY_SKIPPED_ITEM_RISK =
     trim(`You are scheduling a regimen to run today. Be aware that
@@ -1865,6 +1920,54 @@ export namespace SetupWizardContent {
     Be mindful of debris that may be projected and use appropriate
     protective equipment. Disconnect the rotary tool when not in use.`);
 
+  export const SLOTS_SETUP =
+    trim(`In real life, manually (by hand) load the watering nozzle tool
+    into the toolbay slot nearest the home position.`);
+
+  export const SLOTS_1_COORDINATES =
+    trim(`Using the manual controls, instruct FarmBot to move towards the
+    slot with the watering nozzle in it. As you get closer, change the
+    MOVE AMOUNT to a smaller value for finer movements. Your goal is to
+    position the UTM just above the tool and then descend down onto it
+    (mounting it). Once the UTM has fully mounted the tool, click the blue
+    button next to the slot's X, Y, and Z fields to save FarmBot's current
+    position to the slot.`);
+
+  export const SLOTS_2_COORDINATES =
+    trim(`Using the manual controls, move the UTM up 100mm in the +Z
+    direction to dismount the watering nozzle. Then move the UTM 100mm
+    in the +Y direction to roughly align with the next slot in the toolbay.
+    Manually (by hand) move the watering nozzle tool into the next slot.
+    Using the manual controls, move the UTM to descend down onto the tool.
+    Take your time, you may need to make fine +/- 1mm adjustments to the
+    X and Y position as you are descending. Once the tool is mounted,
+    click the blue button to save FarmBot's current position to the slot.`);
+
+  export const SLOTS_REMAINING_COORDINATES =
+    trim(`Repeat the process for all of the remaining toolbay slots.`);
+
+  export const SLOTS_LOAD_TOOLS =
+    trim(`Using the manual controls, instruct FarmBot to go to home.
+    Then manually (by hand) load the tools and seed containers into the
+    toolbays according to the virtual configuration shown in the table
+    below. You may optionally load the tools in a different configuration
+    and use the dropdown menus to change each slot's assignment accordingly.`);
+
+  export const SLOTS_SEED_TROUGH_1 =
+    trim(`Using the manual controls, move the UTM towards the gantry
+    mounted seed trough nearest the electronics box. As you get closer,
+    change the MOVE AMOUNT to a smaller value for finer movements.
+    Your goal is to position the UTM just above the seed trough such
+    that the middle liquid/gas port on the bottom of the UTM (the one
+    centered below the FarmBot logo) is about 1mm above the center of
+    the trough. Then click the blue button to save FarmBot's current
+    position to the trough slot.`);
+
+  export const SLOTS_SEED_TROUGH_2 =
+    trim(`Using the manual controls, move the UTM 22mm in the +Y direction.
+    Then click the blue button to save FarmBot's current position to the
+    trough slot.`);
+
   export const ESTOP_BUTTON =
     trim(`Press the physical E-Stop button on top of the electronics box.`);
 
@@ -2032,6 +2135,7 @@ export enum DeviceSetting {
   gantryHeight = `Gantry Height`,
   safeHeight = `Safe Height`,
   fallbackSoilHeight = `Fallback Soil Height`,
+  defaultAxisOrder = `Default Axis Order`,
 
   // Motors
   motors = `Motors`,
@@ -2089,7 +2193,7 @@ export enum DeviceSetting {
   addNewPinBinding = `Add new pin binding`,
 
   // Pin Guard
-  pinGuardLabels = ``,
+  pinGuardLabels = `Pin Guard`,
   pinGuardTitles = `pin timeout (sec) to state`,
   pinGuard = `Pin Guard`,
   pinGuard1 = `Pin Guard 1`,
@@ -2143,6 +2247,23 @@ export enum DeviceSetting {
   customSettings = `Custom Settings`,
   envEditor = `ENV Editor`,
 
+  // 3D
+  threeDGarden = `3D Garden`,
+  bedWallThickness = `Bed Wall Thickness`,
+  bedHeight = `Bed Height`,
+  ccSupportSize = `Cable Carrier Support Size`,
+  beamLength = `Beam Length`,
+  columnLength = `Column Length`,
+  zAxisLength = `Z Axis Length`,
+  bedXOffset = `Bed X Offset`,
+  bedYOffset = `Bed Y Offset`,
+  bedZOffset = `Bed Z Offset`,
+  legSize = `Leg Size`,
+  bounds = `Bounds`,
+  grid = `Grid`,
+  heading = `Heading`,
+  environment = `Environment`,
+
   // Map
   showPlants = `Plants`,
   showPlantsMapLayer = `Show Plants Map Layer`,
@@ -2166,6 +2287,7 @@ export enum DeviceSetting {
   showReadingsMapLayer = `Show Readings Map Layer`,
   showMoisture = `Moisture`,
   showMoistureInterpolationMapLayer = `Show Moisture Interpolation Map Layer`,
+  show3DMap = `3D Map beta`,
 
   // Controls
   invertJogButtonXAxis = `X Axis`,
@@ -2220,6 +2342,7 @@ export enum DeviceSetting {
   discardUnsavedChanges = `Discard Unsaved Changes`,
   confirmEmergencyUnlock = `Confirm emergency unlock`,
   userInterfaceReadOnlyMode = `User Interface Read Only Mode`,
+  darkMode = `Dark Mode`,
 
   // Photos: Filters
   alwaysHighlightCurrentPhotoInMap = `always highlight current photo in map`,
@@ -2350,7 +2473,6 @@ export enum Actions {
   TOGGLE_POPUP = "TOGGLE_POPUP",
   OPEN_POPUP = "OPEN_POPUP",
   CLOSE_POPUP = "CLOSE_POPUP",
-  TOGGLE_HOTKEY_GUIDE = "TOGGLE_HOTKEY_GUIDE",
 
   // Devices
   CHANGE_STEP_SIZE = "CHANGE_STEP_SIZE",
@@ -2365,6 +2487,13 @@ export enum Actions {
   STASH_STATUS = "STASH_STATUS",
   SET_NEEDS_VERSION_CHECK = "SET_NEEDS_VERSION_CHECK",
   SET_MALFORMED_NOTIFICATION_SENT = "SET_MALFORMED_NOTIFICATION_SENT",
+  DEMO_TOGGLE_PIN = "DEMO_TOGGLE_PIN",
+  DEMO_WRITE_PIN = "DEMO_WRITE_PIN",
+  DEMO_SET_POSITION = "DEMO_SET_POSITION",
+  DEMO_SET_JOB_PROGRESS = "DEMO_SET_JOB_PROGRESS",
+  DEMO_SET_ESTOP = "DEMO_SET_ESTOP",
+  DEMO_SET_MOUNTED_TOOL_ID = "DEMO_SET_MOUNTED_TOOL_ID",
+  DEMO_SET_QUEUE_LENGTH = "DEMO_SET_QUEUE_LENGTH",
 
   // Draggable
   PUT_DATA_XFER = "PUT_DATA_XFER",
@@ -2389,7 +2518,6 @@ export enum Actions {
   SET_SLUG_BULK = "SET_SLUG_BULK",
   CHOOSE_LOCATION = "CHOOSE_LOCATION",
   SET_DRAWN_POINT_DATA = "SET_DRAWN_POINT_DATA",
-  SET_DRAWN_WEED_DATA = "SET_DRAWN_WEED_DATA",
   CHOOSE_SAVED_GARDEN = "CHOOSE_SAVED_GARDEN",
   TRY_SORT_TYPE = "TRY_SORT_TYPE",
   SET_SETTINGS_SEARCH_TERM = "SET_SETTINGS_SEARCH_TERM",
@@ -2410,6 +2538,7 @@ export enum Actions {
   TOGGLE_GRID_ID = "TOGGLE_GRID_ID",
   SET_GRID_START = "SET_GRID_START",
   TOGGLE_SOIL_HEIGHT_LABELS = "TOGGLE_SOIL_HEIGHT_LABELS",
+  SET_PANEL_OPEN = "SET_PANEL_OPEN",
   SET_PROFILE_OPEN = "SET_PROFILE_OPEN",
   SET_PROFILE_AXIS = "SET_PROFILE_AXIS",
   SET_PROFILE_POSITION = "SET_PROFILE_POSITION",
@@ -2420,6 +2549,13 @@ export enum Actions {
   SET_CROP_HEIGHT_CURVE_ID = "SET_CROP_HEIGHT_CURVE_ID",
   SET_CROP_STAGE = "SET_CROP_STAGE",
   SET_CROP_PLANTED_AT = "SET_CROP_PLANTED_AT",
+  SET_CROP_RADIUS = "SET_CROP_RADIUS",
+
+  // 3D
+  SET_DISTANCE_INDICATOR = "SET_DISTANCE_INDICATOR",
+  TOGGLE_3D_TOP_DOWN_VIEW = "TOGGLE_3D_TOP_DOWN_VIEW",
+  TOGGLE_3D_EXAGGERATED_Z = "TOGGLE_3D_EXAGGERATED_Z",
+  SET_3D_TIME = "RESET_3D_TIME",
 
   // Regimens
   PUSH_WEEK = "PUSH_WEEK",

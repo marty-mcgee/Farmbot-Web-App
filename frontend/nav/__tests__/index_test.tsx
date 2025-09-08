@@ -1,8 +1,11 @@
+let mockIsMobile = false;
+jest.mock("../../screen_size", () => ({
+  isMobile: () => mockIsMobile,
+}));
+
 jest.mock("../../devices/timezones/guess_timezone", () => ({
   maybeSetTimezone: jest.fn()
 }));
-
-jest.mock("../../api/crud", () => ({ refresh: jest.fn() }));
 
 jest.mock("../../devices/actions", () => ({
   sync: jest.fn(),
@@ -10,6 +13,7 @@ jest.mock("../../devices/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen } from "@testing-library/react";
 import { shallow, mount } from "enzyme";
 import { NavBar } from "../index";
 import { bot } from "../../__test_support__/fake_state/bot";
@@ -21,9 +25,8 @@ import { maybeSetTimezone } from "../../devices/timezones/guess_timezone";
 import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { fakePings } from "../../__test_support__/fake_state/pings";
 import { Link } from "../../link";
-import { refresh } from "../../api/crud";
-import { push } from "../../history";
 import {
+  fakeDesignerState,
   fakeHelpState, fakeMenuOpenState,
 } from "../../__test_support__/fake_designer_state";
 import { Path } from "../../internal_urls";
@@ -34,8 +37,14 @@ import {
 import { app } from "../../__test_support__/fake_state/app";
 import { Actions } from "../../constants";
 import { cloneDeep } from "lodash";
+import { mountWithContext } from "../../__test_support__/mount_with_context";
+import { ControlsPanel, ControlsPanelProps } from "../../controls/controls";
 
 describe("<NavBar />", () => {
+  beforeEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   const fakeProps = (): NavBarProps => ({
     timeSettings: fakeTimeSettings(),
     logs: [],
@@ -62,6 +71,7 @@ describe("<NavBar />", () => {
     feeds: [],
     peripherals: [],
     sequences: [],
+    designer: fakeDesignerState(),
   });
 
   it("has correct parent className", () => {
@@ -69,6 +79,12 @@ describe("<NavBar />", () => {
     expect(wrapper.find("div").first().hasClass("nav-wrapper")).toBeTruthy();
     expect(wrapper.find("div").first().hasClass("red")).toBeFalsy();
     expect(wrapper.html()).not.toContain("hover");
+  });
+
+  it("renders demo account", () => {
+    localStorage.setItem("myBotIs", "online");
+    render(<NavBar {...fakeProps()} />);
+    expect(screen.getByText("Using a demo account")).toBeInTheDocument();
   });
 
   it("shows popups as open", () => {
@@ -132,51 +148,37 @@ describe("<NavBar />", () => {
     });
   });
 
-  it("refreshes device", () => {
-    const p = fakeProps();
-    const wrapper = mount<NavBar>(<NavBar {...p} />);
+  it("updates document title", () => {
+    const wrapper = mount<NavBar>(<NavBar {...fakeProps()} />);
     expect(wrapper.state().documentTitle).toEqual("");
     document.title = "new page";
     wrapper.instance().componentDidUpdate();
     expect(wrapper.state().documentTitle).not.toEqual("");
-    expect(refresh).toHaveBeenCalledWith(p.device);
-    jest.resetAllMocks();
-    wrapper.instance().componentDidUpdate();
-    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("displays connectivity saucer", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 400,
-      configurable: true
-    });
+    mockIsMobile = true;
     const wrapper = mount(<NavBar {...fakeProps()} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
     expect(wrapper.text().toLowerCase()).not.toContain("connectivity");
   });
 
   it("displays connectivity saucer and button", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 500,
-      configurable: true
-    });
+    mockIsMobile = false;
     const wrapper = mount(<NavBar {...fakeProps()} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
     expect(wrapper.text().toLowerCase()).toContain("connectivity");
   });
 
   it("displays setup button", () => {
-    const wrapper = mount(<NavBar {...fakeProps()} />);
+    const wrapper = mountWithContext(<NavBar {...fakeProps()} />);
     wrapper.find(".setup-button").simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.setup());
+    expect(mockNavigate).toHaveBeenCalledWith(Path.setup());
     expect(wrapper.text().toLowerCase()).toContain("complete");
   });
 
   it("displays setup button: small screens", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 400,
-      configurable: true
-    });
+    mockIsMobile = true;
     const wrapper = mount(<NavBar {...fakeProps()} />);
     expect(wrapper.text().toLowerCase()).not.toContain("complete");
   });
@@ -188,6 +190,15 @@ describe("<NavBar />", () => {
     expect(wrapper.find(".setup-button").length).toEqual(0);
   });
 
+  it("displays time travel button", () => {
+    const p = fakeProps();
+    p.getConfigValue = () => true;
+    p.device.body.lat = 1;
+    p.device.body.lng = 1;
+    const wrapper = mount(<NavBar {...p} />);
+    expect(wrapper.find(".time-travel-button").length).toEqual(1);
+  });
+
   it("displays navbar visual warning for support tokens", () => {
     const p = fakeProps();
     p.authAud = "staff";
@@ -196,10 +207,7 @@ describe("<NavBar />", () => {
   });
 
   it("displays active job", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 500,
-      configurable: true
-    });
+    mockIsMobile = false;
     const p = fakeProps();
     p.bot.hardware.jobs = { "job title": fakePercentJob() };
     const wrapper = mount(<NavBar {...p} />);
@@ -208,14 +216,28 @@ describe("<NavBar />", () => {
   });
 
   it("displays active job on small screens", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 400,
-      configurable: true
-    });
+    mockIsMobile = true;
     const p = fakeProps();
     p.bot.hardware.jobs = { "job title": fakePercentJob() };
     const wrapper = mount(<NavBar {...p} />);
     expect(wrapper.text().toLowerCase()).not.toContain("99%");
     expect(wrapper.text().toLowerCase()).not.toContain("job title");
+  });
+
+  it("uses MCU params when firmware config is missing", () => {
+    const p = fakeProps();
+    p.firmwareConfig = undefined;
+    p.appState.popups.controls = true;
+    const wrapper = mount<NavBar>(<NavBar {...p} />);
+    const props = wrapper.find(ControlsPanel).props() as ControlsPanelProps;
+    expect(props.firmwareSettings).toEqual(p.bot.hardware.mcu_params);
+  });
+
+  it("opens account menu", () => {
+    mockIsMobile = false;
+    const wrapper = mount<NavBar>(<NavBar {...fakeProps()} />);
+    wrapper.instance().toggle("accountMenuOpen")();
+    wrapper.update();
+    expect(wrapper.find(".nav-name").first().hasClass("hover")).toBeTruthy();
   });
 });

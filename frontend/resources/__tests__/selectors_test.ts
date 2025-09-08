@@ -17,6 +17,7 @@ const SLOT_ID = 100;
 const fakeTool: TaggedTool = arrayUnwrap(newTaggedResource("Tool", {
   name: "yadda yadda",
   flow_rate_ml_per_s: 0,
+  seeder_tip_z_offset: 80,
   id: TOOL_ID
 }));
 const fakeSlot: TaggedToolSlotPointer = arrayUnwrap(newTaggedResource("Point",
@@ -49,6 +50,33 @@ describe("findSlotByToolId", () => {
     const state = [saveOK(fakeTool), saveOK(fakeSlot)]
       .reduce(resourceReducer, initialState);
     const result = Selector.findSlotByToolId(state.index, TOOL_ID);
+    expect(result).toBeTruthy();
+    if (result) { expect(result.kind).toBe("Point"); }
+  });
+});
+
+describe("maybeFindSlotByToolId", () => {
+  it("returns undefined when tool not found", () => {
+    const state = resourceReducer(buildResourceIndex(), saveOK(fakeTool));
+    expect(state.index.byKindAndId["Tool." + fakeTool.body.id])
+      .toEqual(fakeTool.uuid);
+    const result = Selector.maybeFindSlotByToolId(state.index, 0);
+    expect(result).toBeFalsy();
+  });
+
+  it("returns undefined when slot not found", () => {
+    const state = resourceReducer(buildResourceIndex(), saveOK(fakeTool));
+    expect(state.index.byKindAndId["Tool." + fakeTool.body.id])
+      .toEqual(fakeTool.uuid);
+    const result = Selector.maybeFindSlotByToolId(state.index, TOOL_ID);
+    expect(result).toBeFalsy();
+  });
+
+  it("returns something when there is a match", () => {
+    const initialState = buildResourceIndex();
+    const state = [saveOK(fakeTool), saveOK(fakeSlot)]
+      .reduce(resourceReducer, initialState);
+    const result = Selector.maybeFindSlotByToolId(state.index, TOOL_ID);
     expect(result).toBeTruthy();
     if (result) { expect(result.kind).toBe("Point"); }
   });

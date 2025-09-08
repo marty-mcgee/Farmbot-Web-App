@@ -1,11 +1,8 @@
 import React from "react";
-import { svgToUrl } from "../open_farm/icons";
-import { maybeGetCachedPlantIcon } from "../open_farm/cached_crop";
 import { setHoveredPlant } from "../farm_designer/map/actions";
 import {
   TaggedPointGroup, uuid, TaggedPoint, TaggedToolSlotPointer, TaggedTool,
   TaggedPlantTemplate,
-  TaggedPlantPointer,
 } from "farmbot";
 import { error } from "../toast/toast";
 import { t } from "../i18next_wrapper";
@@ -14,7 +11,13 @@ import { overwriteGroup } from "./actions";
 import { ToolSlotSVG } from "../farm_designer/map/layers/tool_slots/tool_graphics";
 import { ToolTransformProps } from "../tools/interfaces";
 import { FilePath, Path } from "../internal_urls";
-import { push } from "../history";
+import { NavigationContext } from "../routes_helpers";
+import { findIcon } from "../crops/find";
+
+export const svgToUrl = (xml: string): string => {
+  const DATA_URI = "data:image/svg+xml;utf8,";
+  return DATA_URI + encodeURIComponent(xml);
+};
 
 export interface PointGroupItemProps {
   point: TaggedPoint | TaggedPlantTemplate;
@@ -26,8 +29,6 @@ export interface PointGroupItemProps {
   navigate?: boolean;
 }
 
-interface PointGroupItemState { icon: string; }
-
 const removePoint = (group: TaggedPointGroup, pointId: number) =>
   (dispatch: Function) => {
     type Body = (typeof group)["body"];
@@ -37,14 +38,14 @@ const removePoint = (group: TaggedPointGroup, pointId: number) =>
   };
 
 export const genericPointIcon = (color: string | undefined) =>
-  `<svg xmlns='http://www.w3.org/2000/svg'
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'
     fill='none' stroke-width='1.5' stroke='${color || "green"}'>
-    <circle cx='15' cy='15' r='12' />
-    <circle cx='15' cy='15' r='2' />
+    <circle cx='25' cy='25' r='18' />
+    <circle cx='25' cy='25' r='2' />
   </svg>`;
 
 export const genericWeedIcon = (color: string | undefined) =>
-  `<svg xmlns='http://www.w3.org/2000/svg'>
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'>
       <defs>
         <radialGradient id='WeedGradient'>
           <stop offset='90%' stop-color='${color || "red"}'
@@ -53,25 +54,29 @@ export const genericWeedIcon = (color: string | undefined) =>
             stop-opacity='0'></stop>
         </radialGradient>
       </defs>
-      <circle id='weed-radius' cx='15' cy='15' r='14'
+      <circle id='weed-radius' cx='25' cy='25' r='25'
         fill='url(#WeedGradient)' opacity='0.5'></circle>
     </svg>`;
 
 // The individual plants in the point group detail page.
 export class PointGroupItem
-  extends React.Component<PointGroupItemProps, PointGroupItemState> {
-
-  state: PointGroupItemState = { icon: "" };
+  extends React.Component<PointGroupItemProps, {}> {
 
   key = uuid();
 
   enter = () => this.props.dispatch?.(
-    setHoveredPlant(this.props.point.uuid, this.state.icon));
+    setHoveredPlant(this.props.point.uuid));
 
   leave = () => this.props.dispatch?.(setHoveredPlant(undefined));
 
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
+
   click = () => {
-    if (this.props.navigate) { push(Path.plants(this.props.point.body.id)); }
+    if (this.props.navigate) {
+      this.navigate(Path.plants(this.props.point.body.id));
+    }
     if (this.criteriaIcon) {
       return error(t("Cannot remove points selected by filters."));
     }
@@ -82,28 +87,18 @@ export class PointGroupItem
     this.leave();
   };
 
-  setIconState = (icon: string) => this.setState({ icon });
-
   get criteriaIcon() {
     return this.props.group && !this.props.group.body.point_ids
       .includes(this.props.point.body.id || 0);
   }
 
-  maybeGetCachedIcon = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (this.props.point.kind == "PlantTemplate"
-      || this.props.point.body.pointer_type == "Plant") {
-      const slug = (this.props.point as TaggedPlantPointer | TaggedPlantTemplate)
-        .body.openfarm_slug;
-      maybeGetCachedPlantIcon(slug, img, this.setIconState);
-    }
-  };
-
   get initIcon() {
-    if (this.props.point.kind == "PlantTemplate") { return FilePath.DEFAULT_ICON; }
+    if (this.props.point.kind == "PlantTemplate") {
+      return findIcon(this.props.point.body.openfarm_slug);
+    }
     switch (this.props.point.body.pointer_type) {
       case "Plant":
-        return FilePath.DEFAULT_ICON;
+        return findIcon(this.props.point.body.openfarm_slug);
       case "GenericPointer":
         const { color } = this.props.point.body.meta;
         return svgToUrl(genericPointIcon(color));
@@ -133,7 +128,7 @@ export class PointGroupItem
   };
 
   render() {
-    const size = 20;
+    const size = 30;
     return <span
       key={this.key}
       className={"group-item-icon"}
@@ -150,7 +145,6 @@ export class PointGroupItem
       <img
         style={{ background: this.props.hovered ? "lightgray" : "none" }}
         src={this.initIcon}
-        onLoad={this.maybeGetCachedIcon}
         width={size}
         height={size} />
     </span>;

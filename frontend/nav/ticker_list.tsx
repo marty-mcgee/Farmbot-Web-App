@@ -11,7 +11,6 @@ import { GetWebAppConfigValue } from "../config_storage/actions";
 import { MessageType } from "../sequences/interfaces";
 import { t } from "../i18next_wrapper";
 import { TimeSettings } from "../interfaces";
-import { forceOnline } from "../devices/must_be_online";
 import { formatTime } from "../util";
 import { Actions } from "../constants";
 
@@ -50,9 +49,6 @@ const getFirstTickerLog = (
   botOnline: boolean,
   lastSeen: number,
 ): TaggedLog => {
-  if (forceOnline()) {
-    return demoAccountLog();
-  }
   if (!botOnline) {
     return generateFallbackLog("bot_offline", t("FarmBot is offline"), lastSeen);
   }
@@ -81,7 +77,7 @@ const TickerLog = (props: TickerLogProps) => {
   const time = created_at
     ? formatTime(moment.unix(created_at), timeSettings, "MMM D")
     : "";
-  return <div className="status-ticker-wrapper">
+  return <div className="status-ticker-wrapper row grid-exp-2">
     <div className={`saucer ${type}`} />
     <label className={`status-ticker-message ${prefix ? "prefix" : ""}`}>
       <Markdown>

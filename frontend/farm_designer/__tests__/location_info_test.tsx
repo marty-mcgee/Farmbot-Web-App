@@ -9,14 +9,15 @@ import { BooleanSetting } from "../../session_keys";
 import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import {
+  fakeFbosConfig,
   fakeImage, fakePlant, fakePoint, fakeSensor, fakeSensorReading, fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
 import { tagAsSoilHeight } from "../../points/soil_height";
 import { Actions } from "../../constants";
-import { push } from "../../history";
 import { ImageFlipper } from "../../photos/images/image_flipper";
 import { Path } from "../../internal_urls";
 import { fakeMovementState } from "../../__test_support__/fake_bot_data";
+import { mountWithContext } from "../../__test_support__/mount_with_context";
 
 describe("<LocationInfo />", () => {
   const fakeProps = (): LocationInfoProps => ({
@@ -37,6 +38,7 @@ describe("<LocationInfo />", () => {
     farmwareEnvs: [],
     arduinoBusy: false,
     movementState: fakeMovementState(),
+    defaultAxisOrder: "safe_z",
   });
 
   it("renders empty panel", () => {
@@ -52,7 +54,7 @@ describe("<LocationInfo />", () => {
   });
 
   it("updates query", () => {
-    location.search = "?x=123?y=456";
+    location.search = "?x=123&y=456";
     const p = fakeProps();
     mount(<LocationInfo {...p} />);
     expect(p.dispatch).toHaveBeenCalledWith({
@@ -122,7 +124,7 @@ describe("<LocationInfo />", () => {
     wrapper.find(".plant-search-item").simulate("mouseEnter");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_HOVERED_PLANT,
-      payload: { icon: "", plantUUID: "plantUuid" },
+      payload: { plantUUID: "plantUuid" },
     });
     jest.clearAllMocks();
     wrapper.find(".point-search-item").simulate("mouseEnter");
@@ -145,24 +147,34 @@ describe("<LocationInfo />", () => {
     const p = fakeProps();
     p.chosenLocation = { x: 1, y: 1, z: 0 };
     p.currentBotLocation = { x: 10, y: 1, z: 0 };
-    const wrapper = mount(<LocationInfo {...p} />);
+    const wrapper = mountWithContext(<LocationInfo {...p} />);
     expect(wrapper.text().toLowerCase()).toContain("9mm from farmbot");
     jest.clearAllMocks();
     wrapper.find(".add-point").simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.SET_DRAWN_POINT_DATA,
-      payload: { cx: 1, cy: 1 }
+      payload: {
+        name: "Location Point", cx: 1, cy: 1, color: "gray", r: 0, z: 0,
+        at_soil_level: false,
+      },
     });
-    expect(push).toHaveBeenCalledWith(Path.points("add"));
+    expect(mockNavigate).toHaveBeenCalledWith(Path.points("add"));
   });
 });
 
 describe("mapStateToProps()", () => {
   it("returns props", () => {
     const state = fakeState();
-    state.resources = buildResourceIndex([fakeWebAppConfig()]);
+    state.resources = buildResourceIndex([fakeWebAppConfig(), fakeFbosConfig()]);
     const props = mapStateToProps(state);
     expect(props.getConfigValue(BooleanSetting.xy_swap)).toEqual(false);
+  });
+
+  it("handles missing config", () => {
+    const state = fakeState();
+    state.resources = buildResourceIndex([]);
+    const props = mapStateToProps(state);
+    expect(props.getConfigValue(BooleanSetting.xy_swap)).toEqual(undefined);
   });
 });
 

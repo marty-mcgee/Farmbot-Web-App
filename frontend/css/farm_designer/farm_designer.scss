@@ -1,15 +1,18 @@
+@use "../variables" as *;
+@use "sass:color";
+
 .farm-designer {
   position: relative;
   height: 100vh;
   overflow: scroll;
+  scrollbar-width: none;
   .garden-map-legend {
-    @media screen and (max-width: 450px) {
-      &.panel-open {
+    @media screen and (max-width: $mobile_max_width) {
+      &.panel-open,
+      &.short-panel {
         display: none;
       }
-      &.short-panel {
-        top: 35rem;
-      }
+      &.panel-closed-mobile,
       &.panel-closed {
         top: 15rem;
       }
@@ -20,16 +23,22 @@
 .farm-designer-map {
   display: inline-block;
   min-width: 100%;
-  padding: 11rem 2rem 2rem 2rem; // at zoom = 1.0: 110px 20px 20px 20px
+  padding: 9rem 2rem 2rem 2rem;
   height: 100%;
   overflow: visible;
+  transition: 0.3s ease;
   &.panel-open {
-    padding: 11rem 2rem 2rem 46.8rem; // at zoom = 1.0: 110px 20px 20px 468px
+    padding: 9rem 2rem 2rem 47.5rem;
+    @media screen and (max-width: $mobile_max_width) {
+      padding: 18rem 2rem 2rem 47.5rem;
+    }
+  }
+  &.panel-closed-mobile {
+    padding: 16rem 1rem 1rem 1rem;
   }
   &.short-panel {
-    padding: 35rem 2rem 2rem 2rem; // at zoom = 1.0: 350px 20px 20px 20px
+    padding: 35rem 1rem 1rem;
   }
-  transition: 0.2s ease;
   &::-webkit-scrollbar {
     display: none;
   }
@@ -68,131 +77,64 @@
 .plant-catalog-image {
   width: 100%;
   background-position: center center !important;
-  background-size: 158% !important;
+  background-size: cover !important;
   background-color: $translucent;
-  height: 12rem;
+  aspect-ratio: 3 / 2;
   border-radius: 5px;
-}
-
-.crop-search-result-wrapper {
-  max-height: calc(100vh - 19rem);
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin-right: -10px;
-  padding-bottom: inherit;
-  .openfarm-search-results-wrapper {
-    display: grid;
-    gap: 2rem;
-    grid-template-columns: repeat(2, 1fr);
-    margin-left: 2.5rem;
-    margin-right: 2rem;
-  }
-  .plant-catalog-tile {
-    position: relative;
-    cursor: pointer;
-    text-align: center;
-    border-radius: 5px;
-    box-shadow: 0px 4px 7px 2px $translucent;
-    transition: transform 0.2s ease;
-    padding: 0;
-    &:hover {
-      box-shadow: 0px 5px 8px 2px rgba(0, 0, 0, 0.25);
-      transform: translateY(-1px);
-    }
-    label {
-      position: absolute;
-      left: 0;
-      bottom: -5px;
-      right: 0;
-      margin-top: 0 !important;
-      padding: 0.4rem 0.6rem 0.2rem;
-      background: linear-gradient(transparent, $translucent5);
-      border-bottom-left-radius: 5px;
-      border-bottom-right-radius: 5px;
-      color: $white;
-      font-size: 1.2rem !important;
-    }
+  &.fallback-image {
+    background-size: 50% !important;
+    background-color: $translucent15 !important;
   }
 }
 
 .thin-search-wrapper {
-  width: 100%;
-  .thin-search {
-    .spinner-container {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 2rem;
-      height: 2rem;
-      padding: 0;
-      margin-right: 1rem;
+  .spinner-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    margin-right: 1rem;
+  }
+  .text-input-wrapper {
+    align-items: center;
+    border-bottom: 1.5px solid var(--border-color);
+    display: flex;
+    padding: 0 0.75rem;
+    i {
+      font-size: 1.5rem;
     }
-    .text-input-wrapper {
-      position: relative;
-      margin: 1rem;
-      border-bottom: 1px solid $dark_gray;
-      &:before,
-      &:after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        background: $dark_gray;
-        width: 1px;
-        height: 3px;
+    .fa-search {
+      cursor: default !important;
+    }
+    .fa-times {
+      color: $medium_dark_red;
+      font-size: 1.3rem;
+      &:hover {
+        color: $red;
       }
-      &:before {
-        left: 0;
-      }
-      &:after {
-        right: 0;
+    }
+    .point-sort-menu {
+      width: 110px;
+      label {
+        margin-top: 0;
       }
       i {
-        font-size: 1.5rem;
-      }
-      .fa-search {
-        position: absolute;
-        top: 0.8rem;
-        left: 1rem;
-        cursor: default !important;
-      }
-      .fa-times {
-        position: absolute;
-        bottom: 0;
-        right: 0;
+        cursor: pointer;
         padding: 0.5rem;
-        color: $darkest_red;
-        font-size: 1.3rem;
-        &:hover {
-          color: $medium_dark_red;
-        }
-      }
-      .bp5-popover-wrapper {
-        position: absolute;
-        .bp5-popover-target {
-          width: 3rem;
-        }
-      }
-      .point-sort-menu {
-        width: 110px;
-        label {
-          margin-top: 0;
-        }
-        i {
-          cursor: pointer;
-          padding: 0.5rem;
-          color: $medium_light_gray;
-          &.selected {
-            font-weight: bold;
-            color: $dark_gray;
-          }
+        color: $medium_light_gray;
+        &.selected {
+          font-weight: bold;
+          color: $dark_gray;
         }
       }
     }
     input {
       background: transparent;
       box-shadow: none !important;
-      padding-left: 3rem !important;
       font-size: 1.4rem !important;
+      color: inherit;
       &:active,
       &:focus {
         background: transparent !important;
@@ -206,24 +148,27 @@
 
 .panel-content {
   %panel-item-base {
-    text-align: right;
     font-size: 1rem;
-    padding-right: 1rem;
-    line-height: 3rem;
-    float: right;
+  }
+  .group-search-item {
+    grid-template-columns: 1fr auto!important;
   }
   .plant-search-item,
-  .group-search-item {
+  .group-search-item,
+  .curve-search-item {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
     cursor: pointer;
     padding: 0.5rem 1rem;
     img {
-      margin-right: 0.5rem;
       height: 3rem;
       width: 3rem;
     }
     &.quick-del {
       &:hover {
-        background: lighten($red, 10%) !important;
+        background: color.adjust($red, $lightness: 10%) !important;
         &:after {
           content: "x";
           margin-left: 1rem;
@@ -235,21 +180,14 @@
   }
   .curve-search-item-name,
   .plant-search-item-name,
-  .group-search-item-name,
   .regimen-search-item-name,
   .saved-garden-search-item-name,
   .weed-search-item-name,
   .point-search-item-name {
     display: inline-block;
     white-space: nowrap;
-    max-width: 60%;
     text-overflow: ellipsis;
     overflow: hidden;
-    vertical-align: middle;
-    margin-left: 1rem;
-  }
-  .group-search-item-name {
-    margin-left: 0;
   }
   .plant-search-item-age {
     @extend %panel-item-base;
@@ -286,25 +224,13 @@
     line-height: 3rem;
     float: right;
   }
-  .regimen-search-item-name,
-  .weed-search-item-name,
-  .point-search-item-name {
-    width: 40%;
-    margin-left: 1.25rem;
-  }
   .tool-search-item,
   .tool-slot-search-item {
-    line-height: 4rem;
+    margin: 0 -1rem;
+    padding: 0 1rem;
     cursor: pointer;
-    .row {
-      margin-left: 0.5rem;
-      margin-right: -25px;
-    }
-    .tool-search-item-icon,
+    .tool-svg,
     .tool-slot-search-item-icon {
-      width: fit-content;
-      padding-left: 10px;
-      padding-right: 0;
       svg {
         vertical-align: middle;
       }
@@ -325,35 +251,31 @@
       line-height: 4rem;
       &.tool-status,
       &.tool-slot-position {
-        float: right;
+        min-width: 10rem;
+        text-align: right;
       }
     }
   }
   .regimen-search-item {
-    position: relative;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
     cursor: pointer;
     height: 3.5rem;
+    padding: 1rem;
     .regimen-search-item-name {
-      font-size: 1.2rem;
-      color: $dark_gray;
-      line-height: 3.5rem;
-      width: 80%;
+      font-size: 1.4rem;
     }
     .regimen-color {
-      display: inline-block;
-      vertical-align: middle;
       .color-picker {
         display: inline;
         .saucer {
-          margin-left: 3rem;
           width: 1.2rem;
           height: 1.2rem;
         }
       }
     }
-  }
-  .padding {
-    height: 6rem;
   }
   &.scrolled {
     box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.1);
@@ -377,19 +299,19 @@
 
 .weed-indicator.is-chosen-true,
 .plant-indicator.is-chosen-true {
+  transform-origin: center;
+  transform-box: fill-box;
   &.animate {
     animation: plant-selection-pop 0.2s 1 cubic-bezier(0, 0, 0, 0.9), pulse-and-rotate 4s 0.2s infinite linear;
   }
-  transform-origin: center;
-  transform-box: fill-box;
 }
 
 .tool-slot-indicator {
+  transform-origin: center;
+  transform-box: fill-box;
   &.animate {
     animation: pulse-and-rotate 4s 0.2s infinite linear;
   }
-  transform-origin: center;
-  transform-box: fill-box;
 }
 
 .map-point {
@@ -402,11 +324,11 @@
   }
   &.is-selected {
     .point-radius {
+      transform-origin: center;
+      transform-box: fill-box;
       &.animate {
         animation: dashed-rotate 4s infinite linear;
       }
-      transform-origin: center;
-      transform-box: fill-box;
     }
   }
 }
@@ -440,11 +362,11 @@
 }
 
 .soil-cloud {
+  transform-origin: center;
+  transform-box: fill-box;
   &.new {
     animation: soil-poof 0.5s cubic-bezier(0, 0, 0, 1);
   }
-  transform-origin: center;
-  transform-box: fill-box;
 }
 
 .spread {
@@ -612,98 +534,38 @@
   }
 }
 
-.saved-garden-indicator {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  z-index: 3;
-  padding: 2rem;
-  background: rgba(255, 255, 255, .75);
-  border-radius: 5px;
-  box-shadow: 0px 1px 4px #555;
-  text-align: center;
-  label {
-    display: block;
-  }
-  button {
-    margin: 0.5rem;
-    float: unset;
-  }
-}
-
-.garden-snapshot {
-  button {
-    &.pseudo-disabled {
-      cursor: not-allowed;
-    }
-  }
-  textarea {
-    font-size: 1.2rem;
-  }
-}
-
-.saved-garden-list {
-  .saved-garden-search-item {
-    padding: 0.25rem;
-    button {
-      margin-bottom: 1rem;
-    }
-    .saved-garden-info div {
-      height: 3rem;
-      line-height: 3rem;
-      cursor: pointer;
-      padding-right: 0;
-      span {
-        margin: 0;
-        pointer-events: none;
-        margin-left: 1rem;
-      }
-      p {
-        float: right;
-        line-height: 3rem;
-        text-align: center;
-        margin-right: 1rem;
-      }
-    }
-  }
-}
-
 .garden-map-legend {
   position: fixed;
-  top: 110px;
+  top: 8rem;
   right: -155px;
   z-index: 3;
-  transition: all 0.4s ease;
+  transition: all 0.3s ease;
   &.active {
     transform: translateX(-165px);
   }
   .content {
     display: flex;
     flex-direction: row-reverse;
+    gap: 1.25rem;
+    .menu-content, .z-display {
+      background-color: var(--main-bg);
+      border-radius: 1rem;
+      box-shadow: var(--box-shadow);
+      backdrop-filter: var(--blur);
+    }
     .menu-content {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
+      display: grid;
       max-width: 155px;
-      padding: 1rem;
-      background: rgba(255, 255, 255, .75);
-      border-radius: 5px;
-      box-shadow: 0px 1px 4px #555;
-      >*+* {
-        margin: auto;
-        margin-top: 0.75rem;
-      }
+      padding: 1.25rem;
+      gap: 0.75rem;
+      justify-items: center;
+      overflow: hidden;
       .zoom-buttons {
-        display: grid;
-        margin: auto;
-        width: 90%;
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 1rem;
         button {
           margin: auto;
-          grid-row: 1;
-          grid-column: 2;
-          &.zoom-out {
-            grid-column: 1;
-          }
         }
       }
     }
@@ -711,10 +573,6 @@
       position: relative;
       padding: 2rem;
       padding-left: 3rem;
-      margin-right: 1.25rem;
-      background: rgba(255, 255, 255, .75);
-      border-radius: 5px;
-      box-shadow: 0px 1px 4px #555;
       label {
         position: absolute;
         top: 0.5rem;
@@ -722,13 +580,13 @@
       }
       .sliders {
         height: 98%;
-        .bp5-slider {
+        .bp6-slider {
           height: 100%;
           margin-left: 1rem;
         }
         .input-slider {
           pointer-events: none;
-          .bp5-slider-handle {
+          .bp6-slider-handle {
             left: 3.8px;
             height: 8px;
             width: 9px;
@@ -736,20 +594,20 @@
             box-shadow: none;
             border: 1px solid $dark_gray;
             border-radius: 2px;
-            .bp5-slider-label {
+            .bp6-slider-label {
               margin-left: -6px;
               margin-top: -14px;
             }
           }
         }
         .data-slider {
-          .bp5-start {
+          .bp6-start {
+            height: 5px;
             &:first-of-type {
               display: unset;
             }
-            height: 5px;
           }
-          .bp5-slider-label {
+          .bp6-slider-label {
             margin-left: -6rem;
             opacity: 1;
           }
@@ -773,39 +631,20 @@
       width: 5rem;
     }
   }
-  .caret-menu-button {
-    display: inline;
-    font-weight: bold;
-    font-size: medium;
-    cursor: pointer;
-    span {
-      margin-left: 0.25rem;
-    }
-  }
-  .more-bugs,
-  .select-mode,
-  .map-settings,
-  .move-to-mode {
-    margin: auto;
-    margin-top: 1rem;
-    p {
-      text-align: center;
-      padding-top: 2rem;
-    }
-  }
   .move-to-mode {
     display: none;
-    @media screen and (max-width: 450px) {
+    @media screen and (max-width: $mobile_max_width) {
       display: block;
     }
   }
   .menu-pullout {
     position: absolute;
     left: -4.5rem;
-    color: $white;
+    color: $off_white;
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
     text-shadow: 0px 1px 1px #555;
+    font-size: 1.5rem;
     &.active {
       left: -4.5rem;
       transform: rotate(180deg);
@@ -832,24 +671,6 @@
       opacity: 0;
     }
   }
-  .map-rotate-button {
-    text-align: center;
-    .fb-button {
-      float: none;
-    }
-  }
-}
-
-.map-plants-submenu,
-.map-settings-submenu,
-.farmbot-layer-submenu {
-  .bp5-popover-wrapper {
-    display: inline;
-    margin-left: 0.5rem;
-  }
-  .fb-toggle-button {
-    margin-left: 1rem;
-  }
 }
 
 .farmbot-origin {
@@ -864,7 +685,7 @@
   .quadrants {
     display: flex;
     flex-wrap: wrap;
-    border: 1px solid $dark_gray;
+    border: 1px solid var(--border-color);
   }
   .quadrant {
     display: inline-block;
@@ -872,7 +693,7 @@
     background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(rgba(0, 0, 0, 0.05) 2px, transparent 2px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 2px, transparent 2px);
     background-size: 4px 4px, 4px 4px, 100px 100px, 100px 100px;
     cursor: pointer;
-    border: 1px solid $dark_gray;
+    border: 1px solid var(--border-color);
     width: 50%;
     height: 24px;
     transition: all 0.2s ease-in-out;
@@ -880,7 +701,7 @@
       background-color: rgba(0, 0, 0, 0.1);
     }
     &.selected {
-      box-shadow: inset 0 0 8px $dark_gray;
+      box-shadow: inset 0 0 8px var(--border-color);
     } // Quadrant 1
     &:nth-child(2) {
       &:before {
@@ -941,48 +762,13 @@
   }
 }
 
-.map-plants-submenu,
-.map-settings-submenu,
-.map-points-submenu {
-  display: flex;
-  flex-direction: column;
-  fieldset {
-    display: flex;
-    margin-top: 0;
-    flex-direction: column;
-    align-items: center;
-  }
-  label {
-    margin-top: 0;
-  }
-  button {
-    margin: auto;
-  }
-  .fb-toggle-button {
-    margin-left: 1rem;
-  }
+.map-size-grid {
+  grid-template-columns: auto 6rem !important;
 }
 
 .image-filter-menu {
-  label {
-    margin-top: 0 !important;
-  }
-  th {
-    text-align: center;
-    label {
-      margin: 0;
-      line-height: unset !important;
-    }
-  }
-  input {
-    background: $white;
-  }
-  .fa-step-backward,
-  .fa-caret-left,
-  .fa-caret-right,
-  .fa-step-forward {
+  .fa {
     font-weight: bold;
-    vertical-align: middle;
   }
   .fa-caret-left,
   .fa-caret-right {
@@ -992,212 +778,56 @@
   .fa-step-forward {
     font-size: 1rem;
   }
-  .fa-step-backward,
-  .fa-caret-left {
-    margin-right: 0.1rem;
+}
+
+@media screen and (min-width: $mobile_max_width) {
+  .farm-designer-panels.panel-closed ~ .three-d-garden .garden-bed-3d-model {
+    animation: panel-hide-shift-3d 0.3s ease forwards;
   }
-  .fa-caret-right,
-  .fa-step-forward {
-    margin-left: 0.1rem;
+  .farm-designer-panels.panel-open ~ .three-d-garden .garden-bed-3d-model {
+    animation: panel-show-shift-3d 0.3s ease forwards;
   }
 }
 
-.image-options {
-  .image-filter-menu {
-    margin-bottom: 1rem;
+@keyframes panel-show-shift-3d {
+  0% {
+    transform: translateX(-22.5rem);
   }
-  .non-layer-config-toggle {
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-  .bp5-popover-wrapper {
-    display: inline;
-    margin-left: 0.5rem;
-  }
-  .fb-toggle-button {
-    margin-left: 1rem;
+  100% {
+    transform: translateX(0);
   }
 }
 
-.sliders {
-  display: inline-block;
-  position: relative;
-  width: 100%;
-  margin-bottom: 3rem;
-  margin-top: 1rem;
-  .bp5-slider {
-    margin-left: 3rem;
-    margin-top: 1rem;
-    width: 80%;
+@keyframes panel-hide-shift-3d {
+  0% {
+    transform: translateX(0);
   }
-  &.vertical {
-    .bp5-slider {
-      margin-top: 0;
-    }
-  }
-  .bp5-slider-label {
-    white-space: nowrap;
-    text-align: center;
-    &:empty {
-      display: none;
-    }
-  }
-  .data-slider {
-    pointer-events: none;
-    .bp5-slider-axis,
-    .bp5-slider-track {
-      display: none;
-    }
-    .bp5-slider-label {
-      box-shadow: none;
-    }
-    .bp5-start {
-      &:first-of-type {
-        display: none;
-      }
-      top: 0.53rem;
-      width: 0.5px;
-      background: transparentize($dark_gray, 0.75);
-      box-shadow: none;
-      height: 0.55rem;
-      border-radius: 0;
-    }
-    &.vertical {
-      .bp5-start {
-        top: unset;
-        left: 0.53rem;
-        height: 0.5px;
-        width: 0.55rem;
-        border-radius: 0;
-      }
-    }
-  }
-  .input-slider {
-    position: absolute;
-    top: 0;
+  100% {
+    transform: translateX(-22.5rem);
   }
 }
 
-.profile-viewer {
+.three-d-map-toggle-menu {
   position: fixed;
   bottom: 0;
-  z-index: 2;
-  width: calc(100% - 450px);
-  background: #e5e5e5;
-  transition: transform 0.5s ease-out;
-  box-shadow: 0 0 1px rgba(0, 0, 0, .3);
-  transform: translateY(10rem) translateX(450px);
-  &.panel-closed {
-    width: 100%;
-    transform: translateY(10rem);
-  }
-  &.none-chosen {
-    transform: translateY(21rem) translateX(450px);
-    &.panel-closed {
-      transform: translateY(21rem);
-    }
-  }
-  @media screen and (max-width: 450px) {
-    &.panel-open {
-      display: none;
-    }
-  }
-  &.open {
-    transform: translateY(0) translateX(450px);
-    &.panel-closed {
-      transform: translateY(0);
-    }
-    .profile-button {
-      i {
-        line-height: 6rem;
-      }
-    }
-  }
-  .profile-button {
-    margin: auto;
-    cursor: pointer;
-    margin-top: -3rem;
-    border-radius: 50%;
-    width: 6rem;
-    height: 6rem;
-    background: $magenta;
-    transition: background-color 0.3s ease-out;
-    text-align: center;
-    box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, .3);
-    &:hover {
-      background: lighten($magenta, 5%);
-    }
+  right: 0;
+  padding: 1rem;
+  button {
+    height: 3.5rem;
+    width: 3.5rem;
     i {
-      color: $off_white;
-      line-height: 3.25rem;
-      font-size: 2rem;
-      transition: line-height 0.5s ease-out;
+      font-size: 1.5rem;
+    }
+    &.active {
+      background-color: $blue !important;
     }
   }
-  .profile-content {
-    label {
-      display: block;
-      margin: auto;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-    .no-profile {
-      height: 12.5rem;
-      text-align: center;
-      margin-top: 1.5rem;
-    }
-    .left-label,
-    .right-label {
-      position: absolute;
-      top: 50%;
-      font-weight: bold;
-    }
-    .left-label {
-      left: 2rem;
-    }
-    .right-label {
-      right: 2rem;
-    }
-    svg {
-      display: block;
-      margin: auto;
-      height: 10rem;
-      width: 90%;
-      border-radius: 5px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      background: #fafafa;
-      box-shadow: 0 0 4px rgba(0, 0, 0, .1);
-      &.expand {
-        height: unset;
-        max-height: 60vh;
-      }
-    }
-    .profile-options {
-      width: 100%;
-      height: 4rem;
-      text-align: center;
-      padding-top: 1rem;
-      padding-bottom: 1rem;
-      background: #f2f2f2;
-      box-shadow: 0px 0px 1px 0px #666666;
-      button {
-        display: inline;
-        float: none;
-        margin-right: 3rem;
-      }
-      label {
-        display: inline;
-        margin-right: 0.5rem;
-        line-height: 2rem;
-        vertical-align: text-top;
-      }
-      input {
-        height: 2rem !important;
-        width: 5rem;
-        margin-right: 3rem;
-      }
-    }
+  .three-d-map-toggle {
+    padding: 0 1.5rem;
+    background-color: var(--main-bg);
+    backdrop-filter: var(--blur);
+    border-radius: 0.5rem;
+    box-shadow: var(--box-shadow);
+    height: 3.5rem;
   }
 }

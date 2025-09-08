@@ -146,6 +146,7 @@ describe("resource reducer", () => {
       type: Actions.TOGGLE_POPUP,
       payload,
     });
+    expect(newState.popups.timeTravel).toBeFalsy();
     expect(newState.popups.controls).toBeTruthy();
     expect(newState.popups.jobs).toBeFalsy();
     expect(newState.popups.connectivity).toBeFalsy();
@@ -159,6 +160,7 @@ describe("resource reducer", () => {
       type: Actions.OPEN_POPUP,
       payload,
     });
+    expect(newState.popups.timeTravel).toBeFalsy();
     expect(newState.popups.controls).toBeFalsy();
     expect(newState.popups.jobs).toBeTruthy();
     expect(newState.popups.connectivity).toBeFalsy();
@@ -171,19 +173,10 @@ describe("resource reducer", () => {
       type: Actions.CLOSE_POPUP,
       payload,
     });
+    expect(newState.popups.timeTravel).toBeFalsy();
     expect(newState.popups.controls).toBeFalsy();
     expect(newState.popups.jobs).toBeFalsy();
     expect(newState.popups.connectivity).toBeFalsy();
-  });
-
-  it("toggle hotkey guide", () => {
-    const state = app;
-    expect(state.hotkeyGuide).toBeFalsy();
-    const newState = appReducer(state, {
-      type: Actions.TOGGLE_HOTKEY_GUIDE,
-      payload: undefined,
-    });
-    expect(newState.hotkeyGuide).toBeTruthy();
   });
 
   it("adds toast", () => {

@@ -1,11 +1,5 @@
 jest.mock("../../devices/actions", () => ({ move: jest.fn() }));
 
-const mockPath = "";
-jest.mock("../../history", () => ({
-  getPathArray: jest.fn(() => mockPath.split("/")),
-  push: jest.fn(),
-}));
-
 jest.mock("../../config_storage/actions", () => ({
   setWebAppConfigValue: jest.fn(),
 }));
@@ -15,20 +9,25 @@ jest.mock("../../ui/popover", () => ({
   Popover: ({ target, content }: PopoverProps) => <div>{target}{content}</div>,
 }));
 
+jest.mock("../../settings/dev/dev_support", () => ({
+  DevSettings: { allOrderOptionsEnabled: () => false },
+}));
+
 import React from "react";
 import { mount, shallow } from "enzyme";
+import { render, screen, fireEvent } from "@testing-library/react";
 import {
   MoveToForm, MoveToFormProps, MoveModeLink, chooseLocation,
   GoToThisLocationButtonProps, GoToThisLocationButton, movementPercentRemaining,
+  MoveModeLinkProps,
 } from "../move_to";
-import { push } from "../../history";
 import { Actions } from "../../constants";
-import { clickButton } from "../../__test_support__/helpers";
 import { move } from "../../devices/actions";
 import { Path } from "../../internal_urls";
 import { setWebAppConfigValue } from "../../config_storage/actions";
 import { StringSetting } from "../../session_keys";
 import { fakeMovementState } from "../../__test_support__/fake_bot_data";
+import { mockDispatch } from "../../__test_support__/fake_dispatch";
 
 describe("<MoveToForm />", () => {
   const fakeProps = (): MoveToFormProps => ({
@@ -37,12 +36,13 @@ describe("<MoveToForm />", () => {
     botOnline: true,
     locked: false,
     dispatch: jest.fn(),
+    defaultAxisOrder: "safe_z",
   });
 
   it("moves to location: custom z value", () => {
     const wrapper = mount(<MoveToForm {...fakeProps()} />);
     wrapper.setState({ z: 50 });
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 1, y: 2, z: 50, speed: 100, safeZ: false,
     });
@@ -63,10 +63,14 @@ describe("<MoveToForm />", () => {
   });
 
   it("changes safe z value", () => {
-    const wrapper = shallow<MoveToForm>(<MoveToForm {...fakeProps()} />);
-    wrapper.findWhere(n => "onChange" in n.props()).at(2)
-      .simulate("change");
-    expect(wrapper.state().safeZ).toEqual(true);
+    render(<MoveToForm {...fakeProps()} />);
+    expect(screen.queryByText("Safe Z")).not.toBeInTheDocument();
+    const dropdown = screen.getByRole("button", { name: "Use default (Safe Z)" });
+    fireEvent.click(dropdown);
+    expect(screen.getAllByText("Safe Z").length).toEqual(1);
+    const item = screen.getByRole("menuitem", { name: "Safe Z" });
+    fireEvent.click(item);
+    expect(screen.getAllByText("Safe Z").length).toEqual(2);
   });
 
   it("fills in some missing values", () => {
@@ -74,7 +78,7 @@ describe("<MoveToForm />", () => {
     p.chosenLocation = { x: 1, y: undefined, z: undefined };
     const wrapper = mount(<MoveToForm {...p} />);
     expect(wrapper.find("input").at(1).props().value).toEqual("---");
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 1, y: 20, z: 30, speed: 100, safeZ: false,
     });
@@ -86,7 +90,7 @@ describe("<MoveToForm />", () => {
     p.currentBotLocation = { x: undefined, y: undefined, z: undefined };
     const wrapper = mount(<MoveToForm {...p} />);
     expect(wrapper.find("input").at(1).props().value).toEqual("---");
-    wrapper.find("button").simulate("click");
+    wrapper.find("button").at(0).simulate("click");
     expect(move).toHaveBeenCalledWith({
       x: 0, y: 0, z: 0, speed: 100, safeZ: false,
     });
@@ -96,32 +100,74 @@ describe("<MoveToForm />", () => {
     const p = fakeProps();
     p.botOnline = false;
     const wrapper = mount(<MoveToForm {...p} />);
-    expect(wrapper.find("button").hasClass("pseudo-disabled")).toBeTruthy();
+    expect(wrapper.find("button").at(0).hasClass("pseudo-disabled")).toBeTruthy();
   });
 });
 
 describe("<MoveModeLink />", () => {
+  const fakeProps = (): MoveModeLinkProps => ({
+    dispatch: jest.fn(),
+  });
+
   it("enters 'move to' mode", () => {
-    const wrapper = shallow(<MoveModeLink />);
-    clickButton(wrapper, 0, "move mode");
-    expect(push).toHaveBeenCalledWith(Path.location());
+    const p = fakeProps();
+    const dispatch = jest.fn();
+    p.dispatch = mockDispatch(dispatch);
+    render(<MoveModeLink {...p} />);
+    const button = screen.getByTitle("open move mode panel");
+    fireEvent.click(button);
+    expect(mockNavigate).toHaveBeenCalledWith(Path.location());
+    expect(dispatch).toHaveBeenCalledWith({
+      type: Actions.SET_PANEL_OPEN,
+      payload: true,
+    });
   });
 });
 
 describe("chooseLocation()", () => {
   it("updates chosen coordinates", () => {
+    location.pathname = Path.mock(Path.location());
+    const navigate = jest.fn();
     const dispatch = jest.fn();
-    chooseLocation({ dispatch, gardenCoords: { x: 1, y: 2 } });
+    chooseLocation({ navigate, dispatch, gardenCoords: { x: 1, y: 2 } });
     expect(dispatch).toHaveBeenCalledWith({
       type: Actions.CHOOSE_LOCATION,
-      payload: { x: 1, y: 2, z: 0 }
+      payload: { x: 1, y: 2, z: 0 },
     });
+    expect(navigate).toHaveBeenCalledWith(Path.location({ x: 1, y: 2 }));
   });
 
-  it("doesn't update coordinates", () => {
+  it("doesn't update coordinates or navigate", () => {
+    location.pathname = Path.mock(Path.location());
+    const navigate = jest.fn();
     const dispatch = jest.fn();
-    chooseLocation({ dispatch, gardenCoords: undefined });
+    chooseLocation({ navigate, dispatch, gardenCoords: undefined });
     expect(dispatch).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("doesn't navigate: same location", () => {
+    location.pathname = Path.mock(Path.location({ x: 1, y: 2 }));
+    const navigate = jest.fn();
+    const dispatch = jest.fn();
+    chooseLocation({ navigate, dispatch, gardenCoords: { x: 1, y: 2 } });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: Actions.CHOOSE_LOCATION,
+      payload: { x: 1, y: 2, z: 0 },
+    });
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("doesn't navigate: not in location panel", () => {
+    location.pathname = Path.mock(Path.plants());
+    const navigate = jest.fn();
+    const dispatch = jest.fn();
+    chooseLocation({ navigate, dispatch, gardenCoords: { x: 1, y: 2 } });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: Actions.CHOOSE_LOCATION,
+      payload: { x: 1, y: 2, z: 0 },
+    });
+    expect(navigate).not.toHaveBeenCalled();
   });
 });
 

@@ -6,7 +6,7 @@ jest.mock("../../config_storage/actions", () => ({
 let mockHighlightName = "";
 jest.mock("../../settings/maybe_highlight", () => ({
   maybeOpenPanel: jest.fn(),
-  Highlight: (p: { children: React.ReactChild }) => <div>{p.children}</div>,
+  Highlight: (p: { children: React.ReactNode }) => <div>{p.children}</div>,
   getHighlightName: jest.fn(() => mockHighlightName),
 }));
 
@@ -33,10 +33,11 @@ import { maybeOpenPanel } from "../maybe_highlight";
 import { SettingsPanelState } from "../../interfaces";
 import { settingsPanelState } from "../../__test_support__/panel_state";
 import {
+  fakeFbosConfig,
   fakeUser, fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
 import { API } from "../../api";
-import { push } from "../../history";
+import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
 
 const getSetting =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,7 +58,9 @@ describe("<DesignerSettings />", () => {
     getConfigValue: () => 0,
     firmwareConfig: undefined,
     sourceFwConfig: () => ({ value: 10, consistent: true }),
-    sourceFbosConfig: () => ({ value: 10, consistent: true }),
+    sourceFbosConfig: x => ({
+      value: fakeFbosConfig().body[x as keyof FbosConfig], consistent: true,
+    }),
     resources: buildResourceIndex([]).index,
     deviceAccount: fakeDevice(),
     alerts: [],
@@ -69,6 +72,7 @@ describe("<DesignerSettings />", () => {
     farmwareEnvs: [],
     wizardStepResults: [],
     settingsPanelState: fakePanelState,
+    distanceIndicator: "",
   });
 
   it("renders settings", () => {
@@ -92,16 +96,6 @@ describe("<DesignerSettings />", () => {
   it("mounts", () => {
     mount(<DesignerSettings {...fakeProps()} />);
     expect(maybeOpenPanel).toHaveBeenCalled();
-  });
-
-  it("unmounts", () => {
-    const p = fakeProps();
-    const wrapper = mount(<DesignerSettings {...p} />);
-    wrapper.unmount();
-    expect(p.dispatch).toHaveBeenCalledWith({
-      type: Actions.SET_SETTINGS_SEARCH_TERM,
-      payload: "",
-    });
   });
 
   it("sets search term", () => {
@@ -128,7 +122,7 @@ describe("<DesignerSettings />", () => {
       type: Actions.SET_SETTINGS_SEARCH_TERM,
       payload: "setting",
     });
-    expect(push).toHaveBeenCalledWith("path");
+    expect(mockNavigate).toHaveBeenCalledWith("path");
   });
 
   it("fetches firmware_hardware", () => {
@@ -221,6 +215,13 @@ describe("<DesignerSettings />", () => {
     expect(wrapper.text().toLowerCase()).toContain("interpolation");
   });
 
+  it("renders 3D settings", () => {
+    const p = fakeProps();
+    p.searchTerm = "3d";
+    const wrapper = mount(<DesignerSettings {...p} />);
+    expect(wrapper.text().toLowerCase()).toContain("3d");
+  });
+
   it("renders dev settings", () => {
     const p = fakeProps();
     p.searchTerm = "developer";
@@ -228,15 +229,22 @@ describe("<DesignerSettings />", () => {
     expect(wrapper.text().toLowerCase()).toContain("unstable fe");
   });
 
+  it("renders surprise", () => {
+    location.search = "?only=surprise";
+    const p = fakeProps();
+    p.searchTerm = "surprise";
+    const wrapper = mount(<DesignerSettings {...p} />);
+    expect(wrapper.text().toLowerCase()).toContain("attack");
+  });
+
   it("cancels setting isolation", () => {
     location.search = "?only=setting";
-    location.assign = jest.fn();
     location.pathname = "path";
     const p = fakeProps();
     p.searchTerm = "";
     const wrapper = mount(<DesignerSettings {...p} />);
     clickButton(wrapper, 1, "cancel");
-    expect(location.assign).toHaveBeenCalledWith("path");
+    expect(mockNavigate).toHaveBeenCalledWith("path");
   });
 
   it("renders change ownership form", () => {

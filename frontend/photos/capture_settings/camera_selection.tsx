@@ -1,12 +1,10 @@
 import React from "react";
-import { DropDownItem, Row, Col, FBSelect } from "../../ui";
-import {
-  CameraSelectionProps, CameraSelectionState,
-} from "./interfaces";
+import { Row, FBSelect } from "../../ui";
+import { CameraSelectionProps } from "./interfaces";
 import { error } from "../../toast/toast";
 import { UserEnv } from "../../devices/interfaces";
 import { t } from "../../i18next_wrapper";
-import { Content, ToolTips, DeviceSetting } from "../../constants";
+import { Content, DeviceSetting, ToolTips } from "../../constants";
 import { Highlight } from "../../settings/maybe_highlight";
 import { getModifiedClassNameSpecifyDefault } from "../../settings/default_values";
 import { Path } from "../../internal_urls";
@@ -67,36 +65,25 @@ const CAMERA_CHOICES_DDI = () => {
   };
 };
 
-export class CameraSelection
-  extends React.Component<CameraSelectionProps, CameraSelectionState> {
+export const CameraSelection = (props: CameraSelectionProps) => {
 
-  state: CameraSelectionState = {
-    cameraStatus: ""
-  };
+  const selectedCamera =
+    CAMERA_CHOICES_DDI()[parseCameraSelection(props.env)];
 
-  selectedCamera = (): DropDownItem =>
-    CAMERA_CHOICES_DDI()[parseCameraSelection(this.props.env)];
-
-  render() {
-    return <Highlight settingName={DeviceSetting.camera} pathPrefix={Path.photos}>
-      <Row>
-        <Col xs={5}>
-          <label>
-            {t("CAMERA")}
-          </label>
-        </Col>
-        <Col xs={7}>
-          <FBSelect
-            allowEmpty={false}
-            list={CAMERA_CHOICES()}
-            selectedItem={this.selectedCamera()}
-            onChange={ddi =>
-              this.props.dispatch(this.props.saveFarmwareEnv("camera",
-                JSON.stringify(ddi.value)))}
-            extraClass={getModifiedClassNameSpecifyDefault(
-              this.selectedCamera().value, Camera.USB)} />
-        </Col>
-      </Row>
-    </Highlight>;
-  }
-}
+  return <Highlight settingName={DeviceSetting.camera} pathPrefix={Path.photos}>
+    <Row className="row grid-2-col">
+      <label>
+        {t("CAMERA")}
+      </label>
+      <FBSelect
+        allowEmpty={false}
+        list={CAMERA_CHOICES()}
+        selectedItem={selectedCamera}
+        onChange={ddi =>
+          props.dispatch(props.saveFarmwareEnv("camera",
+            JSON.stringify(ddi.value)))}
+        extraClass={getModifiedClassNameSpecifyDefault(
+          selectedCamera.value, Camera.USB)} />
+    </Row>
+  </Highlight>;
+};

@@ -18,7 +18,7 @@ class GlobalConfig < ApplicationRecord
     self.create!(key: key, value: value) unless x
   end
 
-  LONG_REVISION = ENV["BUILT_AT"] || ENV["HEROKU_SLUG_COMMIT"] || "NONE"
+  LONG_REVISION = ENV["BUILT_AT"] || ENV["HEROKU_BUILD_COMMIT"] || "NONE"
   # Bootstrap these values, and ALWAYS clobber pre-existing ones:
   {
     "NODE_ENV" => Rails.env || "development",
@@ -31,7 +31,7 @@ class GlobalConfig < ApplicationRecord
     self.find_or_create_by(key: key).update(key: key, value: value)
   end
 
-  # Memoized version of every GlobalConfig, with key/values layed out in a hash.
+  # Memoized version of every GlobalConfig, with key/values laid out in a hash.
   # Database values preempt values set in ::DEFAULTS
   def self.dump
     @dump ||= reload_

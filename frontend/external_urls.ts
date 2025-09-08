@@ -1,4 +1,4 @@
-import { isNumber } from "lodash";
+import { isFinite } from "lodash";
 
 enum Org {
   FarmBot = "FarmBot",
@@ -19,7 +19,6 @@ enum FbosFile {
 export namespace ExternalUrl {
   const GITHUB = "https://github.com";
   const GITHUB_RAW = "https://raw.githubusercontent.com";
-  const OPENFARM = "https://openfarm.cc";
   const DOCS_HUB = "https://docs.farm.bot";
   const GENESIS_DOCS = "https://genesis.farm.bot";
   const EXPRESS_DOCS = "https://express.farm.bot";
@@ -27,6 +26,8 @@ export namespace ExternalUrl {
   const EDU_DOCS = "https://oer.farm.bot";
   const SOFTWARE_DOCS = "https://software.farm.bot";
   const DEVELOPER_DOCS = "https://developer.farm.bot";
+  const SOLAR = "https://solar.farm.bot";
+  const RAISED_BED = "https://bed.farm.bot";
   const FORUM = "https://forum.farmbot.org";
   const SHOPIFY_CDN = "https://cdn.shopify.com/s/files/1/2040/0289/files";
   const YOUTUBE = "https://www.youtube.com/embed/";
@@ -41,7 +42,7 @@ export namespace ExternalUrl {
 
   export const openStreetMap =
     (latitude: number | undefined, longitude: number | undefined) =>
-      isNumber(latitude) && isNumber(longitude)
+      isFinite(latitude) && isFinite(longitude)
         ? `${OPEN_STREET_MAP}/?mlat=${latitude}&mlon=${longitude}&zoom=10`
         : OPEN_STREET_MAP;
 
@@ -67,11 +68,8 @@ export namespace ExternalUrl {
   export const developerDocs = `${DEVELOPER_DOCS}/docs`;
   export const softwareForum = `${FORUM}/c/software`;
 
-  export namespace OpenFarm {
-    export const cropApi = `${OPENFARM}/api/v1/crops/`;
-    export const cropBrowse = `${OPENFARM}/crops/`;
-    export const newCrop = `${OPENFARM}/en/crops/new`;
-  }
+  export const solar = SOLAR;
+  export const raisedBed = RAISED_BED;
 
   export namespace Video {
     export const desktop =
@@ -83,13 +81,19 @@ export namespace ExternalUrl {
     const motorMovement = `${YOUTUBE}HGuoD23s30A`;
     export const movements = `${motorMovement}?end=107`;
     export const motorTuning = `${motorMovement}?start=107`;
+    export const tools = `${YOUTUBE}f_GqlMAMWPk`;
   }
 
   const PRODUCTS = `${FARMBOT}/products`;
+  const KITS = `${FARMBOT}/collections/farmbot-kits/products`;
   export namespace Store {
     export const home = FARMBOT;
     export const cameraCalibrationCard = `${PRODUCTS}/camera-calibration-card`;
     export const cameraReplacement =
       `${PRODUCTS}/genesis-v1-5-express-v1-0-camera-free-replacement`;
+    export const genesisKit = (version: string) =>
+      `${KITS}/farmbot-genesis-${version.replace(".", "-")}`;
+    export const genesisXlKit = (version: string) =>
+      `${KITS}/farmbot-genesis-xl-${version.replace(".", "-")}`;
   }
 }

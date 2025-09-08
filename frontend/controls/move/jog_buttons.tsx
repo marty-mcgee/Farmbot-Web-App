@@ -97,7 +97,9 @@ export class JogButtons
               target={<button
                 className={"fa fa-power-off arrow-button fb-button"}
                 title={t("click to open power and reset menu")} />}
-              content={<PowerAndResetMenu botOnline={botOnline}
+              content={<PowerAndResetMenu
+                botOnline={botOnline}
+                dispatch={dispatch}
                 showAdvanced={showAdvanced} />} />
           </td>
           <td>
@@ -152,9 +154,6 @@ export class JogButtons
               directionAxisProps={directionAxesProps.z} />
           </td>
         </tr>
-        <tr>
-          <td />
-        </tr>
       </tbody>
     </table>;
   }
@@ -163,6 +162,7 @@ export class JogButtons
 export interface PowerAndResetMenuProps {
   botOnline: boolean;
   showAdvanced: boolean;
+  dispatch: Function;
 }
 
 export const PowerAndResetMenu = (props: PowerAndResetMenuProps) => {
@@ -191,6 +191,8 @@ export const PowerAndResetMenu = (props: PowerAndResetMenuProps) => {
       buttonText={t("SHUTDOWN")}
       color={"red"}
       action={powerOff} />
-    <FactoryResetRows botOnline={botOnline} />
+    <FactoryResetRows
+      dispatch={props.dispatch}
+      botOnline={botOnline} />
   </div>;
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { StepWrapper } from "../../step_ui";
-import { Row, Col, ExpandableHeader } from "../../../ui";
+import { Row, ExpandableHeader, DropDownItem } from "../../../ui";
 import { ToolTips } from "../../../constants";
 import { t } from "../../../i18next_wrapper";
 import { Move, Xyz } from "farmbot";
@@ -27,8 +27,13 @@ import {
 import {
   getSpeedState, getSpeedNode, speedOverwrite, SpeedInputRow,
 } from "./speed";
-import { SafeZCheckbox, getSafeZState, SAFE_Z } from "./safe_z";
+import { getSafeZState, SAFE_Z } from "./safe_z";
+import {
+  axisOrder, AxisOrderInputRow, getAxisGroupingState, getAxisRouteState,
+  getNewAxisOrderState,
+} from "./axis_order";
 import { StepParams } from "../../interfaces";
+import { getFbosConfig } from "../../../resources/getters";
 
 /**
  * _Computed move_
@@ -98,6 +103,8 @@ export class ComputedMove
       z: getSpeedState(this.step, "z"),
     },
     safeZ: getSafeZState(this.step),
+    axisGrouping: getAxisGroupingState(this.step),
+    axisRoute: getAxisRouteState(this.step),
   };
 
   get step() { return this.props.currentStep; }
@@ -178,6 +185,7 @@ export class ComputedMove
       ...speedOverwrite("y", this.speedNodes.y),
       ...speedOverwrite("z", this.speedNodes.z),
       ...(this.state.safeZ ? [SAFE_Z] : []),
+      ...axisOrder(this.state.axisGrouping, this.state.axisRoute),
     ];
   };
 
@@ -241,15 +249,15 @@ export class ComputedMove
         }
       }, this.update);
 
-  toggleSafeZ = () => this.setState({ safeZ: !this.state.safeZ }, this.update);
+  setAxisOrder = (ddi: DropDownItem) => {
+    this.setState({ ...this.state, ...getNewAxisOrderState(ddi) }, this.update);
+  };
   toggleMore = () => this.setState({ more: !this.state.more });
 
   LocationInputRow = () =>
-    <Row>
-      <Col xs={3}>
-        <label>{t("Location")}</label>
-      </Col>
-      <Col xs={8}>
+    <Row className="move-location-grid">
+      <label>{t("Location")}</label>
+      <div className="row grid-exp-1">
         <LocationSelection
           locationNode={this.state.location}
           locationSelection={this.state.locationSelection}
@@ -257,13 +265,11 @@ export class ComputedMove
           onChange={this.setLocationState}
           sequence={this.props.currentSequence}
           sequenceUuid={this.props.currentSequence.uuid} />
-      </Col>
-      <Col xs={1} className={"no-pad"}>
         <ExpandableHeader
           expanded={this.state.more}
           title={""}
           onClick={this.toggleMore} />
-      </Col>
+      </div>
     </Row>;
 
   OverwriteInputRow = () =>
@@ -278,7 +284,7 @@ export class ComputedMove
         onCommit={this.commit}
         setAxisState={this.setAxisState}
         setAxisOverwriteState={this.setAxisOverwriteState} />
-      : <div className={"overwrite-row-hidden"} />;
+      : undefined;
 
   OffsetInputRow = () =>
     (this.state.locationSelection == "offset"
@@ -289,7 +295,7 @@ export class ComputedMove
         disabledAxes={this.disabledAxes}
         onCommit={this.commit}
         setAxisState={this.setAxisState} />
-      : <div className={"offset-row-hidden"} />;
+      : undefined;
 
   VarianceInputRow = () =>
     (some(this.varianceNodes) || this.state.more)
@@ -297,7 +303,7 @@ export class ComputedMove
         variance={this.state.variance}
         disabledAxes={this.disabledAxes}
         onCommit={this.commit} />
-      : <div className={"variance-row-hidden"} />;
+      : undefined;
 
   SpeedInputRow = () =>
     (some(this.speedNodes) || this.state.more)
@@ -306,13 +312,22 @@ export class ComputedMove
         disabledAxes={this.disabledAxes}
         onCommit={this.commit}
         setAxisState={this.setAxisState} />
-      : <div className={"speed-row-hidden"} />;
+      : undefined;
 
-  SafeZCheckbox = () =>
-    (this.state.safeZ || this.state.more)
-      ? <SafeZCheckbox checked={this.state.safeZ}
-        onChange={this.toggleSafeZ} />
-      : <div className={"safe-z-checkbox-hidden"} />;
+  AxisOrderInputRow = () => {
+    const defaultAxisOrder =
+      getFbosConfig(this.props.resources)?.body.default_axis_order;
+    return ((this.state.axisGrouping && this.state.axisRoute)
+      || this.state.safeZ
+      || this.state.more)
+      ? <AxisOrderInputRow
+        defaultValue={defaultAxisOrder}
+        grouping={this.state.axisGrouping}
+        route={this.state.axisRoute}
+        safeZ={this.state.safeZ}
+        onChange={this.setAxisOrder} />
+      : undefined;
+  };
 
   render() {
     return <StepWrapper {...this.props}
@@ -331,7 +346,7 @@ export class ComputedMove
       <this.OffsetInputRow />
       <this.VarianceInputRow />
       <this.SpeedInputRow />
-      <this.SafeZCheckbox />
+      <this.AxisOrderInputRow />
     </StepWrapper>;
   }
 }

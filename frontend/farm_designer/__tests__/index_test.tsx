@@ -1,15 +1,16 @@
-import { Path } from "../../internal_urls";
-let mockPath = Path.mock(Path.plants());
-jest.mock("../../history", () => ({
-  getPathArray: jest.fn(() => mockPath.split("/")),
-}));
-
 jest.mock("../../api/crud", () => ({
   edit: jest.fn(),
   save: jest.fn(),
 }));
 
 jest.mock("../../plants/plant_inventory", () => ({ Plants: () => <div /> }));
+
+let mockIsMobile = false;
+let mockIsDesktop = false;
+jest.mock("../../screen_size", () => ({
+  isMobile: () => mockIsMobile,
+  isDesktop: () => mockIsDesktop,
+}));
 
 import React from "react";
 import {
@@ -25,6 +26,7 @@ import { fakeDesignerState } from "../../__test_support__/fake_designer_state";
 import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import {
   buildResourceIndex,
+  fakeDevice,
 } from "../../__test_support__/resource_index_builder";
 import { fakeState } from "../../__test_support__/fake_state";
 import { edit } from "../../api/crud";
@@ -39,10 +41,12 @@ import {
   fakeBotLocationData, fakeBotSize,
 } from "../../__test_support__/fake_bot_data";
 import { WebAppConfig } from "farmbot/dist/resources/configs/web_app";
+import { Path } from "../../internal_urls";
 
 describe("<FarmDesigner />", () => {
   const fakeProps = (): FarmDesignerProps => ({
     dispatch: jest.fn(),
+    device: fakeDevice().body,
     selectedPlant: undefined,
     designer: fakeDesignerState(),
     hoveredPlant: undefined,
@@ -69,7 +73,7 @@ describe("<FarmDesigner />", () => {
     visualizedSequenceBody: [],
     logs: [],
     deviceTarget: "",
-    sourceFbosConfig: jest.fn(),
+    sourceFbosConfig: () => ({ value: 1, consistent: true }),
     farmwareEnvs: [],
     curves: [],
   });
@@ -86,7 +90,7 @@ describe("<FarmDesigner />", () => {
     expect(legendProps.imageAgeInfo).toEqual({ newestDate: "", toOldest: 1 });
     const gardenMapProps = wrapper.find(GardenMap).props();
     expect(gardenMapProps.mapTransformProps.gridSize.x).toEqual(2900);
-    expect(gardenMapProps.mapTransformProps.gridSize.y).toEqual(1400);
+    expect(gardenMapProps.mapTransformProps.gridSize.y).toEqual(1230);
   });
 
   it("loads image info", () => {
@@ -103,7 +107,7 @@ describe("<FarmDesigner />", () => {
   });
 
   it("renders nav titles", () => {
-    mockPath = Path.mock(Path.plants());
+    location.pathname = Path.mock(Path.plants());
     const wrapper = mount(<FarmDesigner {...fakeProps()} />);
     expect(wrapper.find(".panel-nav").first().hasClass("hidden"))
       .toBeTruthy();
@@ -114,8 +118,10 @@ describe("<FarmDesigner />", () => {
   });
 
   it("hides panel", () => {
-    mockPath = Path.mock(Path.designer());
-    const wrapper = mount(<FarmDesigner {...fakeProps()} />);
+    location.pathname = Path.mock(Path.plants());
+    const p = fakeProps();
+    p.designer.panelOpen = false;
+    const wrapper = mount(<FarmDesigner {...p} />);
     expect(wrapper.find(".panel-nav").first().hasClass("hidden"))
       .toBeFalsy();
     expect(wrapper.find(".farm-designer-panels").hasClass("panel-open"))
@@ -125,10 +131,36 @@ describe("<FarmDesigner />", () => {
   });
 
   it("renders saved garden indicator", () => {
+    mockIsMobile = false;
+    mockIsDesktop = true;
     const p = fakeProps();
     p.designer.openedSavedGarden = 1;
+    p.designer.panelOpen = false;
     const wrapper = mount(<FarmDesigner {...p} />);
     expect(wrapper.text().toLowerCase()).toContain("viewing saved garden");
+    expect(wrapper.html()).not.toContain("three-d-garden");
+  });
+
+  it("renders saved garden indicator on medium screens", () => {
+    mockIsMobile = false;
+    mockIsDesktop = false;
+    const p = fakeProps();
+    p.designer.openedSavedGarden = 1;
+    p.designer.panelOpen = false;
+    const wrapper = mount(<FarmDesigner {...p} />);
+    expect(wrapper.text().toLowerCase()).toContain("viewing saved garden");
+    expect(wrapper.html()).not.toContain("three-d-garden");
+  });
+
+  it("doesn't render saved garden indicator", () => {
+    mockIsMobile = true;
+    mockIsDesktop = false;
+    const p = fakeProps();
+    p.designer.openedSavedGarden = 1;
+    p.designer.panelOpen = false;
+    const wrapper = mount(<FarmDesigner {...p} />);
+    expect(wrapper.text().toLowerCase()).not.toContain("viewing saved garden");
+    expect(wrapper.html()).not.toContain("three-d-garden");
   });
 
   it("toggles setting", () => {
@@ -157,12 +189,19 @@ describe("<FarmDesigner />", () => {
     const i = new FarmDesigner(p);
     expect(i.getBotOriginQuadrant()).toEqual(1);
   });
+
+  it("renders 3D garden", () => {
+    const p = fakeProps();
+    p.getConfigValue = () => true;
+    const wrapper = mount(<FarmDesigner {...p} />);
+    expect(wrapper.html()).toContain("three-d-garden");
+  });
 });
 
 describe("getDefaultAxisLength()", () => {
   it("returns axis lengths", () => {
     const axes = getDefaultAxisLength(() => false);
-    expect(axes).toEqual({ x: 2900, y: 1400, z: 400 });
+    expect(axes).toEqual({ x: 2900, y: 1230, z: 400 });
   });
 });
 
@@ -175,7 +214,7 @@ describe("getGridSize()", () => {
         y: { value: 200, isDefault: false },
         z: { value: 400, isDefault: true },
       });
-    expect(grid).toEqual({ x: 2900, y: 1400 });
+    expect(grid).toEqual({ x: 2900, y: 1230 });
   });
 
   it("returns custom grid size", () => {

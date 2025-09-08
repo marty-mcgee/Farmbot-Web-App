@@ -1,41 +1,28 @@
 import React from "react";
-import { ExternalUrl } from "../external_urls";
 import {
   DesignerPanel, DesignerPanelContent,
 } from "../farm_designer/designer_panel";
-import { Panel, DesignerNavTabs } from "../farm_designer/panel_header";
-import { getUrlQuery } from "../util";
+import { Panel } from "../farm_designer/panel_header";
 import { HelpHeader } from "./header";
+import { useLocation } from "react-router";
 
 export interface DocumentationPanelProps {
   url: string;
 }
 
 export const DocumentationPanel = (props: DocumentationPanelProps) => {
-  const page = getUrlQuery("page");
+  const location = useLocation();
+  const [src, setSrc] = React.useState("");
+
+  React.useEffect(() => {
+    const page = new URLSearchParams(location.search).get("page");
+    setSrc(page ? `${props.url}/${page}` : props.url);
+  }, [props, location]);
+
   return <DesignerPanel panelName={"documentation"} panel={Panel.Help}>
-    <DesignerNavTabs />
     <HelpHeader />
     <DesignerPanelContent panelName={"documentation"}>
-      <iframe src={page ? `${props.url}/${page}` : props.url} />
+      <iframe src={src} />
     </DesignerPanelContent>
   </DesignerPanel>;
 };
-
-export const SoftwareDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.softwareDocs} />;
-
-export const DeveloperDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.developerDocs} />;
-
-export const GenesisDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.genesisDocs} />;
-
-export const ExpressDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.expressDocs} />;
-
-export const MetaDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.metaDocs} />;
-
-export const EducationDocsPanel = () =>
-  <DocumentationPanel url={ExternalUrl.eduDocs} />;

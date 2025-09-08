@@ -7,7 +7,9 @@ import { ConfigurationName, FirmwareHardware } from "farmbot";
 import { getModifiedClassNameSpecifyModified } from "../default_values";
 import { cloneDeep } from "lodash";
 
-type Key = BooleanFbosConfigKey | StringFbosConfigKey | NumberFbosConfigKey
+type Key = BooleanFbosConfigKey
+  | StringFbosConfigKey
+  | NumberFbosConfigKey
   | ConfigurationName;
 type Value = string | number | boolean | undefined;
 const DEFAULT_FBOS_CONFIG_VALUES: Record<Key, Value> = {
@@ -29,6 +31,7 @@ const DEFAULT_FBOS_CONFIG_VALUES: Record<Key, Value> = {
   safe_height: 0,
   soil_height: 0,
   gantry_height: 120,
+  default_axis_order: "xy,z;high",
 };
 
 const DEFAULT_EXPRESS_FBOS_CONFIG_VALUES =
@@ -46,6 +49,7 @@ export const getDefaultConfigValue =
         case "farmduino_k15":
         case "farmduino_k16":
         case "farmduino_k17":
+        case "farmduino_k18":
           return DEFAULT_GENESIS_FBOS_CONFIG_VALUES[key];
         case "express_k10":
         case "express_k11":

@@ -1,4 +1,4 @@
-import { DesignerState } from "../farm_designer/interfaces";
+import { DesignerState, DrawnPointPayl } from "../farm_designer/interfaces";
 import { HelpState } from "../help/reducer";
 import { RunButtonMenuOpen } from "../sequences/interfaces";
 
@@ -7,7 +7,6 @@ export const fakeDesignerState = (): DesignerState => ({
   selectionPointType: undefined,
   hoveredPlant: {
     plantUUID: undefined,
-    icon: ""
   },
   hoveredPoint: undefined,
   hoveredPlantListItem: undefined,
@@ -16,14 +15,11 @@ export const fakeDesignerState = (): DesignerState => ({
   hoveredImage: undefined,
   hoveredSpread: undefined,
   cropSearchQuery: "",
-  cropSearchResults: [],
-  cropSearchInProgress: false,
   companionIndex: undefined,
   plantTypeChangeId: undefined,
   bulkPlantSlug: undefined,
   chosenLocation: { x: undefined, y: undefined, z: undefined },
   drawnPoint: undefined,
-  drawnWeed: undefined,
   openedSavedGarden: undefined,
   tryGroupSortType: undefined,
   editGroupAreaInMap: false,
@@ -52,6 +48,12 @@ export const fakeDesignerState = (): DesignerState => ({
   cropHeightCurveId: undefined,
   cropStage: undefined,
   cropPlantedAt: undefined,
+  cropRadius: undefined,
+  distanceIndicator: "",
+  panelOpen: true,
+  threeDTopDownView: false,
+  threeDExaggeratedZ: false,
+  threeDTime: undefined,
 });
 
 export const fakeHelpState = (): HelpState => ({
@@ -62,4 +64,14 @@ export const fakeHelpState = (): HelpState => ({
 export const fakeMenuOpenState = (): RunButtonMenuOpen => ({
   component: undefined,
   uuid: undefined,
+});
+
+export const fakeDrawnPoint = (): DrawnPointPayl => ({
+  name: "Fake Point",
+  cx: 10,
+  cy: 20,
+  r: 30,
+  color: "green",
+  z: 0,
+  at_soil_level: false,
 });

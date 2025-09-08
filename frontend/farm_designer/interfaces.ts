@@ -1,4 +1,3 @@
-import { OpenFarm } from "../open_farm/openfarm";
 import { DropDownItem } from "../ui";
 import {
   TaggedFarmEvent,
@@ -35,12 +34,14 @@ import {
 import { SelectionBoxData } from "./map/background";
 import { GetWebAppConfigValue } from "../config_storage/actions";
 import {
+  DeviceAccountSettings,
   ExecutableType, PlantPointer, ToolPulloutDirection,
 } from "farmbot/dist/resources/api_resources";
 import { BooleanConfigKey } from "farmbot/dist/resources/configs/web_app";
 import { MovementState, TimeSettings } from "../interfaces";
 import { ExtendedPointGroupSortType } from "../point_groups/paths";
 import { PeripheralValues } from "./map/layers/farmbot/bot_trail";
+import { NavigateFunction } from "react-router";
 
 /* BotOriginQuadrant diagram
 
@@ -84,6 +85,7 @@ export interface MountedToolInfo {
 
 export interface FarmDesignerProps {
   dispatch: Function;
+  device: DeviceAccountSettings;
   selectedPlant: TaggedPlant | undefined;
   designer: DesignerState;
   hoveredPlant: TaggedPlant | undefined;
@@ -130,22 +132,6 @@ export interface MovePointToProps {
   gridSize: AxisNumberProperty;
 }
 
-/**
- * OFCrop bundled with corresponding profile image from OpenFarm API.
- */
-export interface CropLiveSearchResult {
-  crop: OpenFarm.OFCrop;
-  images: string[];
-  companions: OpenFarm.CompanionsData[];
-}
-
-export interface Crop {
-  id?: undefined;
-  svg_icon?: string | undefined;
-  spread?: number | undefined;
-  slug: string;
-}
-
 export interface DesignerState {
   selectedPoints: UUID[] | undefined;
   selectionPointType: PointType[] | undefined;
@@ -157,14 +143,11 @@ export interface DesignerState {
   hoveredSensorReading: string | undefined;
   hoveredImage: string | undefined;
   cropSearchQuery: string;
-  cropSearchResults: CropLiveSearchResult[];
-  cropSearchInProgress: boolean;
   companionIndex: number | undefined;
   plantTypeChangeId: number | undefined;
   bulkPlantSlug: string | undefined;
   chosenLocation: BotPosition;
   drawnPoint: DrawnPointPayl | undefined;
-  drawnWeed: DrawnWeedPayl | undefined;
   openedSavedGarden: number | undefined;
   tryGroupSortType: ExtendedPointGroupSortType | undefined;
   editGroupAreaInMap: boolean;
@@ -193,6 +176,12 @@ export interface DesignerState {
   cropHeightCurveId: number | undefined;
   cropStage: PlantStage | undefined;
   cropPlantedAt: string | undefined;
+  cropRadius: number | undefined;
+  distanceIndicator: string;
+  panelOpen: boolean;
+  threeDTopDownView: boolean;
+  threeDExaggeratedZ: boolean;
+  threeDTime: string | undefined;
 }
 
 export type TaggedExecutable = TaggedSequence | TaggedRegimen;
@@ -206,7 +195,7 @@ export interface AddEditFarmEventProps {
   regimensById: Record<string, TaggedRegimen | undefined>;
   sequencesById: Record<string, TaggedSequence | undefined>;
   farmEventsById: Record<string, TaggedFarmEvent | undefined>;
-  getFarmEvent(): TaggedFarmEvent | undefined;
+  getFarmEvent(navigate: NavigateFunction): TaggedFarmEvent | undefined;
   findFarmEventByUuid(uuid: string | undefined): TaggedFarmEvent | undefined;
   handleTime(e: React.SyntheticEvent<HTMLInputElement>, currentISO: string): string;
   dispatch: Function;
@@ -336,26 +325,19 @@ export interface DraggableEvent {
 
 export interface HoveredPlantPayl {
   plantUUID: string | undefined;
-  icon: string;
 }
 
-export type OpenfarmSearch = (query: string) => (dispatch: Function) => void;
-
 export interface CropCatalogProps {
-  cropSearchQuery: string | undefined;
   dispatch: Function;
-  cropSearchResults: CropLiveSearchResult[];
-  openfarmSearch: OpenfarmSearch;
-  cropSearchInProgress: boolean;
   plant: TaggedPlantPointer | undefined;
   bulkPlantSlug: string | undefined;
   hoveredPlant: HoveredPlantPayl;
+  cropSearchQuery: string;
 }
 
 export interface CropInfoProps {
   dispatch: Function;
   designer: DesignerState;
-  openfarmCropFetch: OpenfarmSearch;
   botPosition: BotPosition;
   xySwap: boolean;
   getConfigValue: GetWebAppConfigValue;
@@ -381,20 +363,11 @@ export interface CameraCalibrationData {
 }
 
 export interface DrawnPointPayl {
-  name?: string;
-  cx: number;
-  cy: number;
+  name: string;
+  cx: number | undefined;
+  cy: number | undefined;
   z: number;
   r: number;
-  color?: string;
-  at_soil_level?: boolean;
-}
-
-export interface DrawnWeedPayl {
-  name?: string;
-  cx: number;
-  cy: number;
-  z: number;
-  r: number;
-  color?: string;
+  color: string;
+  at_soil_level: boolean;
 }

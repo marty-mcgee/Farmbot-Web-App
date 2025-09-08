@@ -1,3 +1,8 @@
+let mockIsMobile = false;
+jest.mock("../../../screen_size", () => ({
+  isMobile: () => mockIsMobile,
+}));
+
 jest.mock("../../../sequences/set_active_sequence_by_name", () => ({
   setActiveSequenceByName: jest.fn()
 }));
@@ -39,7 +44,6 @@ import { fakeState } from "../../../__test_support__/fake_state";
 import {
   setActiveSequenceByName,
 } from "../../set_active_sequence_by_name";
-import { push } from "../../../history";
 import { Path } from "../../../internal_urls";
 import { sequencesPanelState } from "../../../__test_support__/panel_state";
 import { Color } from "farmbot";
@@ -49,6 +53,7 @@ import { API } from "../../../api";
 import { error } from "../../../toast/toast";
 import { addNewSequenceToFolder } from "../../../folders/actions";
 import { emptyState } from "../../../resources/reducer";
+import { mountWithContext } from "../../../__test_support__/mount_with_context";
 
 describe("<DesignerSequenceEditor />", () => {
   API.setBaseUrl("");
@@ -65,6 +70,7 @@ describe("<DesignerSequenceEditor />", () => {
     sequencesState: emptyState().consumers.sequences,
     folderData: mapStateToFolderProps(fakeState()),
     sequencesPanelState: sequencesPanelState(),
+    visualized: undefined,
   });
 
   it("renders", () => {
@@ -129,14 +135,11 @@ describe("<DesignerSequenceEditor />", () => {
   });
 
   it("navigates to full page editor", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 500,
-      configurable: true
-    });
+    mockIsMobile = false;
     const p = fakeProps();
-    const wrapper = mount(<DesignerSequenceEditor {...p} />);
+    const wrapper = mountWithContext(<DesignerSequenceEditor {...p} />);
     wrapper.find(".fa-expand").first().simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.sequencePage("fake"));
+    expect(mockNavigate).toHaveBeenCalledWith(Path.sequencePage("fake"));
   });
 });
 

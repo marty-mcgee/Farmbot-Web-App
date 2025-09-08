@@ -1,5 +1,5 @@
 import { BotState, SourceFbosConfig } from "../../devices/interfaces";
-import { Alert, TaggedDevice } from "farmbot";
+import { Alert, TaggedDevice, TaggedFarmwareEnv } from "farmbot";
 import { SettingsPanelState, TimeSettings } from "../../interfaces";
 
 export interface FarmbotSettingsProps {
@@ -12,6 +12,7 @@ export interface FarmbotSettingsProps {
   botOnline: boolean;
   settingsPanelState: SettingsPanelState;
   showAdvanced: boolean;
+  farmwareEnvs: TaggedFarmwareEnv[];
 }
 
 export interface NameRowProps {
@@ -33,6 +34,7 @@ export interface TimezoneRowProps {
 export interface GardenLocationRowProps {
   dispatch: Function;
   device: TaggedDevice;
+  farmwareEnvs: TaggedFarmwareEnv[];
 }
 
 export interface AutoUpdateRowProps {
@@ -64,6 +66,7 @@ export interface PowerAndResetProps {
 
 export interface FactoryResetRowsProps {
   botOnline: boolean;
+  dispatch: Function;
 }
 
 export interface FarmbotOsRowProps {
@@ -96,6 +99,11 @@ export interface OsUpdateButtonProps {
 }
 
 export interface ZHeightInputProps {
+  dispatch: Function;
+  sourceFbosConfig: SourceFbosConfig;
+}
+
+export interface DefaultAxisOrderProps {
   dispatch: Function;
   sourceFbosConfig: SourceFbosConfig;
 }

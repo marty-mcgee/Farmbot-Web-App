@@ -21,5 +21,7 @@ describe("getModifiedClassName()", () => {
     expect(getModifiedClassName("encoder_enabled_x", 1, "arduino")).toEqual("");
     expect(getModifiedClassName("encoder_enabled_x", 0, "arduino"))
       .toEqual("modified");
+    expect(getModifiedClassName("encoder_enabled_x", 0, "arduino", () => 1))
+      .toEqual("");
   });
 });

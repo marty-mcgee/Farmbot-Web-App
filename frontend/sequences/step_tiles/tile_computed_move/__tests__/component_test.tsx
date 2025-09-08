@@ -2,6 +2,7 @@ const mockEditStep = jest.fn();
 jest.mock("../../../../api/crud", () => ({ editStep: mockEditStep }));
 
 import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import { ComputedMove } from "../component";
 import { Move, SpecialValue } from "farmbot";
@@ -16,6 +17,10 @@ import {
 } from "../test_fixtures";
 import { inputEvent } from "../../../../__test_support__/fake_html_events";
 import { StepParams } from "../../../interfaces";
+import {
+  buildResourceIndex,
+} from "../../../../__test_support__/resource_index_builder";
+import { fakeFbosConfig } from "../../../../__test_support__/fake_state/resources";
 
 describe("<ComputedMove />", () => {
   const fakeProps = (): StepParams<Move> => {
@@ -114,11 +119,24 @@ describe("<ComputedMove />", () => {
   });
 
   it("shows options", () => {
-    const MORE = ["offset", "variance", "safe"];
+    const MORE = ["offset", "variance", "order"];
     const wrapper = mount<ComputedMove>(<ComputedMove {...fakeProps()} />);
     MORE.map(string =>
       expect(wrapper.text().toLowerCase()).not.toContain(string));
     wrapper.setState({ more: true });
+    MORE.map(string =>
+      expect(wrapper.text().toLowerCase()).toContain(string));
+  });
+
+  it("shows options: axis order", () => {
+    const MORE = ["order"];
+    const p = fakeProps();
+    p.currentStep = {
+      kind: "move", args: {}, body: [{
+        kind: "axis_order", args: { grouping: "xyz", route: "high" }
+      }],
+    };
+    const wrapper = mount<ComputedMove>(<ComputedMove {...p} />);
     MORE.map(string =>
       expect(wrapper.text().toLowerCase()).toContain(string));
   });
@@ -132,9 +150,34 @@ describe("<ComputedMove />", () => {
 
   it("enables safe z", () => {
     const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
     expect(wrapper.state().safeZ).toEqual(false);
-    wrapper.instance().toggleSafeZ();
+    wrapper.instance().setAxisOrder({ label: "", value: "safe_z" });
     expect(wrapper.state().safeZ).toEqual(true);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
+  });
+
+  it("enables axis order", () => {
+    const wrapper = shallow<ComputedMove>(<ComputedMove {...fakeProps()} />);
+    expect(wrapper.state().axisGrouping).toEqual(undefined);
+    expect(wrapper.state().axisRoute).toEqual(undefined);
+    expect(wrapper.state().safeZ).toEqual(false);
+    wrapper.instance().setAxisOrder({ label: "", value: "xyz;high" });
+    expect(wrapper.state().safeZ).toEqual(false);
+    expect(wrapper.state().axisGrouping).toEqual("xyz");
+    expect(wrapper.state().axisRoute).toEqual("high");
+  });
+
+  it("handles config", () => {
+    const p = fakeProps();
+    const config = fakeFbosConfig();
+    config.body.default_axis_order = "safe_z";
+    p.resources = buildResourceIndex([config]).index;
+    render(<ComputedMove {...p} />);
+    fireEvent.click(screen.getByText("[]"));
+    expect(screen.getByText("Use default (Safe Z)")).toBeInTheDocument();
   });
 
   it("commits number value", () => {

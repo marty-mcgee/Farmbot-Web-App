@@ -6,13 +6,7 @@ module Devices
 
       # DO NOT ALPHABETIZE. ORDER MATTERS! - RC
       COMMAND_ORDER = [
-        # PLANTS =================================
-        :plants,
-
         # GROUPS =================================
-        :point_groups_spinach,
-        :point_groups_broccoli,
-        :point_groups_beet,
         :point_groups_all_plants,
         :point_groups_all_points,
         :point_groups_all_weeds,
@@ -43,6 +37,7 @@ module Devices
         :settings_firmware,
         :settings_gantry_height,
         :settings_hide_sensors,
+        :settings_three_d,
 
         # TOOLS ==================================
         :tools_seed_bin,
@@ -66,9 +61,6 @@ module Devices
         :tool_slots_slot_8,
         :tool_slots_slot_9,
 
-        # WEBCAM FEEDS ===========================
-        :webcam_feeds,
-
         # SEQUENCES ==============================
         :sequences_mount_tool,
         :sequences_dismount_tool,
@@ -86,9 +78,8 @@ module Devices
         :sequences_dispense_water,
         :sequences_mow_all_weeds,
         :sequences_pick_from_seed_tray,
-
-        # EVERYTHING ELSE ========================
-        :misc,
+        :sequences_pick_from_seed_trough,
+        :sequences_pick_from_seed_bin,
       ]
 
       def initialize(device)
@@ -98,8 +89,6 @@ module Devices
       def settings_hide_sensors
         device.web_app_config.update!(hide_sensors: false)
       end
-
-      def plants; end
 
       def peripherals_lighting
         add_peripheral(7, ToolNames::LIGHTING)
@@ -127,6 +116,8 @@ module Devices
       def sequences_plant_seed; end
       def sequences_mow_all_weeds; end
       def sequences_pick_from_seed_tray; end
+      def sequences_pick_from_seed_trough; end
+      def sequences_pick_from_seed_bin; end
 
       def sequences_take_photo_of_plant
         s = SequenceSeeds::TAKE_PHOTO_OF_PLANT.deep_dup
@@ -141,12 +132,6 @@ module Devices
 
         Sequences::Create.run!(s, device: device)
       end
-
-      def point_groups_spinach; end
-
-      def point_groups_broccoli; end
-
-      def point_groups_beet; end
 
       def point_groups_all_plants
         add_point_group(name: "All plants")
@@ -227,8 +212,10 @@ module Devices
       def settings_soil_height; end
 
       def settings_soil_height
-        device.fbos_config.update!(soil_height: -200)
+        device.fbos_config.update!(soil_height: -500)
       end
+
+      def settings_three_d; end
 
       def tool_slots_slot_1; end
       def tool_slots_slot_2; end
@@ -251,9 +238,6 @@ module Devices
       end
       def tools_weeder; end
       def tools_rotary; end
-
-      def webcam_feeds; end
-      def misc; end
 
       private
 
@@ -326,7 +310,7 @@ module Devices
         PointGroups::Create.run!(device: device,
                                  name: name,
                                  point_ids: [],
-                                 sort_type: "yx_ascending",
+                                 sort_type: "yx_alternating",
                                  criteria: {
                                    string_eq: {
                                      pointer_type: [pointer_type],
@@ -337,10 +321,6 @@ module Devices
                                    number_gt: {},
                                    day: { op: "<", days_ago: 0 },
                                  })
-      end
-
-      def seeder_id
-        @seeder_id ||= device.tools.find_by!(name: ToolNames::SEEDER).id
       end
 
       def water_plant_id

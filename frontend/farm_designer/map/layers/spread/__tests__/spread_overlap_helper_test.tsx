@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import {
   SpreadOverlapHelper,
   getDiscreteColor,
@@ -14,6 +14,7 @@ import { fakePlant } from "../../../../../__test_support__/fake_state/resources"
 import {
   fakeMapTransformProps,
 } from "../../../../../__test_support__/map_transform_props";
+import { svgMount } from "../../../../../__test_support__/svg_mount";
 
 describe("<SpreadOverlapHelper/>", () => {
   function fakeProps(): SpreadOverlapHelperProps {
@@ -27,7 +28,8 @@ describe("<SpreadOverlapHelper/>", () => {
       dragging: false,
       zoomLvl: 1,
       activeDragXY: { x: undefined, y: undefined, z: undefined },
-      activeDragSpread: 25
+      activeDragSpread: 25,
+      inactiveSpread: 25,
     };
   }
 
@@ -119,6 +121,7 @@ describe("<SpreadOverlapHelper/>", () => {
 
   it("shows overlap values", () => {
     const p = fakeProps();
+    p.inactiveSpread = 0;
     p.activeDragXY = { x: 100, y: 100, z: 0 };
     p.dragging = false;
     p.showOverlapValues = true;
@@ -167,14 +170,14 @@ describe("SpreadOverlapHelper functions", () => {
 
   it("overlapText()", () => {
     const spreadData = { active: 100, inactive: 200 };
-    const svgText = shallow(overlapText(100, 100, 150, spreadData));
+    const svgText = svgMount(overlapText(100, 100, 150, spreadData));
     ["Active: 80%", "Inactive: 40%", "orange"].map(string =>
       expect(svgText.text()).toContain(string));
   });
 
   it("overlapText(): no overlap", () => {
     const spreadData = { active: 100, inactive: 200 };
-    const svgText = shallow(overlapText(100, 100, 0, spreadData));
+    const svgText = svgMount(overlapText(100, 100, 0, spreadData));
     expect(svgText.text()).toEqual("");
   });
 });

@@ -89,7 +89,7 @@ export interface ConfigFieldsProps {
 }
 
 /** Return a div that includes all Farmware input fields. */
-export function ConfigFields(props: ConfigFieldsProps): JSX.Element {
+export function ConfigFields(props: ConfigFieldsProps): React.ReactNode {
   const { farmwareName, farmwareConfigs, getValue, userEnv } = props;
   return <div className={"farmware-config-fields"}>
     {farmwareConfigs.map(config => {
@@ -188,7 +188,8 @@ export class FarmwareForm
     const collapsedConfigs = farmware.config.filter(collapsed);
 
     return <div className={"farmware-form"}>
-      {this.props.docPage && <ToolTip helpText={""} docPage={this.props.docPage} />}
+      {this.props.docPage &&
+        <ToolTip helpText={""} docPage={this.props.docPage} dispatch={dispatch} />}
       <button
         className={["fb-button green farmware-button",
           nonZeroValue(env.measure_soil_height_measured_distance)

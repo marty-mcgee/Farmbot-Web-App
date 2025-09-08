@@ -1,5 +1,6 @@
 class DashboardController < ApplicationController
   before_action :set_global_config
+  skip_before_action :verify_authenticity_token, only: [:csp_reports]
   layout "dashboard"
 
   # === THESE CONSTANTS ARE CONFIGURABLE: ===
@@ -13,6 +14,7 @@ class DashboardController < ApplicationController
                         :terminal,
                         :tos_update,
                         :try_farmbot,
+                        :promo,
                       ]
 
   OUTPUT_URL = "/" + File.join("assets", "parcel") # <= served from public/ dir
@@ -20,7 +22,6 @@ class DashboardController < ApplicationController
   CACHE_DIR = File.join(".cache")
 
   CSS_INPUTS = {
-    front_page: "/css/laptop_splash.scss",
     default: "/css/_index.scss",
     terminal: "/css/xterm.css",
   }.with_indifferent_access
@@ -32,8 +33,8 @@ class DashboardController < ApplicationController
     tos_update: "/tos_update/index.tsx",
     demo: "/demo/index.tsx",
     try_farmbot: "/try_farmbot/index.tsx",
+    promo: "/promo/index.tsx",
     os_download: "/os_download/index.tsx",
-    featured: "/featured/index.tsx",
     terminal: "/terminal/index.tsx",
   }.with_indifferent_access
 
@@ -102,10 +103,16 @@ class DashboardController < ApplicationController
     payload = request.body.read || ""
     begin
       report = JSON.parse(payload)
-    rescue
-      report = { problem: "Crashed while parsing report" }
+    rescue JSON::ParserError => e
+      report = {
+        error: "CSP report parse error",
+        exception: e.message,
+        raw: payload,
+      }
     end
-    render json: report
+
+    Rollbar.info("CSP Violation Report", report)
+    head :no_content
   end
 
   # (for self hosted users) Direct image upload endpoint.

@@ -25,8 +25,8 @@ import {
   chooseLocationAction, MoveToForm, unChooseLocationAction, validGoButtonAxes,
 } from "./move_to";
 import { Actions } from "../constants";
-import { push } from "../history";
-import { distance } from "../point_groups/paths";
+import { useNavigate } from "react-router";
+import { distance } from "../point_groups/other_sort_methods";
 import { isUndefined, round, sortBy, sum } from "lodash";
 import { PlantInventoryItem } from "../plants/plant_inventory_item";
 import { PointInventoryItem } from "../points/point_inventory_item";
@@ -44,6 +44,9 @@ import { Collapse } from "@blueprintjs/core";
 import { ImageFlipper } from "../photos/images/image_flipper";
 import { PhotoFooter } from "../photos/images/photos";
 import { Path } from "../internal_urls";
+import { NavigationContext } from "../routes_helpers";
+import { DrawnPointPayl } from "./interfaces";
+import { getFbosConfig } from "../resources/getters";
 
 export const mapStateToProps = (props: Everything): LocationInfoProps => ({
   chosenLocation: props.resources.consumers.farm_designer.chosenLocation,
@@ -65,6 +68,7 @@ export const mapStateToProps = (props: Everything): LocationInfoProps => ({
   timeSettings: maybeGetTimeSettings(props.resources.index),
   arduinoBusy: props.bot.hardware.informational_settings.busy,
   movementState: props.app.movement,
+  defaultAxisOrder: getFbosConfig(props.resources.index)?.body.default_axis_order,
 });
 
 export interface LocationInfoProps {
@@ -85,6 +89,7 @@ export interface LocationInfoProps {
   farmwareEnvs: TaggedFarmwareEnv[];
   arduinoBusy: boolean;
   movementState: MovementState;
+  defaultAxisOrder: string | undefined;
 }
 
 export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
@@ -96,15 +101,19 @@ export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
       : undefined;
   }
 
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
+
   componentDidMount() {
     unselectPlant(this.props.dispatch)();
     const x = getUrlQuery("x");
     const y = getUrlQuery("y");
     const z = getUrlQuery("z") || "0";
-    !this.chosenXY && !isUndefined(x) && !isUndefined(y) &&
-      this.props.dispatch(chooseLocationAction({
-        x: parseFloat(x), y: parseFloat(y), z: parseFloat(z)
-      }));
+    if (!this.chosenXY && !isUndefined(x) && !isUndefined(y)) {
+      const loc = { x: parseFloat(x), y: parseFloat(y), z: parseFloat(z) };
+      this.props.dispatch(chooseLocationAction(loc));
+    }
   }
 
   componentWillUnmount() {
@@ -136,12 +145,13 @@ export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
           graphic={EmptyStateGraphic.points}>
           <div className={"location-info-content"}>
             <LocationActions
+              defaultAxisOrder={this.props.defaultAxisOrder}
               currentBotLocation={this.props.currentBotLocation}
               chosenLocation={this.props.chosenLocation}
               botOnline={this.props.botOnline}
               locked={this.props.locked}
               dispatch={this.props.dispatch} />
-            <h1>{t("Nearby")}</h1>
+            <h2>{t("Nearby")}</h2>
             {[
               {
                 title: t("Plants"),
@@ -184,6 +194,8 @@ export class RawLocationInfo extends React.Component<LocationInfoProps, {}> {
 }
 
 export const LocationInfo = connect(mapStateToProps)(RawLocationInfo);
+// eslint-disable-next-line import/no-default-export
+export default LocationInfo;
 
 type Item = TaggedPlantPointer
   | TaggedGenericPointer
@@ -451,11 +463,14 @@ interface LocationActionsProps {
   botOnline: boolean;
   locked: boolean;
   chosenLocation: BotPosition;
+  defaultAxisOrder: string | undefined;
 }
 
-const LocationActions = (props: LocationActionsProps) =>
-  <div className={"location-actions"}>
+const LocationActions = (props: LocationActionsProps) => {
+  const navigate = useNavigate();
+  return <div className={"location-actions"}>
     <MoveToForm
+      defaultAxisOrder={props.defaultAxisOrder}
       chosenLocation={props.chosenLocation}
       currentBotLocation={props.currentBotLocation}
       locked={props.locked}
@@ -474,15 +489,19 @@ const LocationActions = (props: LocationActionsProps) =>
         &nbsp;{props.currentBotLocation.z})</p>}
     <button className={"fb-button gray add-point"}
       onClick={() => {
-        props.dispatch({
-          type: Actions.SET_DRAWN_POINT_DATA,
-          payload: {
-            cx: props.chosenLocation.x,
-            cy: props.chosenLocation.y,
-          }
-        });
-        push(Path.points("add"));
+        const payload: DrawnPointPayl = {
+          name: t("Location Point"),
+          cx: props.chosenLocation.x,
+          cy: props.chosenLocation.y,
+          color: "gray",
+          at_soil_level: false,
+          r: 0,
+          z: 0,
+        };
+        props.dispatch({ type: Actions.SET_DRAWN_POINT_DATA, payload });
+        navigate(Path.points("add"));
       }}>
       {t("Add point at this location")}
     </button>
   </div>;
+};

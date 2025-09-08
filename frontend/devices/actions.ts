@@ -18,9 +18,10 @@ import {
   Xyz,
   AxisOverwrite,
   RpcRequestBodyItem,
+  Move,
 } from "farmbot";
 import { oneOf, versionOK, trim } from "../util";
-import { Actions, Content } from "../constants";
+import { Actions, Content, DeviceSetting } from "../constants";
 import { mcuParamValidator } from "./update_interceptor";
 import { edit, save as apiSave } from "../api/crud";
 import { CONFIG_DEFAULTS } from "farmbot/dist/config";
@@ -31,10 +32,12 @@ import { getFirmwareConfig, getFbosConfig } from "../resources/getters";
 import { isObject, isString, get, noop } from "lodash";
 import { t } from "../i18next_wrapper";
 import { ExternalUrl } from "../external_urls";
-import { goToFbosSettings } from "../settings/maybe_highlight";
 import { ToastOptions } from "../toast/interfaces";
 import { forceOnline } from "./must_be_online";
 import { store } from "../redux/store";
+import { linkToSetting } from "../settings/maybe_highlight";
+import { runDemoLuaCode, runDemoSequence, csToLua } from "../demo/lua_runner";
+import { eStop } from "../demo/lua_runner/actions";
 
 const ON = 1, OFF = 0;
 export type ConfigKey = keyof McuParams;
@@ -82,7 +85,19 @@ const maybeAlertLocked = () =>
 
 /** Send RPC. */
 export function sendRPC(command: RpcRequestBodyItem) {
-  maybeNoop();
+  if (forceOnline()) {
+    if (command.kind == "execute") {
+      runDemoSequence(
+        store.getState().resources.index,
+        command.args.sequence_id,
+        command.body);
+    } else if (command.kind == "emergency_lock") {
+      eStop();
+    } else {
+      runDemoLuaCode(csToLua(command));
+    }
+    return;
+  }
   getDevice()
     .send(rpcRequest([command]))
     .then(maybeNoop, commandErr());
@@ -160,7 +175,10 @@ export function flashFirmware(firmwareName: FirmwareHardware) {
 
 export function emergencyLock() {
   const noun = t("Emergency stop");
-  maybeNoop();
+  if (forceOnline()) {
+    eStop();
+    return;
+  }
   getDevice()
     .emergencyLock()
     .then(commandOK(noun), commandErr(noun));
@@ -169,7 +187,10 @@ export function emergencyLock() {
 export function emergencyUnlock(force = false) {
   const noun = t("Emergency unlock");
   if (force || confirm(t("Are you sure you want to unlock the device?"))) {
-    maybeNoop();
+    if (forceOnline()) {
+      runDemoLuaCode("emergency_unlock()");
+      return;
+    }
     getDevice()
       .emergencyUnlock()
       .then(commandOK(noun), commandErr(noun));
@@ -205,6 +226,10 @@ export function execSequence(
 ) {
   const noun = t("Sequence execution");
   if (sequenceId) {
+    if (forceOnline()) {
+      runDemoSequence(store.getState().resources.index, sequenceId, bodyVariables);
+      return;
+    }
     commandOK(noun)();
     return getDevice()
       .execSequence(sequenceId, bodyVariables)
@@ -221,7 +246,10 @@ export function execSequence(
 }
 
 export function takePhoto() {
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode("take_photo()");
+    return;
+  }
   getDevice().takePhoto()
     .then(commandOK("", Content.PROCESSING_PHOTO))
     .catch(() => error(t("Error taking photo")));
@@ -336,7 +364,10 @@ export function settingToggle(
 }
 
 export function moveRelative(props: MoveRelProps) {
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode(`move_relative(${props.x}, ${props.y}, ${props.z})`);
+    return;
+  }
   maybeAlertLocked();
   return getDevice()
     .moveRelative(props)
@@ -345,7 +376,10 @@ export function moveRelative(props: MoveRelProps) {
 
 export function moveAbsolute(props: MoveRelProps) {
   const noun = t("Absolute movement");
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode(`move_absolute(${props.x}, ${props.y}, ${props.z})`);
+    return;
+  }
   maybeAlertLocked();
   return getDevice()
     .moveAbsolute(props)
@@ -354,7 +388,6 @@ export function moveAbsolute(props: MoveRelProps) {
 
 export function move(props: MoveProps) {
   const noun = t("Movement");
-  maybeNoop();
   maybeAlertLocked();
   const safeZ: SafeZ = { kind: "safe_z", args: {} };
   const speedOverwrite = (axis: Xyz, speed: number): SpeedOverwrite => ({
@@ -388,14 +421,22 @@ export function move(props: MoveProps) {
     ...(props.speed ? [speedOverwrite("z", props.speed)] : []),
     ...(props.safeZ ? [safeZ] : []),
   ];
+  const cmd: Move = { kind: "move", args: {}, body };
+  if (forceOnline()) {
+    runDemoLuaCode(csToLua(cmd));
+    return;
+  }
   return getDevice()
-    .send(rpcRequest([{ kind: "move", args: {}, body }]))
+    .send(rpcRequest([cmd]))
     .then(maybeNoop, commandErr(noun));
 }
 
 export function pinToggle(pin_number: number) {
-  const noun = t("Setting toggle");
-  maybeNoop();
+  const noun = t("Toggle pin");
+  if (forceOnline()) {
+    runDemoLuaCode(`toggle_pin(${pin_number})`);
+    return;
+  }
   maybeAlertLocked();
   return getDevice()
     .togglePin({ pin_number })
@@ -424,8 +465,11 @@ export function writePin(
 }
 
 export function moveToHome(axis: Axis) {
+  if (forceOnline()) {
+    runDemoLuaCode(`go_to_home("${axis}")`);
+    return;
+  }
   const noun = t("'Move To Home' command");
-  maybeNoop();
   maybeAlertLocked();
   getDevice()
     .home({ axis, speed: CONFIG_DEFAULTS.speed })
@@ -434,7 +478,10 @@ export function moveToHome(axis: Axis) {
 
 export function findHome(axis: Axis) {
   const noun = t("'Find Home' command");
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode(`find_home("${axis}")`);
+    return;
+  }
   maybeAlertLocked();
   getDevice()
     .findHome({ axis, speed: CONFIG_DEFAULTS.speed })
@@ -451,8 +498,11 @@ export function setHome(axis: Axis) {
 
 export function findAxisLength(axis: Axis) {
   const noun = t("'Find Axis Length' command");
-  maybeNoop();
   maybeAlertLocked();
+  if (forceOnline()) {
+    runDemoLuaCode(`find_axis_length("${axis}")`);
+    return;
+  }
   getDevice()
     .calibrate({ axis })
     .catch(commandErr(noun));
@@ -504,11 +554,11 @@ export function changeStepSize(integer: number) {
 }
 
 export function badVersion(options: ToastOptions = { noDismiss: true }) {
-  goToFbosSettings();
   error(t(Content.OLD_FBOS_UNSUPPORTED), {
     title: t("Please Update"),
     noTimer: true,
     idPrefix: "EOL",
+    redirect: linkToSetting(DeviceSetting.farmbotOS),
     ...options,
   });
 }

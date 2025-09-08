@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedPlantInfo } from "./map_state_to_props";
-import { push } from "../history";
-import { BlurableInput, Row, Col, Help } from "../ui";
+import { useNavigate } from "react-router";
+import { BlurableInput, Help } from "../ui";
 import {
   PlantStage, TaggedCurve, TaggedFarmwareEnv, TaggedGenericPointer,
   TaggedPlantPointer, Xyz,
@@ -25,6 +25,7 @@ import { BotPosition, SourceFbosConfig } from "../devices/interfaces";
 import { AllCurveInfo, CURVE_KEY_LOOKUP } from "./curve_info";
 import { BotSize } from "../farm_designer/map/interfaces";
 import { UpdatePlant } from "./plant_info";
+import { ALIASED_SLUG_LOOKUP } from "../crops/constants";
 
 export interface PlantPanelProps {
   info: FormattedPlantInfo;
@@ -85,12 +86,14 @@ export const EditPlantLocation = (props: EditPlantLocationProps) => {
     points: props.soilHeightPoints,
     farmwareEnvs: props.farmwareEnvs,
   });
-  return <Row>
+  return <div className="row">
     {["x", "y", "z"].map((axis: Xyz) =>
-      <Col xs={4} key={axis}>
-        <label style={{ marginTop: 0 }}>{t("{{axis}} (mm)", { axis })}</label>
-        {axis == "z" && !isUndefined(soilZ) &&
-          <Help text={`${t("soil height at plant location")}: ${soilZ}mm`} />}
+      <div key={axis} className="grid half-gap">
+        <div className="row grid-exp-2 half-gap">
+          <label style={{ marginTop: 0 }}>{t("{{axis}} (mm)", { axis })}</label>
+          {axis == "z" && !isUndefined(soilZ) &&
+            <Help text={`${t("soil height at plant location")}: ${soilZ}mm`} />}
+        </div>
         <BlurableInput
           type="number"
           value={plantLocation[axis]}
@@ -98,8 +101,8 @@ export const EditPlantLocation = (props: EditPlantLocationProps) => {
           onCommit={e => updatePlant(uuid, {
             [axis]: parseIntInput(e.currentTarget.value)
           })} />
-      </Col>)}
-  </Row>;
+      </div>)}
+  </div>;
 };
 
 export interface EditPlantRadiusProps extends EditPlantProperty {
@@ -107,46 +110,42 @@ export interface EditPlantRadiusProps extends EditPlantProperty {
 }
 
 export const EditPlantRadius = (props: EditPlantRadiusProps) =>
-  <Row>
-    <Col xs={6}>
-      <label style={{ marginTop: 0 }}>{t("radius (mm)")}</label>
-      <BlurableInput
-        type="number"
-        name="radius"
-        value={props.radius}
-        min={0}
-        onCommit={e => props.updatePlant(props.uuid, {
-          radius: parseIntInput(e.currentTarget.value)
-        })} />
-    </Col>
-  </Row>;
+  <div className="grid half-gap">
+    <label style={{ marginTop: 0 }}>{t("radius (mm)")}</label>
+    <BlurableInput
+      type="number"
+      name="radius"
+      value={props.radius}
+      min={0}
+      onCommit={e => props.updatePlant(props.uuid, {
+        radius: parseIntInput(e.currentTarget.value)
+      })} />
+  </div>;
 
 export interface EditPlantDepthProps extends EditPlantProperty {
   depth: number;
 }
 
 export const EditPlantDepth = (props: EditPlantDepthProps) =>
-  <Row>
-    <Col xs={6}>
-      <label style={{ marginTop: 0 }}>{t("depth (mm)")}</label>
-      <BlurableInput
-        type="number"
-        name="depth"
-        value={props.depth}
-        min={0}
-        onCommit={e => props.updatePlant(props.uuid, {
-          depth: parseIntInput(e.currentTarget.value)
-        })} />
-    </Col>
-  </Row>;
+  <div className="grid half-gap">
+    <label style={{ marginTop: 0 }}>{t("depth (mm)")}</label>
+    <BlurableInput
+      type="number"
+      name="depth"
+      value={props.depth}
+      min={0}
+      onCommit={e => props.updatePlant(props.uuid, {
+        depth: parseIntInput(e.currentTarget.value)
+      })} />
+  </div>;
 
 interface ListItemProps {
   name?: string;
-  children: React.ReactChild | React.ReactChild[];
+  children: React.ReactNode;
 }
 
 export const ListItem = (props: ListItemProps) =>
-  <li>
+  <div className="info-box">
     {props.name &&
       <label>
         {props.name}
@@ -154,7 +153,7 @@ export const ListItem = (props: ListItemProps) =>
     <div className={"plant-info-field-data"}>
       {props.children}
     </div>
-  </li>;
+  </div>;
 
 export function PlantPanel(props: PlantPanelProps) {
   const {
@@ -163,61 +162,56 @@ export function PlantPanel(props: PlantPanelProps) {
   const { slug, plantedAt, daysOld, uuid, plantStatus } = info;
   const { x, y, z } = info;
   const commonProps = { uuid, updatePlant };
+  const navigate = useNavigate();
+  const slugForCropInfoLink = ALIASED_SLUG_LOOKUP[slug] || slug;
   return <DesignerPanelContent panelName={"plants"}>
-    <ul>
+    <div className="grid">
       <ListItem name={t("Plant Type")}>
         <Link
           title={t("View crop info")}
-          to={Path.cropSearch(slug)}>
-          {startCase(slug)}
+          to={Path.cropSearch(slugForCropInfoLink)}>
+          {startCase(slugForCropInfoLink)}
         </Link>
-        <i className={"fa fa-pencil fb-icon-button"}
+        <i className={"fa fa-pencil fb-icon-button invert"}
           onClick={() => {
             dispatch({ type: Actions.SET_PLANT_TYPE_CHANGE_ID, payload: info.id });
             dispatch({ type: Actions.SET_SLUG_BULK, payload: undefined });
-            push(Path.cropSearch());
+            navigate(Path.cropSearch());
           }} />
       </ListItem>
-      {(timeSettings && !inSavedGarden) &&
-        <Row>
-          <Col xs={7}>
-            <ListItem name={t("Started")}>
-              <EditDatePlanted {...commonProps}
-                datePlanted={plantedAt}
-                timeSettings={timeSettings} />
-            </ListItem>
-          </Col>
-          <Col xs={5}>
-            <ListItem name={t("Age")}>
-              {daysOldText({ age: daysOld, stage: plantStatus })}
-            </ListItem>
-          </Col>
-        </Row>}
-      <ListItem>
+      {timeSettings && !inSavedGarden &&
+        <div className="row info-box">
+          <div className="grid half-gap">
+            <label>{t("Started")}</label>
+            <EditDatePlanted {...commonProps}
+              datePlanted={plantedAt}
+              timeSettings={timeSettings} />
+          </div>
+          <EditPlantStatus {...commonProps} plantStatus={plantStatus} />
+          <div className="grid half-gap">
+            <label>{t("Age")}</label>
+            {daysOldText({ age: daysOld, stage: plantStatus })}
+          </div>
+        </div>}
+      <div className="row grid-exp-1 info-box" style={{ alignItems: "end" }}>
         <EditPlantLocation {...commonProps}
           plantLocation={{ x, y, z }}
           soilHeightPoints={props.soilHeightPoints}
           farmwareEnvs={props.farmwareEnvs} />
-      </ListItem>
-      <GoToThisLocationButton
-        dispatch={props.dispatch}
-        locationCoordinate={{ x, y, z }}
-        botOnline={props.botOnline}
-        arduinoBusy={props.arduinoBusy}
-        currentBotLocation={props.currentBotLocation}
-        movementState={props.movementState}
-        defaultAxes={props.defaultAxes} />
-      <ListItem>
+        <GoToThisLocationButton
+          dispatch={props.dispatch}
+          locationCoordinate={{ x, y, z }}
+          botOnline={props.botOnline}
+          arduinoBusy={props.arduinoBusy}
+          currentBotLocation={props.currentBotLocation}
+          movementState={props.movementState}
+          defaultAxes={props.defaultAxes} />
+      </div>
+      <div className="row info-box">
         <EditPlantRadius {...commonProps} radius={info.radius} />
-      </ListItem>
-      {!isUndefined(info.depth) && <ListItem>
-        <EditPlantDepth {...commonProps} depth={info.depth} />
-      </ListItem>}
-      <ListItem name={t("Status")}>
-        {(!inSavedGarden)
-          ? <EditPlantStatus {...commonProps} plantStatus={plantStatus} />
-          : t(startCase(plantStatus))}
-      </ListItem>
+        {!isUndefined(info.depth) && <EditPlantDepth
+          {...commonProps} depth={info.depth} />}
+      </div>
       {info.uuid.startsWith("Point") &&
         <AllCurveInfo
           dispatch={props.dispatch}
@@ -241,6 +235,6 @@ export function PlantPanel(props: PlantPanelProps) {
             return <ListItem key={key} name={key}>{value || ""}</ListItem>;
         }
       })}
-    </ul>
+    </div>
   </DesignerPanelContent>;
 }

@@ -6,11 +6,13 @@ import { OsUpdateButtonProps } from "./interfaces";
 import { checkControllerUpdates } from "../../devices/actions";
 import { bulkToggleControlPanel, toggleControlPanel } from "../toggle_section";
 import { isString } from "lodash";
-import { Actions, Content } from "../../constants";
+import { Actions, Content, DeviceSetting } from "../../constants";
 import { t } from "../../i18next_wrapper";
 import { API } from "../../api";
-import { highlight, goToHardReset } from "../maybe_highlight";
+import { linkToSetting } from "../maybe_highlight";
 import { isJobDone } from "../../devices/jobs";
+import { NavigateFunction, useNavigate } from "react-router";
+import { setPanelOpen } from "../../farm_designer/panel_header";
 
 /**
  * FBOS versions older than this can't connect to the available OTA system
@@ -119,21 +121,22 @@ export const OsUpdateButton = (props: OsUpdateButtonProps) => {
   /** FBOS update download progress data. */
   const osUpdateJob = (bot.hardware.jobs || {})["FBOS_OTA"];
 
+  const navigate = useNavigate();
   return <button
     className={`fb-button ${buttonStatusProps.color}`}
     title={buttonStatusProps.hoverText}
     disabled={!isJobDone(osUpdateJob) || !botOnline}
     onPointerEnter={() => dispatch(fetchOsUpdateVersion(target))}
-    onClick={tooOld ? onTooOld(dispatch) : checkControllerUpdates}>
+    onClick={tooOld ? onTooOld(dispatch, navigate) : checkControllerUpdates}>
     {downloadProgress(osUpdateJob) || buttonStatusProps.text}
   </button>;
 };
 
-const onTooOld = (dispatch: Function) => () => {
-  highlight.highlighted = false;
+const onTooOld = (dispatch: Function, navigate: NavigateFunction) => () => {
   dispatch(bulkToggleControlPanel(false));
   dispatch(toggleControlPanel("power_and_reset"));
-  goToHardReset();
+  dispatch(setPanelOpen(true));
+  navigate(linkToSetting(DeviceSetting.hardReset));
 };
 
 /** For errors fetching data from releases API. */

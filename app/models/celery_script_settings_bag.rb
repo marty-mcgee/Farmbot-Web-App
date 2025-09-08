@@ -24,6 +24,10 @@ module CeleryScriptSettingsBag
 
   ALLOWED_ASSERTION_TYPES = %w(abort recover abort_recover continue)
   ALLOWED_AXIS = %w(x y z all)
+  ALLOWED_GROUPING = %w(xyz x,yz yz,x y,xz xz,y z,xy xy,z
+                        x,y,z x,z,y y,x,z y,z,x z,x,y z,y,x
+                        xy x,y y,x xz x,z z,x yz y,z z,y x y z)
+  ALLOWED_ROUTE = %w(high low in_order)
   ALLOWED_CHANGES = %w(add remove update)
   ALLOWED_CHANNEL_NAMES = %w(ticker toast email espeak)
   ALLOWED_LHS_STRINGS = [*(0..69)].map { |x| "pin#{x}" }.concat(%w(x y z))
@@ -56,6 +60,8 @@ module CeleryScriptSettingsBag
   BAD_ASSERTION_TYPE = '"%s" is not a valid assertion type. ' \
                        "Try these instead: %s"
   BAD_AXIS = '"%s" is not a valid axis. Allowed values: %s'
+  BAD_GROUPING = '"%s" is not a valid grouping. Allowed values: %s'
+  BAD_ROUTE = '"%s" is not a valid route. Allowed values: %s'
   BAD_CHANNEL_NAME = '"%s" is not a valid channel_name. Allowed values: %s'
   BAD_LHS = 'Can not put "%s" into a left hand side (LHS) argument. ' \
             "Allowed values: %s"
@@ -112,6 +118,8 @@ module CeleryScriptSettingsBag
 
   CORPUS_ENUM = {
     ALLOWED_AXIS: [ALLOWED_AXIS, BAD_AXIS],
+    ALLOWED_GROUPING: [ALLOWED_GROUPING, BAD_GROUPING],
+    ALLOWED_ROUTE: [ALLOWED_ROUTE, BAD_ROUTE],
     ALLOWED_SPECIAL_VALUE: [ALLOWED_SPECIAL_VALUE, BAD_SPECIAL_VALUE],
     ALLOWED_CHANNEL_NAMES: [ALLOWED_CHANNEL_NAMES, BAD_CHANNEL_NAME],
     ALLOWED_MESSAGE_TYPES: [ALLOWED_MESSAGE_TYPES, BAD_MESSAGE_TYPE],
@@ -206,6 +214,8 @@ module CeleryScriptSettingsBag
     url: { defn: [v(:string)] },
     value: { defn: [v(:string), v(:integer), v(:boolean)] },
     variance: { defn: [v(:integer)] },
+    grouping: { defn: [e(:ALLOWED_GROUPING)] },
+    route: { defn: [e(:ALLOWED_ROUTE)] },
     version: { defn: [v(:integer)] },
     x: { defn: [v(:integer), v(:float)] },
     y: { defn: [v(:integer), v(:float)] },
@@ -557,6 +567,10 @@ module CeleryScriptSettingsBag
       args: [],
       tags: [:data],
     },
+    axis_order: {
+      args: [:grouping, :route],
+      tags: [:data],
+    },
     random: {
       args: [:variance],
       tags: [:data],
@@ -566,6 +580,7 @@ module CeleryScriptSettingsBag
         :axis_overwrite,
         :axis_addition,
         :speed_overwrite,
+        :axis_order,
         :safe_z,
       ],
       tags: [:function, :firmware_user],
@@ -589,7 +604,7 @@ module CeleryScriptSettingsBag
     when "Device"
       # When "resource_type" is "Device", resource_id always refers to
       # the current_device.
-      # For convenience, we try to set it here, defaulting to 0
+      # For convenience, we try to set it here, defaulting to owner.id.
       node.args[:resource_id].instance_variable_set("@value", owner.id)
     when "PointGroup"
       no_resource(node, PointGroup, resource_id) unless PointGroup.exists?(resource_id)

@@ -42,15 +42,19 @@ import { FBSelect } from "../../ui";
 import { destroy } from "../../api/crud";
 import { updateConfig } from "../../devices/actions";
 import { Session } from "../../session";
-import { push } from "../../history";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import { fakeWizardStepResult } from "../../__test_support__/fake_state/resources";
 import { Path } from "../../internal_urls";
 import { API } from "../../api";
+import moment from "moment";
 
 API.setBaseUrl("");
 
 describe("<AlertCard />", () => {
+  beforeEach(() => {
+    mockFeatureBoolean = false;
+  });
+
   const fakeProps = (): AlertCardProps => ({
     alert: {
       created_at: 123,
@@ -83,6 +87,7 @@ describe("<AlertCard />", () => {
     expect(wrapper.text()).toContain("Your device has no firmware");
     expect(wrapper.find(".fa-times").length).toEqual(0);
     expect(wrapper.text()).toContain("Apr");
+    expect(wrapper.text()).toContain("2019");
     expect(wrapper.text()).toContain("Select one");
   });
 
@@ -104,6 +109,7 @@ describe("<AlertCard />", () => {
   });
 
   it("renders firmware card with new boards", () => {
+    mockFeatureBoolean = true;
     const p = fakeProps();
     p.alert.problem_tag = "farmbot_os.firmware.missing";
     p.alert.created_at = 1555555555;
@@ -141,7 +147,7 @@ describe("<AlertCard />", () => {
     const wrapper = mount(<AlertCard {...p} />);
     expect(wrapper.text().toLowerCase()).toContain("wizard");
     wrapper.find("a").simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.setup());
+    expect(mockNavigate).toHaveBeenCalledWith(Path.setup());
     expect(wrapper.text().toLowerCase()).toContain("get started");
   });
 
@@ -161,7 +167,7 @@ describe("<AlertCard />", () => {
     const wrapper = mount(<AlertCard {...p} />);
     expect(wrapper.text()).toContain("tour");
     wrapper.find(".link-button").first().simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.tours());
+    expect(mockNavigate).toHaveBeenCalledWith(Path.tours());
   });
 
   it("renders welcome card", () => {
@@ -237,6 +243,17 @@ describe("<AlertCard />", () => {
     const wrapper = mount(<AlertCard {...p} />);
     expect(wrapper.text()).not.toContain("Jan 1, 12:00am");
   });
+
+  it("doesn't show current year", () => {
+    const p = fakeProps();
+    p.alert.problem_tag = "farmbot_os.firmware.missing";
+    p.alert.created_at = Date.now().valueOf() / 1000;
+    p.timeSettings.hour24 = false;
+    p.timeSettings.utcOffset = 0;
+    const wrapper = mount(<AlertCard {...p} />);
+    const currentYear = moment().format("YYYY");
+    expect(wrapper.text()).not.toContain(currentYear);
+  });
 });
 
 describe("changeFirmwareHardware()", () => {
@@ -259,12 +276,12 @@ describe("changeFirmwareHardware()", () => {
 describe("SEED_DATA_OPTIONS()", () => {
   it("returns options", () => {
     mockFeatureBoolean = false;
-    expect(SEED_DATA_OPTIONS().length).toEqual(15);
+    expect(SEED_DATA_OPTIONS().length).toEqual(17);
   });
 
   it("returns more options", () => {
     mockFeatureBoolean = true;
-    expect(SEED_DATA_OPTIONS().length).toEqual(17);
+    expect(SEED_DATA_OPTIONS().length).toEqual(19);
   });
 });
 

@@ -1,27 +1,20 @@
 import {
   DesignerState,
-  CropLiveSearchResult,
   DrawnPointPayl,
-  DrawnWeedPayl,
   HoveredPlantPayl,
 } from "./interfaces";
 import { generateReducer } from "../redux/generate_reducer";
-import { cloneDeep, isUndefined } from "lodash";
 import { TaggedResource, PointType, PlantStage } from "farmbot";
 import { Actions } from "../constants";
 import { BotPosition } from "../devices/interfaces";
 import { PointGroupSortType } from "farmbot/dist/resources/api_resources";
 import { UUID } from "../resources/interfaces";
-import { push } from "../history";
-import { getUrlQuery } from "../util";
-import { Path } from "../internal_urls";
 
 export const initialState: DesignerState = {
   selectedPoints: undefined,
   selectionPointType: undefined,
   hoveredPlant: {
     plantUUID: undefined,
-    icon: ""
   },
   hoveredPoint: undefined,
   hoveredSpread: undefined,
@@ -30,14 +23,11 @@ export const initialState: DesignerState = {
   hoveredSensorReading: undefined,
   hoveredImage: undefined,
   cropSearchQuery: "",
-  cropSearchResults: [],
-  cropSearchInProgress: false,
   companionIndex: undefined,
   plantTypeChangeId: undefined,
   bulkPlantSlug: undefined,
   chosenLocation: { x: undefined, y: undefined, z: undefined },
   drawnPoint: undefined,
-  drawnWeed: undefined,
   openedSavedGarden: undefined,
   tryGroupSortType: undefined,
   editGroupAreaInMap: false,
@@ -66,21 +56,17 @@ export const initialState: DesignerState = {
   cropHeightCurveId: undefined,
   cropStage: undefined,
   cropPlantedAt: undefined,
+  cropRadius: undefined,
+  distanceIndicator: "",
+  panelOpen: true,
+  threeDTopDownView: false,
+  threeDExaggeratedZ: false,
+  threeDTime: undefined,
 };
 
 export const designer = generateReducer<DesignerState>(initialState)
   .add<string>(Actions.SEARCH_QUERY_CHANGE, (s, { payload }) => {
-    s.cropSearchInProgress = true;
-    const state = cloneDeep(s);
-    state.cropSearchQuery = payload;
-    return state;
-  })
-  .add<boolean>(Actions.OF_SEARCH_RESULTS_START, (s) => {
-    s.cropSearchInProgress = true;
-    return s;
-  })
-  .add<boolean>(Actions.OF_SEARCH_RESULTS_NO, (s) => {
-    s.cropSearchInProgress = false;
+    s.cropSearchQuery = payload;
     return s;
   })
   .add<number | undefined>(Actions.SET_PLANT_TYPE_CHANGE_ID, (s, { payload }) => {
@@ -128,6 +114,10 @@ export const designer = generateReducer<DesignerState>(initialState)
     s.cropPlantedAt = payload;
     return s;
   })
+  .add<number | undefined>(Actions.SET_CROP_RADIUS, (s, { payload }) => {
+    s.cropRadius = payload;
+    return s;
+  })
   .add<string | undefined>(Actions.HOVER_PLANT_LIST_ITEM, (s, { payload }) => {
     s.hoveredPlantListItem = payload;
     return s;
@@ -150,43 +140,20 @@ export const designer = generateReducer<DesignerState>(initialState)
   })
   .add<DrawnPointPayl | undefined>(
     Actions.SET_DRAWN_POINT_DATA, (s, { payload }) => {
-      const { color } = (!payload || !payload.color)
-        ? (s.drawnPoint || { color: "green" })
-        : payload;
       s.drawnPoint = payload;
-      s.drawnPoint && (s.drawnPoint.color = color);
       return s;
     })
-  .add<DrawnWeedPayl | undefined>(
-    Actions.SET_DRAWN_WEED_DATA, (s, { payload }) => {
-      const { color } = (!payload || !payload.color)
-        ? (s.drawnWeed || { color: "red" })
-        : payload;
-      s.drawnWeed = payload;
-      s.drawnWeed && (s.drawnWeed.color = color);
-      return s;
-    })
-  .add<CropLiveSearchResult[]>(Actions.OF_SEARCH_RESULTS_OK, (s, a) => {
-    s.cropSearchResults = a.payload;
-    s.cropSearchInProgress = false;
-    return s;
-  })
   .add<number>(Actions.SET_COMPANION_INDEX, (s, a) => {
     s.companionIndex = a.payload;
     return s;
   })
   .add<TaggedResource>(Actions.DESTROY_RESOURCE_OK, (s) => {
     s.selectedPoints = undefined;
-    s.hoveredPlant = { plantUUID: undefined, icon: "" };
+    s.hoveredPlant = { plantUUID: undefined };
     return s;
   })
   .add<BotPosition>(Actions.CHOOSE_LOCATION, (s, { payload }) => {
     s.chosenLocation = payload;
-    !isUndefined(payload.x) &&
-      Path.getSlug(Path.designer()) === "location" &&
-      parseFloat("" + getUrlQuery("x")) != payload.x &&
-      parseFloat("" + getUrlQuery("y")) != payload.y &&
-      push(Path.location({ x: payload.x, y: payload.y }));
     return s;
   })
   .add<number | undefined>(Actions.CHOOSE_SAVED_GARDEN, (s, { payload }) => {
@@ -269,6 +236,26 @@ export const designer = generateReducer<DesignerState>(initialState)
   })
   .add<boolean>(Actions.TOGGLE_SOIL_HEIGHT_LABELS, (s) => {
     s.soilHeightLabels = !s.soilHeightLabels;
+    return s;
+  })
+  .add<string>(Actions.SET_DISTANCE_INDICATOR, (s, { payload }) => {
+    s.distanceIndicator = payload;
+    return s;
+  })
+  .add<boolean>(Actions.TOGGLE_3D_TOP_DOWN_VIEW, (s, { payload }) => {
+    s.threeDTopDownView = payload;
+    return s;
+  })
+  .add<boolean>(Actions.TOGGLE_3D_EXAGGERATED_Z, (s, { payload }) => {
+    s.threeDExaggeratedZ = payload;
+    return s;
+  })
+  .add<string | undefined>(Actions.SET_3D_TIME, (s, { payload }) => {
+    s.threeDTime = payload;
+    return s;
+  })
+  .add<boolean>(Actions.SET_PANEL_OPEN, (s, { payload }) => {
+    s.panelOpen = payload;
     return s;
   })
   .add<boolean>(Actions.SET_PROFILE_OPEN, (s, { payload }) => {

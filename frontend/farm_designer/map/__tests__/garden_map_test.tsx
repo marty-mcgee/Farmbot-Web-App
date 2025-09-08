@@ -52,13 +52,6 @@ jest.mock("../profile", () => ({
   ProfileLine: () => <g />,
 }));
 
-import { Path } from "../../../internal_urls";
-let mockPath = Path.mock(Path.plants());
-jest.mock("../../../history", () => ({
-  push: jest.fn(),
-  getPathArray: () => mockPath.split("/"),
-}));
-
 let mockGroup: TaggedPointGroup | undefined = undefined;
 jest.mock("../../../point_groups/group_detail", () => ({
   findGroupFromUrl: () => mockGroup,
@@ -87,7 +80,6 @@ import {
   fakePlant, fakePointGroup, fakePoint, fakeSensorReading,
 } from "../../../__test_support__/fake_state/resources";
 import { fakeTimeSettings } from "../../../__test_support__/fake_time_settings";
-import { push } from "../../../history";
 import { TaggedPointGroup } from "farmbot";
 import { fakeMountedToolInfo } from "../../../__test_support__/fake_tool_info";
 import {
@@ -102,6 +94,8 @@ import {
 } from "../../../__test_support__/map_transform_props";
 import { keyboardEvent } from "../../../__test_support__/fake_html_events";
 import { times } from "lodash";
+import { Path } from "../../../internal_urls";
+import { mountWithContext } from "../../../__test_support__/mount_with_context";
 
 const DEFAULT_EVENT = { preventDefault: jest.fn(), pageX: NaN, pageY: NaN };
 
@@ -149,8 +143,8 @@ const fakeProps = (): GardenMapProps => ({
 
 describe("<GardenMap/>", () => {
   it("drops plant", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.clickToAdd;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("click", DEFAULT_EVENT);
     expect(dropPlant).toHaveBeenCalled();
   });
@@ -196,6 +190,7 @@ describe("<GardenMap/>", () => {
   });
 
   it("doesn't animate", () => {
+    mockMode = Mode.editPlant;
     mockGroup = fakePointGroup();
     mockGroup.body.criteria.string_eq = { pointer_type: ["Plant"] };
     const p = fakeProps();
@@ -208,8 +203,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("starts drag: move plant", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.editPlant;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockAtPlant = true;
     wrapper.find(".drop-area-svg").simulate("mouseDown", DEFAULT_EVENT);
     expect(beginPlantDrag).toHaveBeenCalled();
@@ -217,8 +212,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("starts drag: draw box", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.editPlant;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockAtPlant = false;
     wrapper.find(".drop-area-svg").simulate("mouseDown", DEFAULT_EVENT);
     expect(beginPlantDrag).not.toHaveBeenCalled();
@@ -226,6 +221,7 @@ describe("<GardenMap/>", () => {
   });
 
   it("ends drag", () => {
+    mockMode = Mode.editPlant;
     const wrapper = shallow<GardenMap>(<GardenMap {...fakeProps()} />);
     wrapper.setState({ isDragging: true });
     wrapper.find(".drop-area-svg").simulate("mouseUp", DEFAULT_EVENT);
@@ -242,94 +238,106 @@ describe("<GardenMap/>", () => {
   });
 
   it("starts drag on background: selecting", () => {
+    mockMode = Mode.addPlant;
     const p = fakeProps();
     p.designer.selectedPoints = ["fakePointUuid"];
-    const wrapper = mount(<GardenMap {...p} />);
-    mockMode = Mode.addPlant;
+    const wrapper = mountWithContext(<GardenMap {...p} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith(Path.plants());
+    expect(mockNavigate).toHaveBeenCalledWith(Path.plants());
     expect(getGardenCoordinates).toHaveBeenCalledWith(
       expect.objectContaining(e));
   });
 
   it("starts drag on background: selecting again", () => {
-    const wrapper = mount(<GardenMap {...fakeProps()} />);
     mockMode = Mode.boxSelect;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).toHaveBeenCalledWith(
       expect.objectContaining(e));
   });
 
   it("starts drag on background: does nothing when adding plants", () => {
-    const wrapper = mount(<GardenMap {...fakeProps()} />);
     mockMode = Mode.clickToAdd;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).not.toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).not.toHaveBeenCalled();
   });
 
   it("starts drag on background: does nothing when in move mode", () => {
-    const wrapper = mount(<GardenMap {...fakeProps()} />);
     mockMode = Mode.locationInfo;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).not.toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).not.toHaveBeenCalled();
   });
 
   it("starts drag on background: does nothing when in profile mode", () => {
-    const wrapper = mount(<GardenMap {...fakeProps()} />);
     mockMode = Mode.profile;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).not.toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).not.toHaveBeenCalled();
   });
 
   it("starts drag on background: creating points", () => {
-    const wrapper = mount(<GardenMap {...fakeProps()} />);
     mockMode = Mode.createPoint;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewPoint).toHaveBeenCalled();
     expect(startNewSelectionBox).not.toHaveBeenCalled();
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(getGardenCoordinates).toHaveBeenCalledWith(
+      expect.objectContaining(e));
+  });
+
+  it("starts drag on background: creating weeds", () => {
+    mockMode = Mode.createWeed;
+    const wrapper = mountWithContext(<GardenMap {...fakeProps()} />);
+    const e = { pageX: 1000, pageY: 2000 };
+    wrapper.find(".drop-area-background").simulate("mouseDown", e);
+    expect(startNewPoint).toHaveBeenCalled();
+    expect(startNewSelectionBox).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).toHaveBeenCalledWith(
       expect.objectContaining(e));
   });
 
   it("starts drag on background: selecting zone", () => {
+    mockMode = Mode.editGroup;
     const p = fakeProps();
     p.designer.editGroupAreaInMap = true;
-    const wrapper = mount(<GardenMap {...p} />);
-    mockMode = Mode.editGroup;
+    const wrapper = mountWithContext(<GardenMap {...p} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
     expect(startNewSelectionBox).toHaveBeenCalledWith(
       expect.objectContaining({ plantActions: false }));
-    expect(push).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
     expect(getGardenCoordinates).toHaveBeenCalledWith(
       expect.objectContaining(e));
   });
 
   it("starts drag on background: opening location info", () => {
-    mockPath = Path.mock(Path.plants());
+    location.pathname = Path.mock(Path.plants());
+    mockMode = Mode.none;
     const p = fakeProps();
     p.designer.selectedPoints = [];
-    p.designer.hoveredPlant = { icon: "", plantUUID: undefined };
+    p.designer.hoveredPlant = { plantUUID: undefined };
     p.designer.hoveredPoint = undefined;
     p.designer.hoveredToolSlot = undefined;
     const wrapper = mount<GardenMap>(<GardenMap {...p} />);
-    mockMode = Mode.none;
     const e = { pageX: 1000, pageY: 2000 } as React.DragEvent<SVGElement>;
     wrapper.instance().startDragOnBackground(e);
     wrapper.find(".drop-area-background").simulate("mouseDown", e);
@@ -341,8 +349,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("starts drag: click-to-add mode", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.clickToAdd;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     const e = { pageX: 1000, pageY: 2000 };
     wrapper.find(".drop-area-svg").simulate("mouseDown", e);
     expect(beginPlantDrag).not.toHaveBeenCalled();
@@ -350,8 +358,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("drags: selecting", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.boxSelect;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     const e = { pageX: 2000, pageY: 2000 };
     wrapper.find(".drop-area-svg").simulate("mouseMove", e);
     expect(resizeBox).toHaveBeenCalled();
@@ -360,10 +368,10 @@ describe("<GardenMap/>", () => {
   });
 
   it("drags: selecting zone", () => {
+    mockMode = Mode.editGroup;
     const p = fakeProps();
     p.designer.editGroupAreaInMap = true;
     const wrapper = shallow(<GardenMap {...p} />);
-    mockMode = Mode.editGroup;
     const e = { pageX: 2000, pageY: 2000 };
     wrapper.find(".drop-area-svg").simulate("mouseMove", e);
     expect(resizeBox).toHaveBeenCalledWith(
@@ -373,8 +381,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("selects location", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.locationInfo;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("click", {
       pageX: 1000, pageY: 2000, preventDefault: jest.fn()
     });
@@ -384,8 +392,8 @@ describe("<GardenMap/>", () => {
   });
 
   it("selects profile location", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.profile;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("click", {
       pageX: 1000, pageY: 2000, preventDefault: jest.fn()
     });
@@ -395,56 +403,43 @@ describe("<GardenMap/>", () => {
   });
 
   it("starts drawing point", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.createPoint;
-    wrapper.find(".drop-area-svg").simulate("mouseDown", {
-      pageX: 1, pageY: 2
-    });
-    expect(startNewPoint).toHaveBeenCalledWith(expect.objectContaining({
-      type: "point"
-    }));
-    expect(getGardenCoordinates).toHaveBeenCalledWith(
-      expect.objectContaining({ pageX: 1, pageY: 2 }));
-  });
-
-  it("starts drawing weed", () => {
     const wrapper = shallow(<GardenMap {...fakeProps()} />);
-    mockMode = Mode.createWeed;
     wrapper.find(".drop-area-svg").simulate("mouseDown", {
       pageX: 1, pageY: 2
     });
     expect(startNewPoint).toHaveBeenCalledWith(expect.objectContaining({
-      type: "weed"
+      gardenCoords: { x: 100, y: 200 },
     }));
     expect(getGardenCoordinates).toHaveBeenCalledWith(
       expect.objectContaining({ pageX: 1, pageY: 2 }));
   });
 
   it("sets drawn point radius", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.createPoint;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("mouseMove", {
       pageX: 10, pageY: 20
     });
     expect(resizePoint).toHaveBeenCalledWith(expect.objectContaining({
-      type: "point"
+      gardenCoords: { x: 100, y: 200 },
     }));
   });
 
   it("sets drawn weed radius", () => {
-    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     mockMode = Mode.createWeed;
+    const wrapper = shallow(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("mouseMove", {
       pageX: 10, pageY: 20
     });
     expect(resizePoint).toHaveBeenCalledWith(expect.objectContaining({
-      type: "weed"
+      gardenCoords: { x: 100, y: 200 },
     }));
   });
 
   it("sets cursor position", () => {
-    const wrapper = shallow<GardenMap>(<GardenMap {...fakeProps()} />);
     mockMode = Mode.clickToAdd;
+    const wrapper = shallow<GardenMap>(<GardenMap {...fakeProps()} />);
     wrapper.find(".drop-area-svg").simulate("mouseMove", {
       pageX: 10, pageY: 20
     });
@@ -548,8 +543,9 @@ describe("<GardenMap/>", () => {
     wrapper.setState({
       toLocation: { x: 100, y: 100, z: 0 }, previousSelectionBoxArea: 0,
     });
+    wrapper.instance().navigate = jest.fn();
     wrapper.instance().closePanel()();
-    expect(push).toHaveBeenCalledWith(
+    expect(wrapper.instance().navigate).toHaveBeenCalledWith(
       expect.stringContaining(Path.location()));
     expect(closePlantInfo).toHaveBeenCalled();
     expect(wrapper.state().toLocation).toEqual(undefined);
@@ -562,8 +558,9 @@ describe("<GardenMap/>", () => {
     wrapper.setState({
       toLocation: { x: 100, y: 100, z: 0 }, previousSelectionBoxArea: 1000,
     });
+    wrapper.instance().navigate = jest.fn();
     wrapper.instance().closePanel()();
-    expect(push).not.toHaveBeenCalledWith(
+    expect(wrapper.instance().navigate).not.toHaveBeenCalledWith(
       expect.stringContaining(Path.location()));
     expect(closePlantInfo).toHaveBeenCalled();
     expect(wrapper.state().toLocation).toEqual(undefined);
@@ -586,12 +583,12 @@ describe("<GardenMap/>", () => {
   });
 
   it("returns point", () => {
+    mockMode = Mode.none;
     const p = fakeProps();
     const point = fakePoint();
     p.allPoints = [point];
     p.designer.selectedPoints = [point.uuid];
     const wrapper = shallow<GardenMap>(<GardenMap {...p} />);
-    mockMode = Mode.none;
     expect(wrapper.instance().currentSelection).toEqual([point]);
   });
 

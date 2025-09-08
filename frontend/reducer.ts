@@ -29,7 +29,6 @@ export interface AppState {
   jobs: JobsAndLogsState;
   controls: ControlsState;
   popups: PopupsState;
-  hotkeyGuide: boolean;
 }
 
 export const emptyState = (): AppState => {
@@ -50,6 +49,7 @@ export const emptyState = (): AppState => {
       parameter_management: false,
       custom_settings: false,
       farm_designer: false,
+      three_d: false,
       account: false,
       other_settings: false,
     },
@@ -98,11 +98,11 @@ export const emptyState = (): AppState => {
       distance: { x: 0, y: 0, z: 0 },
     },
     popups: {
+      timeTravel: false,
       controls: false,
       jobs: false,
       connectivity: false,
     },
-    hotkeyGuide: false,
   };
 };
 
@@ -160,6 +160,7 @@ export const appReducer =
         s.settingsPanelState.parameter_management = a.payload;
         s.settingsPanelState.custom_settings = a.payload;
         s.settingsPanelState.farm_designer = a.payload;
+        s.settingsPanelState.three_d = a.payload;
         s.settingsPanelState.account = a.payload;
         s.settingsPanelState.other_settings = a.payload;
         return s;
@@ -181,6 +182,7 @@ export const appReducer =
       })
     .add<keyof PopupsState>(Actions.TOGGLE_POPUP, (s, { payload }) => {
       const newState = !s.popups[payload];
+      s.popups.timeTravel = false;
       s.popups.controls = false;
       s.popups.jobs = false;
       s.popups.connectivity = false;
@@ -188,6 +190,7 @@ export const appReducer =
       return s;
     })
     .add<keyof PopupsState>(Actions.OPEN_POPUP, (s, { payload }) => {
+      s.popups.timeTravel = false;
       s.popups.controls = false;
       s.popups.jobs = false;
       s.popups.connectivity = false;
@@ -195,13 +198,10 @@ export const appReducer =
       return s;
     })
     .add<undefined>(Actions.CLOSE_POPUP, (s) => {
+      s.popups.timeTravel = false;
       s.popups.controls = false;
       s.popups.jobs = false;
       s.popups.connectivity = false;
-      return s;
-    })
-    .add<undefined>(Actions.TOGGLE_HOTKEY_GUIDE, (s) => {
-      s.hotkeyGuide = !s.hotkeyGuide;
       return s;
     })
     .add<ToastMessageProps>(Actions.CREATE_TOAST, (s, { payload }) => {

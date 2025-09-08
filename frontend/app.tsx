@@ -50,12 +50,14 @@ import { TourStepContainer } from "./help/tours";
 import { Toasts } from "./toast/fb_toast";
 import Bowser from "bowser";
 import { landingPagePath, Path } from "./internal_urls";
-import { push } from "./history";
 import { AppState } from "./reducer";
 import {
   sourceFbosConfigValue, sourceFwConfigValue,
 } from "./settings/source_config_value";
 import { RunButtonMenuOpen } from "./sequences/interfaces";
+import { Navigate, Outlet } from "react-router";
+import { ErrorBoundary } from "./error_boundary";
+import { DesignerState } from "./farm_designer/interfaces";
 
 export interface AppProps {
   dispatch: Function;
@@ -86,6 +88,7 @@ export interface AppProps {
   sequences: TaggedSequence[];
   menuOpen: RunButtonMenuOpen;
   appState: AppState;
+  designer: DesignerState;
   children?: React.ReactNode;
 }
 
@@ -127,6 +130,7 @@ export function mapStateToProps(props: Everything): AppProps {
     peripherals: uniq(selectAllPeripherals(props.resources.index)),
     sequences: selectAllSequences(props.resources.index),
     menuOpen: props.resources.consumers.sequences.menuOpen,
+    designer: props.resources.consumers.farm_designer,
   };
 }
 /** Time at which the app gives up and asks the user to refresh */
@@ -146,6 +150,7 @@ const MUST_LOAD: ResourceName[] = [
 ];
 
 export class RawApp extends React.Component<AppProps, {}> {
+  private _isMounted = false;
   private get isLoaded() {
     return (MUST_LOAD.length ===
       intersection(this.props.loaded, MUST_LOAD).length);
@@ -156,8 +161,9 @@ export class RawApp extends React.Component<AppProps, {}> {
  * access into the app, but still warned.
  */
   componentDidMount() {
+    this._isMounted = true;
     setTimeout(() => {
-      if (!this.isLoaded) {
+      if (this._isMounted && !this.isLoaded) {
         error(t(Content.APP_LOAD_TIMEOUT_MESSAGE), { title: t("Warning") });
       }
     }, LOAD_TIME_FAILURE_MS);
@@ -166,17 +172,22 @@ export class RawApp extends React.Component<AppProps, {}> {
       warning(t(Content.UNSUPPORTED_BROWSER));
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   render() {
     const syncLoaded = this.isLoaded;
     const { bot, dispatch, getConfigValue } = this.props;
     const landingPage = getConfigValue(StringSetting.landing_page);
-    if (Path.equals("") && isString(landingPage)) {
-      push(landingPagePath(landingPage));
-    }
-    return <div className="app">
+    const themeClass = getConfigValue(BooleanSetting.dark_mode) ? "dark" : "light";
+    return <div className={["app", themeClass].join(" ")}>
+      {(Path.equals("") || Path.equals(Path.app())) && isString(landingPage) &&
+        <Navigate to={landingPagePath(landingPage)} />}
       {!syncLoaded && <LoadingPlant animate={this.props.animate} />}
-      <HotKeys dispatch={dispatch} hotkeyGuide={this.props.appState.hotkeyGuide} />
+      <HotKeys dispatch={dispatch} designer={this.props.designer} />
       {syncLoaded && <NavBar
+        designer={this.props.designer}
         timeSettings={this.props.timeSettings}
         user={this.props.user}
         bot={bot}
@@ -203,6 +214,11 @@ export class RawApp extends React.Component<AppProps, {}> {
         menuOpen={this.props.menuOpen}
         pings={this.props.pings} />}
       {syncLoaded && this.props.children}
+      <ErrorBoundary>
+        <React.Suspense>
+          {syncLoaded && <Outlet />}
+        </React.Suspense>
+      </ErrorBoundary>
       <div className={"toast-container"}>
         <TourStepContainer
           key={JSON.stringify(this.props.helpState)}
@@ -219,3 +235,5 @@ export class RawApp extends React.Component<AppProps, {}> {
 
 export const App = connect(mapStateToProps)(
   RawApp) as ConnectedComponent<typeof RawApp, { children?: React.ReactNode }>;
+// eslint-disable-next-line import/no-default-export
+export default App;

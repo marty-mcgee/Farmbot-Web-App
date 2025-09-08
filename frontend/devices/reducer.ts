@@ -13,6 +13,7 @@ import {
 } from "../connectivity/reducer";
 import { versionOK } from "../util";
 import { updateMotorHistoryArray } from "../controls/move/motor_position_plot";
+import { PercentageProgress, Xyz } from "farmbot";
 
 const afterEach = (state: BotState, a: ReduxAction<{}>) => {
   state.connectivity = connectivityReducer(state.connectivity, a);
@@ -74,6 +75,7 @@ export const initialState = (): BotState => ({
   },
   needVersionCheck: true,
   alreadyToldUserAboutMalformedMsg: false,
+  demoQueueLength: 0,
 });
 
 export const botReducer = generateReducer<BotState>(initialState())
@@ -129,6 +131,37 @@ export const botReducer = generateReducer<BotState>(initialState())
   })
   .add<void>(Actions._RESOURCE_NO, (s) => {
     unstash(s);
+    return s;
+  })
+  .add<number>(Actions.DEMO_TOGGLE_PIN, (s, { payload }) => {
+    const pin = s.hardware.pins[payload] ??= { value: 0, mode: 0 };
+    pin.value = Number(!pin.value);
+    return s;
+  })
+  .add<{ pin: number, mode: string, value: number }>(Actions.DEMO_WRITE_PIN,
+    (s, { payload }) => {
+      const mode = payload.mode.toLowerCase() == "analog" ? 1 : 0;
+      s.hardware.pins[payload.pin] = { mode, value: payload.value };
+      return s;
+    })
+  .add<Record<Xyz, number>>(Actions.DEMO_SET_POSITION, (s, { payload }) => {
+    s.hardware.location_data.position = payload;
+    return s;
+  })
+  .add<[string, PercentageProgress]>(Actions.DEMO_SET_JOB_PROGRESS,
+    (s, { payload }) => {
+      s.hardware.jobs[payload[0]] = payload[1];
+      return s;
+    })
+  .add<boolean>(Actions.DEMO_SET_ESTOP, (s, { payload }) => {
+    s.hardware.informational_settings.locked = payload;
+    s.hardware.pins = {};
+    s.hardware.jobs = {};
+    s.demoQueueLength = 0;
+    return s;
+  })
+  .add<number>(Actions.DEMO_SET_QUEUE_LENGTH, (s, { payload }) => {
+    s.demoQueueLength = payload;
     return s;
   })
   .add<PingResultPayload>(Actions.PING_OK, (s) => {

@@ -1,21 +1,24 @@
 import React from "react";
 import { getLinks } from "./nav/nav_links";
 import { sync } from "./devices/actions";
-import { push } from "./history";
-import { HotkeyConfig, useHotkeys, HotkeysDialog2 } from "@blueprintjs/core";
-import { unselectPlant } from "./farm_designer/map/actions";
-import { getPanelPath, PANEL_BY_SLUG } from "./farm_designer/panel_header";
+import { HotkeyConfig, useHotkeys } from "@blueprintjs/core";
+import {
+  getPanelPath, PANEL_BY_SLUG, setPanelOpen,
+} from "./farm_designer/panel_header";
 import { t } from "./i18next_wrapper";
 import { store } from "./redux/store";
 import { save } from "./api/crud";
 import { Path } from "./internal_urls";
-import { Actions } from "./constants";
+import { NavigateFunction, useNavigate } from "react-router";
+import { DesignerState } from "./farm_designer/interfaces";
+import { isUndefined } from "lodash";
+import { resetDrawnPointDataAction } from "./points/create_points";
 
 type HotkeyConfigs = Record<HotKey, HotkeyConfig>;
 
 export interface HotKeysProps {
   dispatch: Function;
-  hotkeyGuide: boolean;
+  designer: DesignerState;
 }
 
 export enum HotKey {
@@ -25,7 +28,7 @@ export enum HotKey {
   navigateLeft = "navigateLeft",
   addPlant = "addPlant",
   addEvent = "addEvent",
-  backToPlantOverview = "backToPlantOverview",
+  closePanel = "closePanel",
   openGuide = "openGuide",
 }
 
@@ -54,9 +57,9 @@ const HOTKEY_BASE_MAP = (): HotkeyConfigs => ({
     combo: "ctrl + shift + e",
     label: t("Add Event"),
   },
-  [HotKey.backToPlantOverview]: {
+  [HotKey.closePanel]: {
     combo: "escape",
-    label: t("Back to plant overview"),
+    label: t("Close panel"),
   },
   [HotKey.openGuide]: {
     combo: "shift + ?",
@@ -64,7 +67,15 @@ const HOTKEY_BASE_MAP = (): HotkeyConfigs => ({
   },
 });
 
-export const hotkeysWithActions = (dispatch: Function, slug: string) => {
+export interface HotkeysWithActionsProps {
+  navigate: NavigateFunction;
+  dispatch: Function;
+  slug: string;
+  designer: DesignerState;
+}
+
+export const hotkeysWithActions = (props: HotkeysWithActionsProps) => {
+  const { navigate, dispatch, slug, designer } = props;
   const links = getLinks();
   const idx = links.indexOf(PANEL_BY_SLUG[slug]);
   const panelPlus = links[idx + 1] || links[0];
@@ -88,26 +99,27 @@ export const hotkeysWithActions = (dispatch: Function, slug: string) => {
     },
     [HotKey.navigateRight]: {
       ...hotkeysBase[HotKey.navigateRight],
-      onKeyDown: () => push(getPanelPath(panelPlus)),
+      onKeyDown: () => { navigate(getPanelPath(panelPlus)); },
     },
     [HotKey.navigateLeft]: {
       ...hotkeysBase[HotKey.navigateLeft],
-      onKeyDown: () => push(getPanelPath(panelMinus)),
+      onKeyDown: () => { navigate(getPanelPath(panelMinus)); },
     },
     [HotKey.addPlant]: {
       ...hotkeysBase[HotKey.addPlant],
-      onKeyDown: () => push(Path.cropSearch()),
+      onKeyDown: () => { navigate(Path.cropSearch()); },
     },
     [HotKey.addEvent]: {
       ...hotkeysBase[HotKey.addEvent],
-      onKeyDown: () => push(Path.farmEvents("add")),
+      onKeyDown: () => { navigate(Path.farmEvents("add")); },
     },
-    [HotKey.backToPlantOverview]: {
-      ...hotkeysBase[HotKey.backToPlantOverview],
+    [HotKey.closePanel]: {
+      ...hotkeysBase[HotKey.closePanel],
       onKeyDown: () => {
-        if (slug != "photos") {
-          push(Path.plants());
-          dispatch(unselectPlant(dispatch));
+        if (!isUndefined(designer.drawnPoint?.cx)) {
+          dispatch(resetDrawnPointDataAction());
+        } else {
+          dispatch(setPanelOpen(false));
         }
       },
     },
@@ -116,20 +128,23 @@ export const hotkeysWithActions = (dispatch: Function, slug: string) => {
   return list;
 };
 
-export const toggleHotkeyHelpOverlay = (dispatch: Function) => () =>
-  dispatch({ type: Actions.TOGGLE_HOTKEY_GUIDE, payload: undefined });
+export const toggleHotkeyHelpOverlay = () =>
+  document.dispatchEvent(new KeyboardEvent("keydown",
+    { key: "?", shiftKey: true, bubbles: true }));
 
 export const HotKeys = (props: HotKeysProps) => {
+  const navigate = useNavigate();
   const slug = Path.getSlug(Path.designer()) || "plants";
-  const hotkeys = React.useMemo(() =>
-    Object.values(hotkeysWithActions(props.dispatch, slug))
-      .map(hotkey => ({ ...hotkey, global: true })), [props.dispatch, slug]);
+  const { dispatch, designer } = props;
+  const hotkeys = React.useMemo(
+    () => Object.values(hotkeysWithActions({
+      navigate, dispatch, slug, designer,
+    }))
+      .map(hotkey => ({ ...hotkey, global: true })),
+    [navigate, dispatch, slug, designer]);
   const { handleKeyDown, handleKeyUp } = useHotkeys(hotkeys,
     { showDialogKeyCombo: undefined });
   return <div className={"hotkeys"}
     onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-    <HotkeysDialog2 globalGroupName={""}
-      onClose={props.dispatch(toggleHotkeyHelpOverlay)}
-      hotkeys={hotkeys} isOpen={props.hotkeyGuide} />
   </div>;
 };

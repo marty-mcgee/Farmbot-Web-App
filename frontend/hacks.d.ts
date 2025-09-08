@@ -27,3 +27,7 @@ declare namespace jest {
     toBeSameTimeAs: jest.Expect;
   }
 }
+
+declare var mockNavigate: jest.Mock;
+
+declare module 'fengari-web';

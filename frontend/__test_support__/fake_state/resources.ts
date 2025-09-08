@@ -125,6 +125,7 @@ export function fakeTool(): TaggedTool {
   return fakeResource("Tool", {
     name: "Foo",
     flow_rate_ml_per_s: 0,
+    seeder_tip_z_offset: 80,
   });
 }
 
@@ -312,7 +313,8 @@ export function fakeFbosConfig(): TaggedFbosConfig {
     sequence_init_log: false,
     firmware_hardware: "arduino",
     os_auto_update: false,
-    arduino_debug_messages: false
+    arduino_debug_messages: false,
+    default_axis_order: "xyz;high",
   });
 }
 
@@ -388,8 +390,10 @@ export function fakeWebAppConfig(): TaggedWebAppConfig {
     default_plant_depth: 5,
     disable_emergency_unlock_confirmation: false,
     map_size_x: 2900,
-    map_size_y: 1400,
+    map_size_y: 1230,
     user_interface_read_only_mode: false,
+    three_d_garden: false,
+    dark_mode: true,
     view_celery_script: false,
   });
 }
@@ -427,8 +431,8 @@ export function fakeFirmwareConfig(): TaggedFirmwareConfig {
     movement_axis_stealth_x: 0,
     movement_axis_stealth_y: 0,
     movement_axis_stealth_z: 0,
-    movement_calibration_deadzone_x: 50,
-    movement_calibration_deadzone_y: 50,
+    movement_calibration_deadzone_x: 250,
+    movement_calibration_deadzone_y: 250,
     movement_calibration_deadzone_z: 250,
     movement_calibration_retry_x: 3,
     movement_calibration_retry_y: 3,

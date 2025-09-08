@@ -1,7 +1,9 @@
 import React from "react";
 import { t } from "../../i18next_wrapper";
 import { addOrEditDeclarationLocals } from "../locals_list/handle_select";
-import { LocalsListProps, VariableNode } from "../locals_list/locals_list_support";
+import {
+  isParameterDeclaration, LocalsListProps, VariableNode,
+} from "../locals_list/locals_list_support";
 import { defensiveClone, betterCompact } from "../../util/util";
 import {
   TaggedSequence,
@@ -76,10 +78,6 @@ export const removeVariable =
         dispatch(overwrite(resource, updated.body));
       }
     };
-
-export const isParameterDeclaration =
-  (x: VariableNode): x is ParameterDeclaration =>
-    x.kind === "parameter_declaration";
 
 /**
  * List of local variables for a sequence.

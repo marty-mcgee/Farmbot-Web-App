@@ -1,14 +1,17 @@
 import React from "react";
-import { Row, Col, Popover } from "../ui";
+import { Row, Popover } from "../ui";
 import { BotPosition } from "../devices/interfaces";
 import { move } from "../devices/actions";
-import { push } from "../history";
+import { NavigateFunction, useNavigate } from "react-router";
 import { AxisInputBox } from "../controls/axis_input_box";
-import { isNumber, sum } from "lodash";
+import { isNumber, isUndefined, sum } from "lodash";
 import { Actions, Content } from "../constants";
 import { AxisNumberProperty } from "./map/interfaces";
 import { t } from "../i18next_wrapper";
-import { SafeZCheckbox } from "../sequences/step_tiles/tile_computed_move/safe_z";
+import {
+  AxisOrderInputRow,
+  getNewAxisOrderState,
+} from "../sequences/step_tiles/tile_computed_move/axis_order";
 import { Position, Slider } from "@blueprintjs/core";
 import { Path } from "../internal_urls";
 import { setMovementStateFromPosition } from "../connectivity/log_handlers";
@@ -19,6 +22,11 @@ import {
 } from "../config_storage/actions";
 import { StringSetting } from "../session_keys";
 import { MovementState } from "../interfaces";
+import { getUrlQuery } from "../util";
+import { setPanelOpen } from "./panel_header";
+import {
+  AxisGrouping, AxisRoute,
+} from "../sequences/step_tiles/tile_computed_move/interfaces";
 
 export interface MoveToFormProps {
   chosenLocation: BotPosition;
@@ -26,16 +34,25 @@ export interface MoveToFormProps {
   botOnline: boolean;
   locked: boolean;
   dispatch: Function;
+  defaultAxisOrder: string | undefined;
 }
 
 interface MoveToFormState {
   z: number | undefined;
   safeZ: boolean;
+  axisGrouping: AxisGrouping;
+  axisRoute: AxisRoute;
   speed: number;
 }
 
 export class MoveToForm extends React.Component<MoveToFormProps, MoveToFormState> {
-  state = { z: this.props.chosenLocation.z, safeZ: false, speed: 100 };
+  state = {
+    z: this.props.chosenLocation.z,
+    safeZ: false,
+    axisGrouping: undefined,
+    axisRoute: undefined,
+    speed: 100,
+  };
 
   get vector(): { x: number, y: number, z: number } {
     const { chosenLocation } = this.props;
@@ -54,87 +71,87 @@ export class MoveToForm extends React.Component<MoveToFormProps, MoveToFormState
     const { x, y } = this.props.chosenLocation;
     const { botOnline, locked } = this.props;
     return <div className={"move-to-form"}>
-      <Row>
-        <Col xs={3}>
-          <label>{t("X AXIS")}</label>
-        </Col>
-        <Col xs={3}>
-          <label>{t("Y AXIS")}</label>
-        </Col>
-        <Col xs={3}>
-          <label>{t("Z AXIS")}</label>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={3}>
-          <input disabled name="x" value={isNumber(x) ? x : "---"} />
-        </Col>
-        <Col xs={3}>
-          <input disabled name="y" value={isNumber(y) ? y : "---"} />
-        </Col>
+      <Row className="move-to-grid">
+        <label>{t("X AXIS")}</label>
+        <label>{t("Y AXIS")}</label>
+        <label>{t("Z AXIS")}</label>
+        <div />
+        <input disabled name="x" value={isNumber(x) ? x : "---"} />
+        <input disabled name="y" value={isNumber(y) ? y : "---"} />
         <AxisInputBox
           onChange={(_, val: number) => this.setState({ z: val })}
           axis={"z"}
           value={this.state.z} />
-        <Col xs={3}>
-          <button
-            onClick={() => {
-              this.props.dispatch(setMovementStateFromPosition(
-                this.props.currentBotLocation, this.vector));
-              move({
-                ...this.vector,
-                speed: this.state.speed,
-                safeZ: this.state.safeZ,
-              });
-            }}
-            className={["fb-button green",
-              (botOnline && !locked) ? "" : "pseudo-disabled",
-            ].join(" ")}
-            title={botOnline
-              ? t("Move to this coordinate")
-              : t(Content.NOT_AVAILABLE_WHEN_OFFLINE)}>
-            {t("GO")}
-          </button>
-        </Col>
+        <button
+          onClick={() => {
+            this.props.dispatch(setMovementStateFromPosition(
+              this.props.currentBotLocation, this.vector));
+            move({
+              ...this.vector,
+              speed: this.state.speed,
+              safeZ: this.state.safeZ,
+            });
+          }}
+          className={["fb-button green",
+            (botOnline && !locked) ? "" : "pseudo-disabled",
+          ].join(" ")}
+          title={botOnline
+            ? t("Move to this coordinate")
+            : t(Content.NOT_AVAILABLE_WHEN_OFFLINE)}>
+          {t("GO")}
+        </button>
       </Row>
-      <Row className={"speed"}>
-        <Col xs={3}>
-          <label>{t("Speed")}</label>
-        </Col>
-        <Col xs={9}>
-          <Slider min={1} max={100} labelValues={[1, 50, 100]}
-            labelRenderer={value => `${value}%`}
-            value={this.state.speed}
-            onChange={speed => this.setState({ speed })} />
-        </Col>
+      <Row className={"speed-grid"}>
+        <label>{t("Speed")}</label>
+        <Slider min={1} max={100} labelValues={[1, 50, 100]}
+          labelRenderer={value => `${value}%`}
+          value={this.state.speed}
+          onChange={speed => this.setState({ speed })} />
       </Row>
-      <SafeZCheckbox checked={this.state.safeZ}
-        onChange={() => this.setState({ safeZ: !this.state.safeZ })} />
+      <AxisOrderInputRow
+        defaultValue={this.props.defaultAxisOrder}
+        safeZ={this.state.safeZ}
+        grouping={this.state.axisGrouping}
+        route={this.state.axisRoute}
+        onChange={ddi =>
+          this.setState({ ...this.state, ...getNewAxisOrderState(ddi) })} />
     </div>;
   }
 }
 
-export const MoveModeLink = () =>
-  <div className="move-to-mode">
+export interface MoveModeLinkProps {
+  dispatch: Function;
+}
+
+export const MoveModeLink = (props: MoveModeLinkProps) => {
+  const navigate = useNavigate();
+  return <div className="move-to-mode">
     <button
-      className="fb-button gray"
+      className={["fb-button gray"].join(" ")}
       title={t("open move mode panel")}
-      onClick={() => push(Path.location())}>
+      onClick={() => {
+        props.dispatch(setPanelOpen(true));
+        navigate(Path.location());
+      }}>
       {t("move mode")}
     </button>
   </div>;
+};
 
 /** Mark a new bot target location on the map. */
 export const chooseLocation = (props: {
+  navigate: NavigateFunction,
   gardenCoords: AxisNumberProperty | undefined,
   dispatch: Function,
 }) => {
   if (props.gardenCoords) {
-    props.dispatch(chooseLocationAction({
+    const loc = {
       x: Math.max(0, props.gardenCoords.x),
       y: Math.max(0, props.gardenCoords.y),
       z: 0,
-    }));
+    };
+    props.dispatch(chooseLocationAction(loc));
+    navigateToLocation(props.navigate, loc);
   }
 };
 
@@ -181,7 +198,7 @@ export class GoToThisLocationButton
     ].join(" ");
     const defaultDestination = coordinateFromAxes(target, current, defaultAxes);
     const remaining = movementPercentRemaining(current, this.props.movementState);
-    return <div className={"go-button-axes-wrapper"}>
+    return <div className={"go-button-axes-wrapper row no-gap"}>
       <button
         className={classes("go-button-axes-text")}
         title={goText(this.props.defaultAxes)}
@@ -270,6 +287,17 @@ export const unChooseLocationAction = () => ({
   type: Actions.CHOOSE_LOCATION,
   payload: { x: undefined, y: undefined, z: undefined },
 });
+
+const navigateToLocation = (
+  navigate: NavigateFunction,
+  location: BotPosition,
+) => {
+  !isUndefined(location.x) &&
+    Path.getSlug(Path.designer()) === "location" &&
+    parseFloat("" + getUrlQuery("x")) != location.x &&
+    parseFloat("" + getUrlQuery("y")) != location.y &&
+    navigate(Path.location({ x: location.x, y: location.y }));
+};
 
 export const movementPercentRemaining =
   (botPosition: BotPosition, movementState: MovementState) => {

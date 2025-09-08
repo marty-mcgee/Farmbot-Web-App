@@ -1,12 +1,11 @@
 import React from "react";
 import { NavBarProps, NavBarState } from "./interfaces";
 import { EStopButton } from "./e_stop_btn";
-import { Row, Col, Popover } from "../ui";
-import { push } from "../history";
+import { Popover } from "../ui";
 import { updatePageInfo } from "../util";
 import { validBotLocationData } from "../util/location";
 import { NavLinks } from "./nav_links";
-import { TickerList } from "./ticker_list";
+import { demoAccountLog, TickerList } from "./ticker_list";
 import { AdditionalMenu } from "./additional_menu";
 import { MobileMenu } from "./mobile_menu";
 import { Position } from "@blueprintjs/core";
@@ -18,8 +17,7 @@ import { DiagnosisSaucer } from "../devices/connectivity/diagnosis";
 import { maybeSetTimezone } from "../devices/timezones/guess_timezone";
 import { BooleanSetting } from "../session_keys";
 import { ReadOnlyIcon } from "../read_only_mode";
-import { refresh } from "../api/crud";
-import { isBotOnlineFromState } from "../devices/must_be_online";
+import { forceOnline, isBotOnlineFromState } from "../devices/must_be_online";
 import { setupProgressString } from "../wizard/data";
 import { lastSeenNumber } from "../settings/fbos_settings/last_seen_row";
 import { Path } from "../internal_urls";
@@ -31,8 +29,14 @@ import { round } from "lodash";
 import { ControlsPanel } from "../controls/controls";
 import { Actions } from "../constants";
 import { PopupsState } from "../interfaces";
-import { Panel, TAB_ICON } from "../farm_designer/panel_header";
+import { Panel, setPanelOpen, TAB_ICON } from "../farm_designer/panel_header";
 import { movementPercentRemaining } from "../farm_designer/move_to";
+import { isMobile } from "../screen_size";
+import { NavigationContext } from "../routes_helpers";
+import { NavigateFunction } from "react-router";
+import {
+  showTimeTravelButton, TimeTravelContent, TimeTravelTarget,
+} from "../three_d_garden/time_travel";
 
 export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   state: NavBarState = {
@@ -48,12 +52,19 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
 
   componentDidUpdate = () => {
     if (this.state.documentTitle != document.title) {
-      this.props.dispatch(refresh(this.props.device));
       this.setState({ documentTitle: document.title });
     }
   };
 
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate: NavigateFunction = url => { this.context(url as string); };
+
   get isStaff() { return this.props.authAud == "staff"; }
+
+  get logs() {
+    return this.props.logs.concat(forceOnline() ? [demoAccountLog()] : []);
+  }
 
   toggle = (key: keyof NavBarState) => () =>
     this.setState({ [key]: !this.state[key] });
@@ -67,6 +78,28 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
 
   togglePopup = (payload: keyof PopupsState) => () =>
     this.props.dispatch({ type: Actions.TOGGLE_POPUP, payload });
+
+  TimeTravel = () => {
+    const isOpen = this.props.appState.popups.timeTravel;
+    const threeDGarden = !!this.props.getConfigValue(BooleanSetting.three_d_garden);
+    const common = {
+      device: this.props.device.body,
+      threeDGarden,
+      designer: this.props.designer,
+    };
+    if (!showTimeTravelButton(threeDGarden, common.device)) { return; }
+    return <div className={"nav-popup-button-wrapper"}>
+      <Popover position={Position.BOTTOM_RIGHT}
+        isOpen={isOpen}
+        enforceFocus={false}
+        target={<TimeTravelTarget {...common}
+          timeSettings={this.props.timeSettings}
+          isOpen={isOpen}
+          click={this.togglePopup("timeTravel")} />}
+        content={<TimeTravelContent {...common}
+          dispatch={this.props.dispatch} />} />
+    </div>;
+  };
 
   Coordinates = () => {
     const { hardware } = this.props.bot;
@@ -132,13 +165,18 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         position={Position.BOTTOM_RIGHT}
         isOpen={this.state.accountMenuOpen}
         onClose={this.close("accountMenuOpen")}
-        target={window.innerWidth <= 450
+        target={isMobile()
           ? <i className={"fa fa-user"} onClick={this.toggle("accountMenuOpen")} />
-          : <div className="nav-name" data-title={firstName}
+          : <div className={`nav-name ${this.state.accountMenuOpen ? "hover" : ""}`}
+            data-title={firstName}
             onClick={this.toggle("accountMenuOpen")}>
             {firstName}
           </div>}
-        content={<AdditionalMenu close={this.close} isStaff={this.isStaff} />} />
+        content={<AdditionalMenu
+          close={this.close("accountMenuOpen")}
+          dispatch={this.props.dispatch}
+          darkMode={!!this.props.getConfigValue(BooleanSetting.dark_mode)}
+          isStaff={this.isStaff} />} />
     </div>;
   };
 
@@ -163,7 +201,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             <DiagnosisSaucer {...data.flags}
               className={"nav"}
               syncStatus={sync_status} />
-            {window.innerWidth > 450 && <p>{t("Connectivity")}</p>}
+            {!isMobile() && <p>{t("Connectivity")}</p>}
           </div>}
           content={<ErrorBoundary>
             <Connectivity
@@ -186,14 +224,17 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   SetupButton = () => {
     const firmwareHardware = this.props.apiFirmwareValue;
     const { wizardStepResults, device } = this.props;
-    return !device.body.setup_completed_at
-      ? <a className={"setup-button"}
-        onClick={() => push(Path.setup())}>
+    if (!device.body.setup_completed_at) {
+      return <a className={"setup-button"}
+        onClick={() => {
+          this.props.dispatch(setPanelOpen(true));
+          this.navigate(Path.setup());
+        }}>
         {t("Setup")}
-        {window.innerWidth > 450 &&
+        {!isMobile() &&
           `: ${setupProgressString(wizardStepResults, { firmwareHardware })}`}
-      </a>
-      : <div style={{ display: "inline" }} />;
+      </a>;
+    }
   };
 
   JobsButton = () => {
@@ -202,8 +243,8 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
     const job = jobActive ? sortedJobs[0] : undefined;
     const isPercent = job?.unit == "percent";
     const percent = isPercent ? round(job.percent, 1) : "";
-    const activeText = window.innerWidth > 450 ? jobNameLookup(job) : "";
-    const inactiveText = window.innerWidth > 450 ? t("idle") : t("jobs");
+    const activeText = !isMobile() ? jobNameLookup(job) : "";
+    const inactiveText = !isMobile() ? t("idle") : t("jobs");
     const jobProgress = isPercent ? `${percent}%` : "";
     const isOpen = this.props.appState.popups.jobs;
     return <div className={"nav-popup-button-wrapper"}>
@@ -215,7 +256,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         target={<a className={`jobs-button ${isOpen ? "hover" : ""}`}
           onClick={this.togglePopup("jobs")}>
           <i className={"fa fa-history"} />
-          {window.innerWidth > 450 &&
+          {!isMobile() &&
             <div className={"nav-job-info"}>
               <p className={"title"}>{jobActive ? activeText : inactiveText}</p>
               {jobActive &&
@@ -228,7 +269,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           dispatch={this.props.dispatch}
           bot={this.props.bot}
           getConfigValue={this.props.getConfigValue}
-          logs={this.props.logs}
+          logs={this.logs}
           jobsPanelState={this.props.appState.jobs}
           sourceFbosConfig={this.props.sourceFbosConfig}
           fbosVersion={this.props.device.body.fbos_version}
@@ -243,12 +284,20 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
       <i className={"fa fa-bars mobile-menu-icon"}
         onClick={this.toggle("mobileMenuOpen")} />
       <span className="mobile-menu-container">
-        <MobileMenu close={this.close} alertCount={this.props.alertCount}
+        <MobileMenu
+          designer={this.props.designer}
+          dispatch={this.props.dispatch}
+          close={this.close("mobileMenuOpen")}
+          alertCount={this.props.alertCount}
           mobileMenuOpen={this.state.mobileMenuOpen}
           helpState={this.props.helpState} />
       </span>
       <span className="top-menu-container">
-        <NavLinks close={this.close} alertCount={this.props.alertCount}
+        <NavLinks
+          designer={this.props.designer}
+          dispatch={this.props.dispatch}
+          close={this.close("mobileMenuOpen")}
+          alertCount={this.props.alertCount}
           helpState={this.props.helpState} />
       </span>
     </div>;
@@ -256,8 +305,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   TickerList = () =>
     <TickerList
       dispatch={this.props.dispatch}
-      logs={this.props.logs}
-      toggle={this.toggle}
+      logs={this.logs}
       timeSettings={this.props.timeSettings}
       getConfigValue={this.props.getConfigValue}
       lastSeen={lastSeenNumber({ bot: this.props.bot, device: this.props.device })}
@@ -273,29 +321,26 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         this.isStaff ? "red" : "",
       ].join(" ")}>
         <nav role="navigation">
-          <Row>
-            <Col xs={12}>
-              <div className="nav-bar">
-                <this.TickerList />
-                <div className="nav-group">
-                  <div className="nav-left">
-                    <this.AppNavLinks />
-                  </div>
-                  <div className="nav-right">
-                    <ErrorBoundary>
-                      <this.ReadOnlyStatus />
-                      <this.AccountMenu />
-                      <this.EstopButton />
-                      <this.ConnectionStatus />
-                      <this.SetupButton />
-                      <this.JobsButton />
-                      <this.Coordinates />
-                    </ErrorBoundary>
-                  </div>
-                </div>
+          <div className="nav-bar">
+            <this.TickerList />
+            <div className="nav-group">
+              <div className="nav-left">
+                <this.AppNavLinks />
               </div>
-            </Col>
-          </Row>
+              <div className="nav-right">
+                <ErrorBoundary>
+                  <this.ReadOnlyStatus />
+                  <this.AccountMenu />
+                  <this.EstopButton />
+                  <this.ConnectionStatus />
+                  <this.SetupButton />
+                  <this.TimeTravel />
+                  <this.Coordinates />
+                  <this.JobsButton />
+                </ErrorBoundary>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
     </ErrorBoundary>;

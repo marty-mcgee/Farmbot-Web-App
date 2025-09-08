@@ -36,7 +36,6 @@ import {
 } from "./layers/plants/plant_actions";
 import { chooseLocation } from "../move_to";
 import { GroupOrder } from "./group_order_visual";
-import { push } from "../../history";
 import { ErrorBoundary } from "../../error_boundary";
 import { TaggedPoint, TaggedPointGroup, PointType } from "farmbot";
 import { findGroupFromUrl } from "../../point_groups/group_detail";
@@ -49,6 +48,9 @@ import { chooseProfile, ProfileLine } from "./profile";
 import { betterCompact } from "../../util";
 import { Path } from "../../internal_urls";
 import { AddPlantIcon } from "./active_plant/add_plant_icon";
+import { NavigationContext } from "../../routes_helpers";
+import { NavigateFunction } from "react-router";
+import { setPanelOpen } from "../panel_header";
 
 const BOUND_KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
@@ -59,6 +61,10 @@ export class GardenMap extends
     super(props);
     this.state = {};
   }
+
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate: NavigateFunction = url => { this.context(url as string); };
 
   componentDidMount = () => {
     document.onkeydown = this.onKeyDown as never;
@@ -136,6 +142,7 @@ export class GardenMap extends
         gridOffset: this.props.gridOffset,
         pageX: e.pageX,
         pageY: e.pageY,
+        designer: this.props.designer,
       });
     };
 
@@ -171,19 +178,12 @@ export class GardenMap extends
         });
         break;
       case Mode.createPoint:
-        startNewPoint({
-          gardenCoords: this.getGardenCoordinates(e),
-          dispatch: this.props.dispatch,
-          setMapState: this.setMapState,
-          type: "point",
-        });
-        break;
       case Mode.createWeed:
         startNewPoint({
           gardenCoords: this.getGardenCoordinates(e),
           dispatch: this.props.dispatch,
           setMapState: this.setMapState,
-          type: "weed",
+          drawnPoint: this.props.designer.drawnPoint,
         });
         break;
       case Mode.clickToAdd:
@@ -234,7 +234,7 @@ export class GardenMap extends
             return true;
           }
         };
-        openLocationInfo(e) && push(Path.plants());
+        openLocationInfo(e) && this.navigate(Path.plants());
         startNewSelectionBox({
           gardenCoords: this.getGardenCoordinates(e),
           setMapState: this.setMapState,
@@ -300,7 +300,6 @@ export class GardenMap extends
         gridSize: this.mapTransformProps.gridSize,
         dispatch: this.props.dispatch,
         getConfigValue: this.props.getConfigValue,
-        plants: this.props.plants,
         curves: this.props.curves,
         designer: this.props.designer,
       });
@@ -314,7 +313,9 @@ export class GardenMap extends
         break;
       case Mode.locationInfo:
         e.preventDefault();
+        this.props.dispatch(setPanelOpen(true));
         !this.state.toLocation && chooseLocation({
+          navigate: this.navigate,
           gardenCoords: this.getGardenCoordinates(e),
           dispatch: this.props.dispatch
         });
@@ -344,25 +345,17 @@ export class GardenMap extends
         });
         break;
       case Mode.createPoint:
+      case Mode.createWeed:
         resizePoint({
           gardenCoords: this.getGardenCoordinates(e),
           drawnPoint: this.props.designer.drawnPoint,
           dispatch: this.props.dispatch,
           isDragging: this.state.isDragging,
-          type: "point",
-        });
-        break;
-      case Mode.createWeed:
-        resizePoint({
-          gardenCoords: this.getGardenCoordinates(e),
-          drawnPoint: this.props.designer.drawnWeed,
-          dispatch: this.props.dispatch,
-          isDragging: this.state.isDragging,
-          type: "weed",
         });
         break;
       case Mode.editGroup:
         resizeBox({
+          navigate: this.navigate,
           selectionBox: this.state.selectionBox,
           plants: this.props.plants,
           allPoints: this.props.allPoints,
@@ -380,6 +373,7 @@ export class GardenMap extends
       case Mode.boxSelect:
       default:
         resizeBox({
+          navigate: this.navigate,
           selectionBox: this.state.selectionBox,
           plants: this.props.plants,
           allPoints: this.props.allPoints,
@@ -452,19 +446,19 @@ export class GardenMap extends
       case Mode.boxSelect:
         return this.props.designer.selectedPoints
           ? () => { }
-          : closePlantInfo(this.props.dispatch);
+          : closePlantInfo(this.navigate, this.props.dispatch);
       default:
         return () => {
           const area = this.state.previousSelectionBoxArea;
           const box = area && area > 10;
           if (this.state.toLocation &&
             [Mode.none, Mode.points, Mode.weeds].includes(getMode())) {
-            !box && push(Path.location(this.state.toLocation));
+            !box && this.navigate(Path.location(this.state.toLocation));
           }
           this.setState({
             toLocation: undefined, previousSelectionBoxArea: undefined,
           });
-          closePlantInfo(this.props.dispatch)();
+          closePlantInfo(this.navigate, this.props.dispatch)();
         };
     }
   };
@@ -660,12 +654,14 @@ export class GardenMap extends
       point.uuid == this.props.designer.hoveredPoint)[0]}
     zoomLvl={this.props.zoomLvl}
     mapTransformProps={this.mapTransformProps} />;
-  DrawnPoint = () => <DrawnPoint
-    data={this.props.designer.drawnPoint}
-    mapTransformProps={this.mapTransformProps} />;
-  DrawnWeed = () => <DrawnWeed
-    data={this.props.designer.drawnWeed}
-    mapTransformProps={this.mapTransformProps} />;
+  DrawnPoint = () => getMode() == Mode.createPoint &&
+    <DrawnPoint
+      data={this.props.designer.drawnPoint}
+      mapTransformProps={this.mapTransformProps} />;
+  DrawnWeed = () => getMode() == Mode.createWeed &&
+    <DrawnWeed
+      data={this.props.designer.drawnPoint}
+      mapTransformProps={this.mapTransformProps} />;
   GroupOrder = () => <GroupOrder
     group={this.group}
     groupPoints={this.pointsSelectedByGroup}
@@ -686,8 +682,8 @@ export class GardenMap extends
     : <g />;
   AddPlantIcon = () => getMode() == Mode.clickToAdd
     ? <AddPlantIcon
+      designer={this.props.designer}
       cursorPosition={this.state.cursorPosition}
-      cropSearchResults={this.props.designer.cropSearchResults}
       mapTransformProps={this.mapTransformProps} />
     : <g />;
 

@@ -18,7 +18,6 @@ import { isTaggedSequence } from "../../resources/tagged_resources";
 import {
   setActiveSequenceByName,
 } from "../set_active_sequence_by_name";
-import { push } from "../../history";
 import { colors, urlFriendly } from "../../util";
 import { edit, save } from "../../api/crud";
 import {
@@ -32,6 +31,8 @@ import { error } from "../../toast/toast";
 import { noop } from "lodash";
 import { addNewSequenceToFolder } from "../../folders/actions";
 import { Position } from "@blueprintjs/core";
+import { isMobile } from "../../screen_size";
+import { NavigationContext } from "../../routes_helpers";
 
 interface SequencesState {
   processingTitle: boolean;
@@ -53,6 +54,10 @@ export class RawDesignerSequenceEditor
     return this.state.processingColor || this.state.processingTitle;
   }
 
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
+
   render() {
     const panelName = "designer-sequence-editor";
     const { sequence } = this.props;
@@ -73,6 +78,7 @@ export class RawDesignerSequenceEditor
               dispatch={this.props.dispatch}
               sequence={sequence}
               isProcessing={this.isProcessing}
+              inDesigner={true}
               setTitleProcessing={processingTitle =>
                 this.setState({ processingTitle })}
               setColorProcessing={processingColor =>
@@ -85,15 +91,16 @@ export class RawDesignerSequenceEditor
             content={<ColorPickerCluster
               onChange={color => this.props.dispatch(edit(sequence, { color }))}
               current={sequence.body.color} />} />}
-          {sequence && window.innerWidth > 450 &&
+          {sequence && !isMobile() &&
             <i className={"fa fa-expand fb-icon-button"}
               title={t("open full-page editor")}
-              onClick={() =>
-                push(Path.sequencePage(urlFriendly(sequence.body.name)))} />}
+              onClick={() => {
+                this.navigate(Path.sequencePage(urlFriendly(sequence.body.name)));
+              }} />}
           {!sequence && <button
             className={"fb-button green"}
             title={t("add new sequence")}
-            onClick={() => addNewSequenceToFolder()}>
+            onClick={() => addNewSequenceToFolder(this.navigate)}>
             <i className="fa fa-plus" />
           </button>}
         </div>
@@ -151,7 +158,7 @@ export const ResourceTitle = (props: ResourceTitleProps) => {
       onChange={e => {
         setNameValue(e.currentTarget.value);
       }} />
-    : <span className={"title white-text"}
+    : <span className={"title"}
       style={props.readOnly ? { pointerEvents: "none" } : {}}
       title={t("click to edit")}
       onClick={() => setIsEditing(true)}>
@@ -163,18 +170,20 @@ interface AutoGenerateButtonProps {
   dispatch: Function;
   sequence: TaggedSequence;
   isProcessing: boolean;
+  inDesigner: boolean;
   setTitleProcessing(state: boolean): void;
   setColorProcessing(state: boolean): void;
 }
 
 export const AutoGenerateButton = (props: AutoGenerateButtonProps) => {
   const {
-    dispatch, sequence, isProcessing, setTitleProcessing, setColorProcessing,
+    dispatch, sequence, isProcessing, inDesigner, setTitleProcessing, setColorProcessing,
   } = props;
   return <i title={t("auto-generate sequence title and color")}
     className={[
       "fa",
       isProcessing ? "fa-spinner fa-pulse" : "fa-magic",
+      inDesigner ? "" : "invert",
       "fb-icon-button",
     ].join(" ")}
     onClick={() => {
@@ -219,3 +228,5 @@ export const AutoGenerateButton = (props: AutoGenerateButtonProps) => {
 
 export const DesignerSequenceEditor =
   connect(mapStateToProps)(RawDesignerSequenceEditor);
+// eslint-disable-next-line import/no-default-export
+export default DesignerSequenceEditor;

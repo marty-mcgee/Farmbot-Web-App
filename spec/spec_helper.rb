@@ -69,11 +69,6 @@ require_relative "./fake_sequence"
 
 Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
-SmarfDoc.config do |c|
-  c.template_file = "api_docs.md.erb"
-  c.output_file = "api_docs.md"
-end
-
 require "database_cleaner"
 DatabaseCleaner.strategy = :truncation
 # then, whenever you need to clean the DB
@@ -88,22 +83,9 @@ RSpec.configure do |config|
   config.include Helpers
   config.infer_spec_type_from_file_location!
   config.order = "random"
-  if ENV["DOCS"]
-    config.after(:each, type: :controller) do
-      if request.path.length > 0 || response.body.length > 0
-        SmarfDoc.run!(NiceResponse.new(request), response)
-      end
-    end
-
-    config.after(:suite) do
-      SmarfDoc.finish!
-    end
-  end
 end
 
-FAKE_ATTACHMENT_URL = "https://cdn.shopify.com/s/files/1/2040/0" \
-                      "289/files/FarmBot.io_Trimmed_Logo_Gray_o" \
-                      "n_Transparent_1_434x200.png?v=1525220371"
+FAKE_ATTACHMENT_URL = "https://example.com/image.jpg"
 
 def simulate_fbos_request(version = "17.1.2")
   ua = "FARMBOTOS/#{version} (RPI3) RPI3 (#{version})"

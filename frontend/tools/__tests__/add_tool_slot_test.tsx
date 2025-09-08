@@ -16,7 +16,6 @@ import {
   buildResourceIndex,
 } from "../../__test_support__/resource_index_builder";
 import { init, save, edit, destroy } from "../../api/crud";
-import { push } from "../../history";
 import { SpecialStatus } from "farmbot";
 import { ToolPulloutDirection } from "farmbot/dist/resources/api_resources";
 import { mapStateToPropsAdd } from "../state_to_props";
@@ -71,9 +70,11 @@ describe("<AddToolSlot />", () => {
 
   it("saves tool slot", () => {
     const wrapper = shallow<AddToolSlot>(<AddToolSlot {...fakeProps()} />);
+    const navigate = jest.fn();
+    wrapper.instance().navigate = navigate;
     wrapper.find("SaveBtn").simulate("click");
     expect(save).toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith(Path.tools());
+    expect(navigate).toHaveBeenCalledWith(Path.tools());
   });
 
   it("saves on unmount", () => {

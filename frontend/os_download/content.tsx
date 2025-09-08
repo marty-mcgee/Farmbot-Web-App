@@ -2,6 +2,7 @@ import React from "react";
 import { t } from "../i18next_wrapper";
 import { Content, SetupWizardContent } from "../constants";
 import { FilePath } from "../internal_urls";
+import { isMobile } from "../screen_size";
 
 interface ReleaseItem {
   computer: string;
@@ -46,6 +47,8 @@ const PLATFORM_DATA = (): PlatformContent[] => [
     imageUrl: RPI4().imageUrl,
     releaseTag: RPI4().releaseTag,
     kits: [
+      "Genesis v1.8",
+      "Genesis XL v1.8",
       "Genesis v1.7",
       "Genesis XL v1.7",
       "Genesis v1.6.2 (white cable or 2 HDMI ports)",
@@ -140,6 +143,7 @@ enum Version {
   "v1.5" = "v1.5",
   "v1.6" = "v1.6",
   "v1.7" = "v1.7",
+  "v1.8" = "v1.8",
 }
 
 const VERSIONS = () => ({
@@ -149,6 +153,7 @@ const VERSIONS = () => ({
     Version["v1.0"],
   ],
   [Model.Genesis]: [
+    Version["v1.8"],
     Version["v1.7"],
     Version["v1.6"],
     Version["v1.5"],
@@ -236,11 +241,14 @@ const DOWNLOADS = (): Downloads => ({
     [Version["v1.7"]]: {
       [Run.first]: RPI4(),
     },
+    [Version["v1.8"]]: {
+      [Run.first]: RPI4(),
+    },
   }
 });
 
 const DownloadLink = (content: Partial<ReleaseItem>) =>
-  <div className={"download-link"}>
+  <div className={"download-link grid"}>
     <p className={"os-download-wizard-note"}>
       {`${t("Your FarmBot's internal computer is the")} ${content.computer}`}</p>
     <a className="transparent-button light" href={content.imageUrl}>
@@ -250,7 +258,7 @@ const DownloadLink = (content: Partial<ReleaseItem>) =>
 
 interface SimpleButtonProps {
   click(): void;
-  content: string | JSX.Element;
+  content: string | React.ReactNode;
   extraClass?: string;
 }
 
@@ -264,7 +272,7 @@ const SimpleButton = (props: SimpleButtonProps) =>
 
 interface ContentButtonProps {
   click(): void;
-  content: string | JSX.Element;
+  content: string | React.ReactNode;
   extraClass?: string;
   label?: string;
   image?: string;
@@ -334,11 +342,11 @@ class OsDownloadWizard
     }
     if (!this.state.model) {
       return <div className={"os-download-wizard"}>
-        <div className={"os-download-wizard-model"}>
+        <div className={"os-download-wizard-model grid double-gap"}>
           <p className={"os-download-wizard-note"}>
             {t("Which FarmBot model do you have?")}
           </p>
-          <div className={"buttons"}>
+          <div className={"buttons row double-gap"}>
             {MODELS().map(model =>
               <ContentButton key={model.value}
                 click={this.select({ model: model.value })}
@@ -370,7 +378,7 @@ class OsDownloadWizard
           <p className={"os-download-wizard-note"}>
             {t(Content.PI_POWER_CABLE_COLOR_PROMPT)}
           </p>
-          <div className={"buttons"}>
+          <div className={"buttons row grid-2-col double-gap"}>
             {RUNS()[this.state.version].map(run =>
               <ContentButton key={run.value}
                 click={this.select({ run: run.value })}
@@ -385,12 +393,13 @@ class OsDownloadWizard
     if (this.state.version == Version["v1.6"] && this.state.run != Run.second
       && !this.state.pi) {
       return <div className={"os-download-wizard"}>
-        <div className={"os-download-wizard-run"}>
+        <div className={"os-download-wizard-run grid"}>
           <p className={"os-download-wizard-note"}>
             {t(SetupWizardContent.RPI)}
           </p>
-          <img src={FilePath.setupWizardImage("rpi_3_vs_4.jpg")} />
-          <div className={"buttons"}>
+          <img className="pi-image"
+            src={FilePath.setupWizardImage("rpi_3_vs_4.jpg")} />
+          <div className={"buttons row grid-2-col double-gap"}>
             {PIS()[Version["v1.6"]].map(pi =>
               <ContentButton key={pi.value}
                 click={this.select({
@@ -420,13 +429,15 @@ class OsDownloadWizard
 
 export const OsDownloadPage = () => {
   const [wizard, setWizard] = React.useState(true);
-  if (window.innerWidth > 450) {
+  if (!isMobile()) {
     (document.querySelector("html") as HTMLElement).style.fontSize = "15px";
   }
   return <div className={"static-page os-download-page"}>
-    <div className={"all-content-wrapper"}>
-      <h1>{t("Download FarmBot OS")}</h1>
-      <p className={"os-download-description"}>{t(Content.DOWNLOAD_FBOS)}</p>
+    <div className={"all-content-wrapper grid double-gap"}>
+      <div className="header grid">
+        <h1>{t("Download FarmBot OS")}</h1>
+        <p className={"os-download-description"}>{t(Content.DOWNLOAD_FBOS)}</p>
+      </div>
       <OsDownloadWizard wizard={wizard} setWizard={setWizard} />
       {wizard
         ? <SimpleButton extraClass={"wizard-btn"}

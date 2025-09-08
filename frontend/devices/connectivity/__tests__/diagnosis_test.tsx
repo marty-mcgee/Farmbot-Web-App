@@ -5,6 +5,8 @@ import {
 } from "../diagnosis";
 import { DiagnosticMessages } from "../../../constants";
 import { mount } from "enzyme";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Path } from "../../../internal_urls";
 
 describe("<Diagnosis/>", () => {
   const fakeProps = (): DiagnosisProps => ({
@@ -15,6 +17,7 @@ describe("<Diagnosis/>", () => {
       botAPI: true,
       botFirmware: true,
     },
+    dispatch: jest.fn(),
   });
 
   it("renders help text", () => {
@@ -28,6 +31,13 @@ describe("<Diagnosis/>", () => {
     p.statusFlags.botFirmware = false;
     const el = mount(<Diagnosis {...p} />);
     expect(el.find(".saucer").hasClass("red")).toBeTruthy();
+  });
+
+  it("navigates on click", () => {
+    render(<Diagnosis {...fakeProps()} />);
+    const link = screen.getByText("upgrade FarmBot OS");
+    fireEvent.click(link);
+    expect(mockNavigate).toHaveBeenCalledWith(Path.settings("farmbot_os"));
   });
 });
 

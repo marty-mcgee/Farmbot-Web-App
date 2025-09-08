@@ -17,6 +17,7 @@ const mockDeviceDefault: DeepPartial<Farmbot> = {
   writePin: jest.fn(() => Promise.resolve()),
   home: jest.fn(() => Promise.resolve()),
   findHome: jest.fn(() => Promise.resolve()),
+  calibrate: jest.fn(() => Promise.resolve()),
   sync: jest.fn(() => Promise.resolve()),
   send: jest.fn(() => Promise.resolve()),
   readStatus: jest.fn(() => Promise.resolve()),
@@ -28,10 +29,6 @@ jest.mock("../../device", () => ({ getDevice: () => mockDevice.current }));
 jest.mock("../../api/crud", () => ({
   edit: jest.fn(),
   save: jest.fn(),
-}));
-
-jest.mock("../../settings/maybe_highlight", () => ({
-  goToFbosSettings: jest.fn(),
 }));
 
 let mockGet: Promise<{}> = Promise.resolve({});
@@ -46,6 +43,16 @@ jest.mock("../../redux/store", () => ({
   },
 }));
 
+jest.mock("../../demo/lua_runner", () => ({
+  runDemoSequence: jest.fn(),
+  runDemoLuaCode: jest.fn(),
+  csToLua: jest.fn(),
+}));
+
+jest.mock("../../demo/lua_runner/actions", () => ({
+  eStop: jest.fn(),
+}));
+
 import * as actions from "../actions";
 import {
   fakeFirmwareConfig, fakeFbosConfig,
@@ -56,8 +63,10 @@ import axios from "axios";
 import { success, error, warning, info } from "../../toast/toast";
 import { edit, save } from "../../api/crud";
 import { DeepPartial } from "../../redux/interfaces";
-import { Farmbot } from "farmbot";
-import { goToFbosSettings } from "../../settings/maybe_highlight";
+import { EmergencyLock, Execute, Farmbot, Wait } from "farmbot";
+import { Path } from "../../internal_urls";
+import { csToLua, runDemoLuaCode, runDemoSequence } from "../../demo/lua_runner";
+import { eStop } from "../../demo/lua_runner/actions";
 
 const replaceDeviceWith = async (d: DeepPartial<Farmbot>, cb: Function) => {
   jest.clearAllMocks();
@@ -67,6 +76,10 @@ const replaceDeviceWith = async (d: DeepPartial<Farmbot>, cb: Function) => {
 };
 
 describe("sendRPC()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls sendRPC", async () => {
     await actions.sendRPC({ kind: "sync", args: {} });
     expect(mockDevice.current.send).toHaveBeenCalledWith({
@@ -74,6 +87,37 @@ describe("sendRPC()", () => {
       args: { label: expect.any(String), priority: 600 },
       body: [{ kind: "sync", args: {} }],
     });
+  });
+
+  it("calls sendRPC on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    const cmd: Wait = { kind: "wait", args: { milliseconds: 1000 } };
+    await actions.sendRPC(cmd);
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).toHaveBeenCalledWith(cmd);
+  });
+
+  it("calls sendRPC on demo accounts: estop", async () => {
+    localStorage.setItem("myBotIs", "online");
+    const cmd: EmergencyLock = { kind: "emergency_lock", args: {} };
+    await actions.sendRPC(cmd);
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).not.toHaveBeenCalled();
+    expect(eStop).toHaveBeenCalled();
+  });
+
+  it("calls sendRPC on demo accounts: execute", async () => {
+    localStorage.setItem("myBotIs", "online");
+    const cmd: Execute = { kind: "execute", args: { sequence_id: 1 }, body: [] };
+    await actions.sendRPC(cmd);
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).not.toHaveBeenCalled();
+    expect(runDemoSequence).toHaveBeenCalledWith(
+      expect.any(Object),
+      1,
+      [],
+    );
   });
 });
 
@@ -146,15 +190,36 @@ describe("flashFirmware()", () => {
 });
 
 describe("emergencyLock() / emergencyUnlock", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+    window.confirm = () => false;
+  });
+
   it("calls emergencyLock", () => {
     actions.emergencyLock();
     expect(mockDevice.current.emergencyLock).toHaveBeenCalled();
+  });
+
+  it("calls emergencyLock on demo account", () => {
+    localStorage.setItem("myBotIs", "online");
+    actions.emergencyLock();
+    expect(mockDevice.current.emergencyLock).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).not.toHaveBeenCalled();
+    expect(eStop).toHaveBeenCalled();
   });
 
   it("calls emergencyUnlock", () => {
     window.confirm = () => true;
     actions.emergencyUnlock();
     expect(mockDevice.current.emergencyUnlock).toHaveBeenCalled();
+  });
+
+  it("calls emergencyUnlock on demo account", () => {
+    window.confirm = () => true;
+    localStorage.setItem("myBotIs", "online");
+    actions.emergencyUnlock();
+    expect(mockDevice.current.emergencyUnlock).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("emergency_unlock()");
   });
 
   it("doesn't call emergencyUnlock", () => {
@@ -198,6 +263,10 @@ describe("sync()", () => {
 });
 
 describe("execSequence()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("handles normal errors", () => {
     const errorThrower: DeepPartial<Farmbot> = {
       execSequence: jest.fn(() => Promise.reject(new Error("yolo")))
@@ -234,6 +303,17 @@ describe("execSequence()", () => {
     expect(success).toHaveBeenCalled();
   });
 
+  it("calls execSequence on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.execSequence(1);
+    expect(mockDevice.current.execSequence).not.toHaveBeenCalled();
+    expect(success).not.toHaveBeenCalled();
+    expect(runDemoSequence).toHaveBeenCalledWith(
+      expect.any(Object),
+      1,
+      undefined);
+  });
+
   it("implodes when executing unsaved sequences", () => {
     expect(() => actions.execSequence(undefined)).toThrow();
     expect(mockDevice.current.execSequence).not.toHaveBeenCalled();
@@ -241,12 +321,24 @@ describe("execSequence()", () => {
 });
 
 describe("takePhoto()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls takePhoto", async () => {
     await actions.takePhoto();
     expect(mockDevice.current.takePhoto).toHaveBeenCalled();
     expect(success).toHaveBeenCalledWith(Content.PROCESSING_PHOTO,
       { title: "Request sent" });
     expect(error).not.toHaveBeenCalled();
+  });
+
+  it("calls takePhoto on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.takePhoto();
+    expect(mockDevice.current.takePhoto).not.toHaveBeenCalled();
+    expect(success).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("take_photo()");
   });
 
   it("calls takePhoto: error", async () => {
@@ -337,11 +429,25 @@ describe("updateMCU()", () => {
 });
 
 describe("moveRelative()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls moveRelative", async () => {
     await actions.moveRelative({ x: 1, y: 0, z: 0 });
     expect(mockDevice.current.moveRelative)
       .toHaveBeenCalledWith({ x: 1, y: 0, z: 0 });
     expect(success).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+  });
+
+  it("calls moveRelative on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.moveRelative({ x: 1, y: 0, z: 0 });
+    expect(mockDevice.current.moveRelative).not.toHaveBeenCalled();
+    expect(success).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("move_relative(1, 0, 0)");
   });
 
   it("shows lock message", () => {
@@ -354,15 +460,53 @@ describe("moveRelative()", () => {
 });
 
 describe("moveAbsolute()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls moveAbsolute", async () => {
     await actions.moveAbsolute({ x: 1, y: 0, z: 0 });
     expect(mockDevice.current.moveAbsolute)
       .toHaveBeenCalledWith({ x: 1, y: 0, z: 0 });
     expect(success).not.toHaveBeenCalled();
   });
+
+  it("calls moveAbsolute on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.moveAbsolute({ x: 1, y: 0, z: 0 });
+    expect(mockDevice.current.moveAbsolute).not.toHaveBeenCalled();
+    expect(success).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("move_absolute(1, 0, 0)");
+  });
 });
 
 describe("move()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
+  const BODY = [{
+    kind: "axis_overwrite",
+    args: {
+      axis: "x",
+      axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
+    }
+  },
+  {
+    kind: "axis_overwrite",
+    args: {
+      axis: "y",
+      axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
+    }
+  },
+  {
+    kind: "axis_overwrite",
+    args: {
+      axis: "z",
+      axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
+    }
+  }];
+
   it("calls move", async () => {
     await actions.move({ x: 1, y: 0, z: 0 });
     expect(mockDevice.current.send)
@@ -372,27 +516,7 @@ describe("move()", () => {
         body: [{
           kind: "move",
           args: {},
-          body: [{
-            kind: "axis_overwrite",
-            args: {
-              axis: "x",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "y",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "z",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          }],
+          body: BODY,
         }],
       });
     expect(success).not.toHaveBeenCalled();
@@ -407,48 +531,29 @@ describe("move()", () => {
         body: [{
           kind: "move",
           args: {},
-          body: [{
-            kind: "axis_overwrite",
-            args: {
-              axis: "x",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "y",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "z",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "speed_overwrite",
-            args: {
-              axis: "x",
-              speed_setting: { kind: "numeric", args: { number: 50 } },
-            }
-          },
-          {
-            kind: "speed_overwrite",
-            args: {
-              axis: "y",
-              speed_setting: { kind: "numeric", args: { number: 50 } },
-            }
-          },
-          {
-            kind: "speed_overwrite",
-            args: {
-              axis: "z",
-              speed_setting: { kind: "numeric", args: { number: 50 } },
-            }
-          },
+          body: [
+            ...BODY,
+            {
+              kind: "speed_overwrite",
+              args: {
+                axis: "x",
+                speed_setting: { kind: "numeric", args: { number: 50 } },
+              }
+            },
+            {
+              kind: "speed_overwrite",
+              args: {
+                axis: "y",
+                speed_setting: { kind: "numeric", args: { number: 50 } },
+              }
+            },
+            {
+              kind: "speed_overwrite",
+              args: {
+                axis: "z",
+                speed_setting: { kind: "numeric", args: { number: 50 } },
+              }
+            },
           ],
         }],
       });
@@ -464,39 +569,43 @@ describe("move()", () => {
         body: [{
           kind: "move",
           args: {},
-          body: [{
-            kind: "axis_overwrite",
-            args: {
-              axis: "x",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "y",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          {
-            kind: "axis_overwrite",
-            args: {
-              axis: "z",
-              axis_operand: { kind: "coordinate", args: { x: 1, y: 0, z: 0 } },
-            }
-          },
-          { kind: "safe_z", args: {} }]
+          body: [
+            ...BODY,
+            { kind: "safe_z", args: {} }]
         }],
       });
+    expect(success).not.toHaveBeenCalled();
+  });
+
+  it("calls move on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.move({ x: 1, y: 0, z: 0 });
+    expect(mockDevice.current.send).not.toHaveBeenCalled();
+    expect(csToLua).toHaveBeenCalledWith({
+      kind: "move",
+      args: {},
+      body: BODY,
+    });
     expect(success).not.toHaveBeenCalled();
   });
 });
 
 describe("pinToggle()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls togglePin", async () => {
     await actions.pinToggle(5);
     expect(mockDevice.current.togglePin).toHaveBeenCalledWith({ pin_number: 5 });
     expect(success).not.toHaveBeenCalled();
+  });
+
+  it("toggles demo account pin", () => {
+    localStorage.setItem("myBotIs", "online");
+    actions.pinToggle(5);
+    expect(mockDevice.current.togglePin).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("toggle_pin(5)");
   });
 });
 
@@ -521,20 +630,62 @@ describe("writePin()", () => {
 });
 
 describe("moveToHome()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls home", async () => {
     await actions.moveToHome("x");
     expect(mockDevice.current.home)
       .toHaveBeenCalledWith({ axis: "x", speed: 100 });
     expect(success).not.toHaveBeenCalled();
   });
+
+  it("calls home on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.moveToHome("x");
+    expect(mockDevice.current.home).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("go_to_home(\"x\")");
+  });
 });
 
 describe("findHome()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls find_home", async () => {
     await actions.findHome("all");
     expect(mockDevice.current.findHome)
       .toHaveBeenCalledWith({ axis: "all", speed: 100 });
     expect(success).not.toHaveBeenCalled();
+  });
+
+  it("calls find_home on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.findHome("all");
+    expect(mockDevice.current.findHome).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("find_home(\"all\")");
+  });
+});
+
+describe("findAxisLength()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
+  it("calls find_axis_length", async () => {
+    await actions.findAxisLength("x");
+    expect(mockDevice.current.calibrate)
+      .toHaveBeenCalledWith({ axis: "x" });
+    expect(success).not.toHaveBeenCalled();
+  });
+
+  it("calls find_home on demo accounts", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.findAxisLength("x");
+    expect(mockDevice.current.calibrate).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("find_axis_length(\"x\")");
   });
 });
 
@@ -562,6 +713,10 @@ describe("commandErr()", () => {
 });
 
 describe("commandOK()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("sends toast", () => {
     actions.commandOK()();
     expect(success).toHaveBeenCalledWith(
@@ -697,12 +852,12 @@ describe("updateConfig()", () => {
   });
 });
 
-const expectBadVersionCall = () => {
-  expect(goToFbosSettings).toHaveBeenCalled();
+const expectBadVersionCall = (noDismiss = true) => {
   expect(error).toHaveBeenCalledWith(expect.stringContaining("old version"), {
     title: "Please Update",
     noTimer: true,
-    noDismiss: true,
+    redirect: Path.settings("farmbot_os"),
+    noDismiss,
     idPrefix: "EOL",
   });
 };
@@ -715,12 +870,6 @@ describe("badVersion()", () => {
 
   it("warns of old FBOS version: dismiss-able", () => {
     actions.badVersion({ noDismiss: false });
-    expect(goToFbosSettings).toHaveBeenCalled();
-    expect(error).toHaveBeenCalledWith(expect.stringContaining("old version"), {
-      title: "Please Update",
-      noTimer: true,
-      noDismiss: false,
-      idPrefix: "EOL",
-    });
+    expectBadVersionCall(false);
   });
 });

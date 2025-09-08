@@ -11,18 +11,17 @@ import {
   setActiveRegimenByName,
 } from "../set_active_regimen_by_name";
 import {
-  EmptyStateWrapper, EmptyStateGraphic, Popover, ColorPickerCluster,
+  EmptyStateWrapper, EmptyStateGraphic,
 } from "../../ui";
 import { isTaggedRegimen } from "../../resources/tagged_resources";
 import { Content } from "../../constants";
 import { ActiveEditor } from "./active_editor";
 import { ResourceTitle } from "../../sequences/panel/editor";
 import { Path } from "../../internal_urls";
-import { edit } from "../../api/crud";
-import { Position } from "@blueprintjs/core";
 import { addRegimen } from "../list/add_regimen";
 import { selectAllRegimens } from "../../resources/selectors_by_kind";
 import { RegimenButtonGroup } from "./regimen_edit_components";
+import { NavigationContext } from "../../routes_helpers";
 
 export class RawDesignerRegimenEditor
   extends React.Component<RegimenEditorProps> {
@@ -30,6 +29,10 @@ export class RawDesignerRegimenEditor
   componentDidMount() {
     if (!this.props.current) { setActiveRegimenByName(); }
   }
+
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
 
   render() {
     const panelName = "designer-regimen-editor";
@@ -48,18 +51,11 @@ export class RawDesignerRegimenEditor
         backTo={Path.regimens()}>
         {regimen &&
           <RegimenButtonGroup regimen={regimen} dispatch={this.props.dispatch} />}
-        {regimen && <Popover className={"color-picker"}
-          position={Position.BOTTOM}
-          popoverClassName={"colorpicker-menu gray"}
-          target={<i title={t("select color")}
-            className={"fa fa-paint-brush fb-icon-button"} />}
-          content={<ColorPickerCluster
-            onChange={color => this.props.dispatch(edit(regimen, { color }))}
-            current={regimen.body.color} />} />}
         {!regimen && <button
           className={"fb-button green"}
           title={t("add new regimen")}
-          onClick={() => this.props.dispatch(addRegimen(regimenCount))}>
+          onClick={() =>
+            this.props.dispatch(addRegimen(regimenCount, this.navigate))}>
           <i className="fa fa-plus" />
         </button>}
       </DesignerPanelHeader>
@@ -83,3 +79,5 @@ export class RawDesignerRegimenEditor
 
 export const DesignerRegimenEditor =
   connect(mapStateToProps)(RawDesignerRegimenEditor);
+// eslint-disable-next-line import/no-default-export
+export default DesignerRegimenEditor;

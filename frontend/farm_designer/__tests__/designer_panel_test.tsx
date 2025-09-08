@@ -1,10 +1,9 @@
-import React from "react";
+import React, { act } from "react";
 import { mount } from "enzyme";
 import {
   DesignerPanel, DesignerPanelContent, DesignerPanelContentProps,
   DesignerPanelHeader, DesignerPanelTop, DesignerPanelTopProps,
 } from "../designer_panel";
-import { act } from "react-dom/test-utils";
 import { SpecialStatus } from "farmbot";
 import { Panel } from "../panel_header";
 
@@ -16,7 +15,7 @@ describe("<DesignerPanel />", () => {
 
   it("removes beacon", () => {
     jest.useFakeTimers();
-    location.search = "?tour=gettingStarted?tourStep=plants";
+    location.search = "?tour=gettingStarted&tourStep=plants";
     const wrapper = mount(<DesignerPanel panelName={"plants"} />);
     expect(wrapper.find("div").first().hasClass("beacon")).toBeTruthy();
     act(() => { jest.runAllTimers(); });

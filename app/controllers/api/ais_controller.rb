@@ -111,7 +111,7 @@ module Api
       url = "https://api.openai.com/v1/chat/completions"
       context_key = raw_json[:context_key]
       lua_request = context_key == "lua"
-      model_lua = ENV["OPENAI_MODEL_LUA"] || "gpt-3.5-turbo-16k"
+      model_lua = ENV["OPENAI_MODEL_LUA"] || "gpt-3.5-turbo"
       model_other = ENV["OPENAI_MODEL_OTHER"] || "gpt-3.5-turbo"
       payload = {
         "model" => lua_request ? model_lua : model_other,
@@ -147,6 +147,15 @@ module Api
               missed = true
             end
             boundary = buffer.index("\n\n")
+            begin
+              err_msg = JSON.parse(buffer)["error"]
+              puts "AI #{context_key} error:" \
+                  " (#{err_msg})" unless Rails.env.test?
+              current_device.tell("Please try again", ["toast"], "error")
+              return {"error" => {"message" => err_msg}}
+            rescue JSON::ParserError
+              nil
+            end
             while not boundary.nil?
               data_str = buffer.slice(0, boundary)
               buffer = buffer.slice(boundary + 2, buffer.length)

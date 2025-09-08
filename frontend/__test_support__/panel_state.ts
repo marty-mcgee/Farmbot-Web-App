@@ -27,6 +27,7 @@ export const settingsPanelState = (): SettingsPanelState => {
     parameter_management: false,
     custom_settings: false,
     farm_designer: false,
+    three_d: false,
     account: false,
     other_settings: false,
   };
@@ -80,6 +81,7 @@ export const jobsState = (): JobsAndLogsState => ({
 });
 
 export const popUpsState = (): PopupsState => ({
+  timeTravel: false,
   controls: false,
   jobs: false,
   connectivity: false,

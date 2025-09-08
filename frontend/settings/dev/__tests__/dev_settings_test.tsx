@@ -5,10 +5,14 @@ jest.mock("../../../config_storage/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import {
   DevWidgetFERow, DevWidgetFBOSRow, DevWidgetDelModeRow,
   DevWidgetShowInternalEnvsRow,
+  DevWidget3dCameraRow,
+  DevWidgetAllOrderOptionsRow,
+  DevWidgetChunkingDisabledRow,
 } from "../dev_settings";
 import { DevSettings } from "../dev_support";
 import { setWebAppConfigValue } from "../../../config_storage/actions";
@@ -52,6 +56,40 @@ describe("<DevWidgetFERow />", () => {
   });
 });
 
+describe("<DevWidget3dCameraRow />", () => {
+  const MOCK_CAMERA_VALUE = "{\"position\": [0, 0, 0], \"target\": [0, 0, 0]}";
+
+  it("changes dev camera value", () => {
+    const wrapper = shallow(<DevWidget3dCameraRow />);
+    wrapper.find("BlurableInput").simulate("commit",
+      { currentTarget: { value: MOCK_CAMERA_VALUE } });
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use",
+      JSON.stringify({ [DevSettings.CAMERA3D]: MOCK_CAMERA_VALUE }));
+    wrapper.find(".fa-times").simulate("click");
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
+    delete mockDevSettings[DevSettings.CAMERA3D];
+  });
+
+  it("enables dev camera position", () => {
+    const wrapper = mount(<DevWidget3dCameraRow />);
+    wrapper.find(".fa-angle-double-up").simulate("click");
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use",
+      JSON.stringify({
+        [DevSettings.CAMERA3D]: JSON.stringify(
+          { position: [-500, -500, 400], target: [-1500, -200, 200] })
+      }));
+    delete mockDevSettings[DevSettings.CAMERA3D];
+  });
+
+  it("disables dev camera position", () => {
+    mockDevSettings[DevSettings.CAMERA3D] = MOCK_CAMERA_VALUE;
+    const wrapper = mount(<DevWidget3dCameraRow />);
+    wrapper.find(".fa-times").simulate("click");
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
+    delete mockDevSettings[DevSettings.CAMERA3D];
+  });
+});
+
 describe("<DevWidgetDelModeRow />", () => {
   it("enables delete mode", () => {
     const wrapper = mount(<DevWidgetDelModeRow />);
@@ -85,5 +123,40 @@ describe("<DevWidgetShowInternalEnvsRow />", () => {
     wrapper.find("button").simulate("click");
     expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
     delete mockDevSettings[DevSettings.SHOW_INTERNAL_ENVS];
+  });
+});
+
+describe("<DevWidgetAllOrderOptionsRow />", () => {
+  it("enables all order options", () => {
+    render(<DevWidgetAllOrderOptionsRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use",
+      JSON.stringify({ [DevSettings.ALL_ORDER_OPTIONS]: "true" }));
+    delete mockDevSettings[DevSettings.ALL_ORDER_OPTIONS];
+  });
+
+  it("disables all order options", () => {
+    mockDevSettings[DevSettings.ALL_ORDER_OPTIONS] = "true";
+    render(<DevWidgetAllOrderOptionsRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(setWebAppConfigValue).toHaveBeenCalledWith("internal_use", "{}");
+    delete mockDevSettings[DevSettings.ALL_ORDER_OPTIONS];
+  });
+});
+
+describe("<DevWidgetChunkingDisabledRow />", () => {
+  it("enables chunking disabled", () => {
+    render(<DevWidgetChunkingDisabledRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(localStorage.getItem("DISABLE_CHUNKING")).toEqual("true");
+    localStorage.removeItem("DISABLE_CHUNKING");
+  });
+
+  it("disables chunking disabled", () => {
+    localStorage.setItem("DISABLE_CHUNKING", "true");
+    render(<DevWidgetChunkingDisabledRow />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(localStorage.getItem("DISABLE_CHUNKING")).toBeFalsy();
+    localStorage.removeItem("DISABLE_CHUNKING");
   });
 });

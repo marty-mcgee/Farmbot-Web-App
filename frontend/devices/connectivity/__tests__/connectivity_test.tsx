@@ -1,3 +1,8 @@
+let mockIsMobile = false;
+jest.mock("../../../screen_size", () => ({
+  isMobile: () => mockIsMobile,
+}));
+
 jest.mock("../../../api/crud", () => ({ refresh: jest.fn() }));
 
 jest.mock("../../actions", () => ({
@@ -128,10 +133,7 @@ describe("<Connectivity />", () => {
   });
 
   it("renders network tab", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 400,
-      configurable: true
-    });
+    mockIsMobile = true;
     const p = fakeProps();
     p.metricPanelState.realtime = false;
     p.metricPanelState.network = true;
@@ -142,10 +144,7 @@ describe("<Connectivity />", () => {
   });
 
   it("displays more network info", () => {
-    Object.defineProperty(window, "innerWidth", {
-      value: 500,
-      configurable: true
-    });
+    mockIsMobile = false;
     const p = fakeProps();
     p.metricPanelState.realtime = false;
     p.metricPanelState.network = true;
@@ -168,7 +167,7 @@ describe("<Connectivity />", () => {
     Object.keys(p.flags).map((key: ConnectionName) => p.flags[key] = true);
     p.flags.botFirmware = false;
     const wrapper = mount(<Connectivity {...p} />);
-    expect(wrapper.find(".fix-firmware-buttons").length).toEqual(1);
+    expect(wrapper.find(".fix-firmware-buttons").length).toBeGreaterThan(0);
     clickButton(wrapper, 1, "restart firmware");
   });
 

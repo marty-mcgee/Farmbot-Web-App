@@ -13,7 +13,7 @@ import { formatTime } from "../util";
 import {
   FlashFirmwareBtn,
 } from "../settings/firmware/firmware_hardware_status";
-import { DropDownItem, Row, Col, FBSelect, docLink, Markdown } from "../ui";
+import { DropDownItem, Row, FBSelect, docLink, Markdown } from "../ui";
 import { Content } from "../constants";
 import { splitProblemTag } from "./alerts";
 import { destroy } from "../api/crud";
@@ -28,7 +28,7 @@ import { ExternalUrl } from "../external_urls";
 import { setupProgressString } from "../wizard/data";
 import { store } from "../redux/store";
 import { selectAllWizardStepResults } from "../resources/selectors_by_kind";
-import { push } from "../history";
+import { useNavigate } from "react-router";
 import moment from "moment";
 import { Path } from "../internal_urls";
 import { logout } from "../logout";
@@ -71,18 +71,21 @@ const timeOk = (timestamp: number) => timestamp > 1550000000;
 
 const AlertCardTemplate = (props: AlertCardTemplateProps) => {
   const { alert, findApiAlertById, dispatch, timeSettings } = props;
+  const thisYear = moment.unix(alert.created_at).year() == moment().year();
+  const timeFormat = thisYear ? "MMM D" : "MMM D, YYYY";
   return <div className={
     `problem-alert ${props.className} priority-${props.alert.priority}`}>
-    <div className="problem-alert-title">
+    <div className="problem-alert-title row grid-exp-2">
       <i className={`fa ${props.iconName || "fa-exclamation-triangle"}`} />
       <h3>{t(props.title)}</h3>
       {timeOk(alert.created_at) &&
         <p>
-          {formatTime(moment.unix(alert.created_at), timeSettings, "MMM D")}
+          {formatTime(moment.unix(alert.created_at), timeSettings, timeFormat)}
         </p>}
+      {alert.id && !props.noDismiss &&
+        <i className={"fa fa-times fb-icon-button invert"}
+          onClick={dismissAlert({ id: alert.id, findApiAlertById, dispatch })} />}
     </div>
-    {alert.id && !props.noDismiss && <i className={"fa fa-times fb-icon-button"}
-      onClick={dismissAlert({ id: alert.id, findApiAlertById, dispatch })} />}
     <div className="problem-alert-content">
       <Markdown html={true}>{t(props.message)}</Markdown>
       {props.children}
@@ -165,6 +168,11 @@ const FirmwareChoiceTable = () =>
     </thead>
     <tbody>
       <tr>
+        <td>{"Genesis v1.8"}</td>
+        <td>{"Farmduino"}</td>
+        <td><code>{FIRMWARE_CHOICES_DDI["farmduino_k18"].label}</code></td>
+      </tr>
+      <tr>
         <td>{"Genesis v1.7"}</td>
         <td>{"Farmduino"}</td>
         <td><code>{FIRMWARE_CHOICES_DDI["farmduino_k17"].label}</code></td>
@@ -230,10 +238,8 @@ const FirmwareMissing = (props: FirmwareMissingProps) =>
     findApiAlertById={props.findApiAlertById}>
     <Row>
       <FirmwareChoiceTable />
-      <Col xs={4}>
+      <div className="row grid-3-col">
         <label>{t("Choose Firmware")}</label>
-      </Col>
-      <Col xs={5}>
         <FBSelect
           key={props.apiFirmwareValue}
           list={getFirmwareChoices()}
@@ -242,35 +248,35 @@ const FirmwareMissing = (props: FirmwareMissingProps) =>
             ? FIRMWARE_CHOICES_DDI[props.apiFirmwareValue]
             : undefined}
           onChange={changeFirmwareHardware(props.dispatch)} />
-      </Col>
-      <Col xs={3} hidden={true}>
         <FlashFirmwareBtn
           apiFirmwareValue={props.apiFirmwareValue}
           botOnline={true} />
-      </Col>
+      </div>
     </Row>
   </AlertCardTemplate>;
 
 export const SEED_DATA_OPTIONS = (displayAll = false): DropDownItem[] => [
+  { label: "Genesis v1.8", value: "genesis_1.8" },
+  { label: "Genesis v1.8 XL", value: "genesis_xl_1.8" },
   { label: "Genesis v1.7", value: "genesis_1.7" },
+  { label: "Genesis v1.7 XL", value: "genesis_xl_1.7" },
   { label: "Genesis v1.6", value: "genesis_1.6" },
+  { label: "Genesis v1.6 XL", value: "genesis_xl_1.6" },
   { label: "Genesis v1.5", value: "genesis_1.5" },
+  { label: "Genesis v1.5 XL", value: "genesis_xl_1.5" },
   { label: "Genesis v1.4", value: "genesis_1.4" },
+  { label: "Genesis v1.4 XL", value: "genesis_xl_1.4" },
   { label: "Genesis v1.3", value: "genesis_1.3" },
   { label: "Genesis v1.2", value: "genesis_1.2" },
-  { label: "Genesis v1.7 XL", value: "genesis_xl_1.7" },
-  { label: "Genesis v1.6 XL", value: "genesis_xl_1.6" },
-  { label: "Genesis v1.5 XL", value: "genesis_xl_1.5" },
-  { label: "Genesis v1.4 XL", value: "genesis_xl_1.4" },
   ...((shouldDisplayFeature(Feature.express_k12) || displayAll)
     ? [{ label: "Express v1.2", value: "express_1.2" }]
     : []),
-  { label: "Express v1.1", value: "express_1.1" },
-  { label: "Express v1.0", value: "express_1.0" },
   ...((shouldDisplayFeature(Feature.express_k12) || displayAll)
     ? [{ label: "Express v1.2 XL", value: "express_xl_1.2" }]
     : []),
+  { label: "Express v1.1", value: "express_1.1" },
   { label: "Express v1.1 XL", value: "express_xl_1.1" },
+  { label: "Express v1.0", value: "express_1.0" },
   { label: "Express v1.0 XL", value: "express_xl_1.0" },
   { label: "Custom Bot", value: "none" },
 ];
@@ -301,17 +307,13 @@ class SeedDataMissing
       noDismiss={true}
       findApiAlertById={this.props.findApiAlertById}
       iconName={"fa-check-square"}>
-      <Row>
-        <Col xs={4}>
-          <label>{t("Choose your FarmBot")}</label>
-        </Col>
-        <Col xs={5}>
-          <FBSelect
-            key={this.state.selection}
-            list={SEED_DATA_OPTIONS()}
-            selectedItem={SEED_DATA_OPTIONS_DDI()[this.state.selection]}
-            onChange={seedAccount(this.dismiss)} />
-        </Col>
+      <Row className="grid-2-col">
+        <label>{t("Choose your FarmBot")}</label>
+        <FBSelect
+          key={this.state.selection}
+          list={SEED_DATA_OPTIONS()}
+          selectedItem={SEED_DATA_OPTIONS_DDI()[this.state.selection]}
+          onChange={seedAccount(this.dismiss)} />
       </Row>
     </AlertCardTemplate>;
   }
@@ -319,27 +321,24 @@ class SeedDataMissing
 
 export const ReSeedAccount = () => {
   const [selection, setSelection] = React.useState("");
-  return <Row className={"re-seed"}>
-    <Col xs={7}>
-      <FBSelect
-        key={selection}
-        list={SEED_DATA_OPTIONS().filter(x => x.value != "none")}
-        customNullLabel={t("Select a model")}
-        selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
-        onChange={ddi => setSelection("" + ddi.value)} />
-    </Col>
-    <Col xs={5}>
-      <button className={"fb-button green"}
-        onClick={() => selection && confirm(t(Content.RE_SEED_ACCOUNT)) &&
-          seedAccount()({ label: "", value: selection })}>
-        {t("re-seed account")}
-      </button>
-    </Col>
+  return <Row className={"re-seed grid-2-col"}>
+    <FBSelect
+      key={selection}
+      list={SEED_DATA_OPTIONS().filter(x => x.value != "none")}
+      customNullLabel={t("Select a model")}
+      selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
+      onChange={ddi => setSelection("" + ddi.value)} />
+    <button className={"fb-button green"}
+      onClick={() => selection && confirm(t(Content.RE_SEED_ACCOUNT)) &&
+        seedAccount()({ label: "", value: selection })}>
+      {t("re-seed account")}
+    </button>
   </Row>;
 };
 
-const TourNotTaken = (props: TourNotTakenProps) =>
-  <AlertCardTemplate
+const TourNotTaken = (props: TourNotTakenProps) => {
+  const navigate = useNavigate();
+  return <AlertCardTemplate
     alert={props.alert}
     className={"tour-not-taken-alert"}
     title={t("Take a guided tour")}
@@ -349,11 +348,12 @@ const TourNotTaken = (props: TourNotTakenProps) =>
     findApiAlertById={props.findApiAlertById}
     iconName={"fa-info-circle"}>
     <a className="link-button fb-button green"
-      onClick={() => push(Path.tours())}
+      onClick={() => { navigate(Path.tours()); }}
       title={t("View available tours")}>
       {t("View available tours")}
     </a>
   </AlertCardTemplate>;
+};
 
 const UserNotWelcomed = (props: CommonAlertCardProps) =>
   <AlertCardTemplate
@@ -441,6 +441,7 @@ const SetupIncomplete = (props: SetupIncompleteProps) => {
   const buttonText = percentComplete != "0% complete"
     ? t("Continue setup")
     : t("Get Started");
+  const navigate = useNavigate();
   return <AlertCardTemplate
     alert={props.alert}
     className={"setup-alert"}
@@ -452,7 +453,7 @@ const SetupIncomplete = (props: SetupIncompleteProps) => {
     findApiAlertById={props.findApiAlertById}
     iconName={"fa-info-circle"}>
     <a className="link-button fb-button green"
-      onClick={() => push(Path.setup())}
+      onClick={() => { navigate(Path.setup()); }}
       title={buttonText}>
       {buttonText}
     </a>

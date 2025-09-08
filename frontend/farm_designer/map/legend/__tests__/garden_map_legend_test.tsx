@@ -15,6 +15,7 @@ import { shallow, mount } from "enzyme";
 import {
   GardenMapLegend, ZoomControls, PointsSubMenu, FarmbotSubMenu,
   PlantsSubMenu, MapSettingsContent, SettingsSubMenuProps,
+  ZoomControlsProps,
 } from "../garden_map_legend";
 import { GardenMapLegendProps } from "../../interfaces";
 import { BooleanSetting } from "../../../../session_keys";
@@ -63,6 +64,7 @@ describe("<GardenMapLegend />", () => {
     expect(wrapper.html()).toContain("filter");
     expect(wrapper.html()).toContain("extras");
     expect(wrapper.html()).not.toContain("-100");
+    expect(wrapper.text().toLowerCase()).not.toContain("3d map");
   });
 
   it("renders with readings", () => {
@@ -80,10 +82,13 @@ describe("<GardenMapLegend />", () => {
 });
 
 describe("<ZoomControls />", () => {
+  const fakeProps = (): ZoomControlsProps => ({
+    zoom: jest.fn(),
+    getConfigValue: jest.fn(),
+  });
+
   const expectDisabledBtnCountToEqual = (expected: number) => {
-    const wrapper = shallow(<ZoomControls
-      zoom={jest.fn()}
-      getConfigValue={jest.fn()} />);
+    const wrapper = shallow(<ZoomControls {...fakeProps()} />);
     expect(wrapper.find(".disabled").length).toEqual(expected);
   };
 
@@ -109,6 +114,7 @@ describe("<ZoomControls />", () => {
 const fakeProps = (): SettingsSubMenuProps => ({
   dispatch: jest.fn(),
   getConfigValue: () => true,
+  firmwareConfig: fakeFirmwareConfig().body,
 });
 
 describe("<PointsSubMenu />", () => {

@@ -12,13 +12,12 @@ jest.mock("../../redux/store", () => ({
 import React from "react";
 import { mount, shallow } from "enzyme";
 import {
-  Highlight, HighlightProps, maybeHighlight, maybeOpenPanel, highlight,
-  goToFbosSettings,
+  Highlight, HighlightProps, maybeOpenPanel,
 } from "../maybe_highlight";
 import { Actions, DeviceSetting } from "../../constants";
 import { toggleControlPanel, bulkToggleControlPanel } from "../toggle_section";
-import { push } from "../../history";
 import { Path } from "../../internal_urls";
+import { mountWithContext } from "../../__test_support__/mount_with_context";
 
 describe("<Highlight />", () => {
   const fakeProps = (): HighlightProps => ({
@@ -28,11 +27,13 @@ describe("<Highlight />", () => {
   });
 
   it("fades highlight", () => {
+    location.search = "?highlight=motors";
+    jest.useFakeTimers();
     const p = fakeProps();
-    const wrapper = mount<Highlight>(<Highlight {...p} />);
-    wrapper.setState({ className: "highlight" });
-    wrapper.instance().componentDidMount();
-    expect(wrapper.state().className).toEqual("unhighlight");
+    const wrapper = mount(<Highlight {...p} />);
+    jest.runAllTimers();
+    wrapper.update();
+    expect(wrapper.find("div").first().hasClass("unhighlight")).toBeTruthy();
   });
 
   it("doesn't hide: no search term", () => {
@@ -105,26 +106,17 @@ describe("<Highlight />", () => {
 
   it("shows anchor link icon on hover", () => {
     const wrapper = shallow<Highlight>(<Highlight {...fakeProps()} />);
-    expect(wrapper.state().hovered).toEqual(false);
     expect(wrapper.find("i").last().hasClass("hovered")).toEqual(false);
     wrapper.simulate("mouseEnter");
-    expect(wrapper.state().hovered).toEqual(true);
-    expect(wrapper.find("i").last().hasClass("hovered")).toEqual(true);
-  });
-
-  it("hides anchor link icon on unhover", () => {
-    const wrapper = shallow<Highlight>(<Highlight {...fakeProps()} />);
-    wrapper.setState({ hovered: true });
     expect(wrapper.find("i").last().hasClass("hovered")).toEqual(true);
     wrapper.simulate("mouseLeave");
-    expect(wrapper.state().hovered).toEqual(false);
     expect(wrapper.find("i").last().hasClass("hovered")).toEqual(false);
   });
 
   it("adds anchor link to url bar", () => {
-    const wrapper = mount(<Highlight {...fakeProps()} />);
+    const wrapper = mountWithContext(<Highlight {...fakeProps()} />);
     wrapper.find("i").last().simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.settings("motors"));
+    expect(mockNavigate).toHaveBeenCalledWith(Path.settings("motors"));
   });
 
   it("doesn't show anchor for non-setting sections", () => {
@@ -144,44 +136,7 @@ describe("<Highlight />", () => {
   });
 });
 
-describe("maybeHighlight()", () => {
-  beforeEach(() => {
-    highlight.opened = false;
-    highlight.highlighted = false;
-  });
-
-  it("highlights only once", () => {
-    location.search = "?highlight=motors";
-    expect(maybeHighlight(DeviceSetting.motors)).toEqual("highlight");
-    expect(maybeHighlight(DeviceSetting.motors)).toEqual("");
-  });
-
-  it("doesn't highlight: different setting", () => {
-    location.search = "?highlight=name";
-    expect(maybeHighlight(DeviceSetting.motors)).toEqual("");
-  });
-
-  it("doesn't highlight: no matches", () => {
-    location.search = "?highlight=na";
-    expect(maybeHighlight(DeviceSetting.motors)).toEqual("");
-  });
-});
-
 describe("maybeOpenPanel()", () => {
-  beforeEach(() => {
-    highlight.opened = false;
-    highlight.highlighted = false;
-  });
-
-  it("opens panel only once", () => {
-    location.search = "?highlight=motors";
-    maybeOpenPanel()(jest.fn());
-    expect(toggleControlPanel).toHaveBeenCalledWith("motors");
-    jest.resetAllMocks();
-    maybeOpenPanel()(jest.fn());
-    expect(toggleControlPanel).not.toHaveBeenCalled();
-  });
-
   it("doesn't open panel: no search term", () => {
     location.search = "";
     maybeOpenPanel()(jest.fn());
@@ -215,13 +170,5 @@ describe("maybeOpenPanel()", () => {
     expect(dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_PHOTOS_PANEL_OPTION, payload: "detectionPP",
     });
-  });
-});
-
-describe("goToFbosSettings()", () => {
-  it("renders correct path", () => {
-    goToFbosSettings();
-    expect(push).toHaveBeenCalledWith(
-      Path.settings("farmbot_os"));
   });
 });

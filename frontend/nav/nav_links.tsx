@@ -4,12 +4,12 @@ import { Link } from "../link";
 import {
   Panel, showSensors, showFarmware, PANEL_SLUG, TAB_ICON, PANEL_TITLE,
   getPanelPath, getCurrentPanel,
+  setPanelOpen,
 } from "../farm_designer/panel_header";
 import { ExternalUrl } from "../external_urls";
 import { maybeBeacon } from "../help/tours";
 
 export const getLinks = (): Panel[] => [
-  Panel.Map,
   Panel.Plants,
   Panel.Weeds,
   Panel.Points,
@@ -29,20 +29,37 @@ export const getLinks = (): Panel[] => [
 export const NavLinks = (props: NavLinksProps) =>
   <div className={"links"}>
     <div className={"nav-links"}>
-      {getLinks().map(panel =>
-        <Link
+      <a id={"map"}
+        draggable={false}
+        className={getCurrentPanel(props.designer) === Panel.Map
+          ? "active"
+          : ""}
+        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+          e.preventDefault();
+          props.close();
+          props.dispatch(setPanelOpen(false));
+        }}>
+        <NavIconAndText panel={Panel.Map} alertCount={props.alertCount} />
+      </a>
+      {getLinks().map(panel => {
+        const isActive = getCurrentPanel(props.designer) === panel;
+        return <Link
           to={getPanelPath(panel)}
           className={[
-            getCurrentPanel() === panel ? "active" : "",
+            isActive ? "active" : "",
             maybeBeacon(PANEL_SLUG[panel], "soft", props.helpState),
           ].join(" ")}
           key={PANEL_SLUG[panel]}
           draggable={false}
-          onClick={props.close("mobileMenuOpen")}>
+          onClick={() => {
+            props.dispatch(setPanelOpen(!isActive));
+            props.close();
+          }}>
           <NavIconAndText panel={panel} alertCount={props.alertCount} />
-        </Link>)}
+        </Link>;
+      })}
       <a className={"shop-link"} key={"shop"}
-        draggable={false} onClick={props.close("mobileMenuOpen")}
+        draggable={false} onClick={props.close}
         href={ExternalUrl.Store.home} target={"_blank"} rel={"noreferrer"}>
         <NavIconAndText panel={Panel.Shop} customMiniIcon={
           <div className={"external-icon"}>

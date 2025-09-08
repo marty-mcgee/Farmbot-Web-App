@@ -1,55 +1,51 @@
 import React from "react";
-import { Col, Row } from "../../ui";
+import { Row } from "../../ui";
 import { DangerousDeleteProps, DeletionRequest } from "./interfaces";
-import { BlurablePassword } from "../../ui/blurable_password";
 import { t } from "../../i18next_wrapper";
+import { clone } from "lodash";
 
 /** Widget for permanently deleting large amounts of user data. */
-export class DangerousDeleteWidget extends
-  React.Component<DangerousDeleteProps, DeletionRequest> {
-  state: DeletionRequest = { password: "" };
+export const DangerousDeleteWidget = (props: DangerousDeleteProps) => {
+  const [password, setPassword] = React.useState("");
+  // eslint-disable-next-line no-null/no-null
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
-  componentWillUnmount() {
-    this.setState({ password: "" });
-  }
-
-  onClick = () =>
-    this.props.dispatch(this.props.onClick({ password: this.state.password }));
-
-  render() {
-    return <Row className={"zero-side-margins"}>
-      <label>
-        {t(this.props.title)}
-      </label>
+  return <div className="grid">
+    <label>
+      {t(props.title)}
+    </label>
+    <div className="settings-warning-banner">
       <p>
-        {t(this.props.warning)}
+        {t(props.warning)}
         <br /><br />
-        {t(this.props.confirmation)}
-        <br /><br />
+        {t(props.confirmation)}
       </p>
-      <form>
-        <Row>
-          <Col xs={12}>
-            <label>
-              {t("Enter Password")}
-            </label>
-          </Col>
-          <Col xs={8}>
-            <BlurablePassword
-              onCommit={e =>
-                this.setState({ password: e.currentTarget.value })} />
-          </Col>
-          <Col xs={4}>
-            <button
-              onClick={this.onClick}
-              className="red fb-button"
-              title={t(this.props.title)}
-              type="button">
-              {t(this.props.title)}
-            </button>
-          </Col>
-        </Row>
-      </form>
-    </Row>;
-  }
-}
+    </div>
+    <div className="grid">
+      <Row className="grid-exp-1">
+        <div className="grid half-gap">
+          <label htmlFor={"password"}>
+            {t("Enter Password")}
+          </label>
+          <input
+            ref={inputRef}
+            id={"password"}
+            type={"password"}
+            onBlur={e => setPassword(e.currentTarget.value)} />
+        </div>
+        <button
+          onClick={() => {
+            const payload: DeletionRequest = clone({ password });
+            setPassword("");
+            inputRef.current && (inputRef.current.value = "");
+            props.dispatch(props.onClick(payload));
+          }}
+          className="red fb-button"
+          title={t(props.title)}
+          type="button">
+          {t(props.title)}
+        </button>
+      </Row>
+    </div>
+  </div>;
+};

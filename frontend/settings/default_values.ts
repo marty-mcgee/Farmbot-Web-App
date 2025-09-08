@@ -67,7 +67,7 @@ const DEFAULT_WEB_APP_CONFIG_VALUES: Record<Key, Value> = {
   show_pins: false,
   disable_emergency_unlock_confirmation: true,
   map_size_x: 2900,
-  map_size_y: 1400,
+  map_size_y: 1230,
   expand_step_options: false,
   hide_sensors: false,
   confirm_plant_deletion: true,
@@ -87,6 +87,8 @@ const DEFAULT_WEB_APP_CONFIG_VALUES: Record<Key, Value> = {
   view_celery_script: false,
   highlight_modified_settings: true,
   show_advanced_settings: false,
+  three_d_garden: false,
+  dark_mode: true,
 };
 
 const DEFAULT_EXPRESS_WEB_APP_CONFIG_VALUES =
@@ -105,6 +107,7 @@ const getDefaultConfigValue =
         case "farmduino_k15":
         case "farmduino_k16":
         case "farmduino_k17":
+        case "farmduino_k18":
           return DEFAULT_GENESIS_WEB_APP_CONFIG_VALUES[key];
         case "express_k10":
         case "express_k11":

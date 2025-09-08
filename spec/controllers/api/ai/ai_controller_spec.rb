@@ -53,7 +53,7 @@ describe Api::AisController do
     expect(response.body).to eq("red")
   end
 
-  it "handles errors" do
+  it "handles timeout" do
     sign_in user
     payload = {
       prompt: "write code",
@@ -64,6 +64,23 @@ describe Api::AisController do
       body: "---\n---# section\ncontent```lua\n```")
 
     stub_request(:post, "https://api.openai.com/v1/chat/completions").to_timeout
+
+    post :create, body: payload.to_json
+    expect(response.status).to eq(422)
+  end
+
+  it "handles error" do
+    sign_in user
+    payload = {
+      prompt: "write code",
+      context_key: "lua",
+      sequence_id: nil,
+    }
+    stub_request(:get, URL_PATTERN).to_return(
+      body: "{---\n---# section\ncontent```lua\n```}")
+
+    stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
+      body: "{\"error\":\"Invalid request\"}")
 
     post :create, body: payload.to_json
     expect(response.status).to eq(422)
@@ -114,22 +131,20 @@ describe Api::AisController do
 
     stub_request(:post, "https://api.openai.com/v1/chat/completions").to_return(
       body: chunk("title"))
+    violation = ThrottlePolicy::Violation.new(Time.now, "too many")
+    allow(Api::AisController::THROTTLE_POLICY)
+      .to receive(:violation_for)
+      .and_return(nil, violation)
+    allow(Api::AisController::THROTTLE_POLICY)
+      .to receive(:track)
 
     post :create, body: payload.to_json
     expect(response.status).to eq(200)
     expect(response.body).to eq("title")
 
-    statuses = []
-    bodies = []
-
-    (0..30).map do |_|
-      post :create, body: payload.to_json
-      statuses.push(response.status)
-      bodies.push(response.body)
-    end
-
-    if statuses.last() != 403 then puts statuses.join(" ") end
-    expect(statuses).to include(403)
-    expect(bodies).to include({error: "Too many requests. Try again later."}.to_json)
+    post :create, body: payload.to_json
+    expect(response.status).to eq(403)
+    expect(response.body)
+      .to eq({ error: "Too many requests. Try again later." }.to_json)
   end
 end

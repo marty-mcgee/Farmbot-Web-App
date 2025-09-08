@@ -5,8 +5,8 @@ import {
 } from "../index";
 import { fakeHelpState } from "../../../__test_support__/fake_designer_state";
 import { Actions } from "../../../constants";
-import { push } from "../../../history";
 import { TourStepContainerProps } from "../interfaces";
+import { mountWithContext } from "../../../__test_support__/mount_with_context";
 
 describe("<TourStepContainer />", () => {
   const fakeProps = (): TourStepContainerProps => ({
@@ -30,7 +30,7 @@ describe("<TourStepContainer />", () => {
 
   it("renders first tour step", () => {
     jest.useFakeTimers();
-    location.search = "?tour=gettingStarted?tourStep=intro";
+    location.search = "?tour=gettingStarted&tourStep=intro";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "intro";
@@ -43,7 +43,7 @@ describe("<TourStepContainer />", () => {
     Object.defineProperty(document, "querySelector", {
       value: () => ({ scrollHeight: 1 }), configurable: true,
     });
-    location.search = "?tour=gettingStarted?tourStep=plants";
+    location.search = "?tour=gettingStarted&tourStep=plants";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "plants";
@@ -61,7 +61,7 @@ describe("<TourStepContainer />", () => {
     Object.defineProperty(document, "querySelector", {
       value: () => element, configurable: true,
     });
-    location.search = "?tour=gettingStarted?tourStep=connectivityPopup";
+    location.search = "?tour=gettingStarted&tourStep=connectivityPopup";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "connectivityPopup";
@@ -78,7 +78,7 @@ describe("<TourStepContainer />", () => {
     Object.defineProperty(document, "querySelector", {
       value: () => element, configurable: true,
     });
-    location.search = "?tour=garden?tourStep=cropSearch";
+    location.search = "?tour=garden&tourStep=cropSearch";
     const p = fakeProps();
     p.helpState.currentTour = "garden";
     p.helpState.currentTourStep = "cropSearch";
@@ -90,7 +90,7 @@ describe("<TourStepContainer />", () => {
 
   it("handles unknown tour", () => {
     jest.useFakeTimers();
-    location.search = "?tour=unknown?tourStep=plants";
+    location.search = "?tour=unknown&tourStep=plants";
     const p = fakeProps();
     p.helpState.currentTour = "unknown";
     p.helpState.currentTourStep = "plants";
@@ -101,7 +101,7 @@ describe("<TourStepContainer />", () => {
   });
 
   it("handles unknown step", () => {
-    location.search = "?tour=unknown?tourStep=unknown";
+    location.search = "?tour=unknown&tourStep=unknown";
     const p = fakeProps();
     p.helpState.currentTour = "unknown";
     p.helpState.currentTourStep = undefined;
@@ -111,7 +111,7 @@ describe("<TourStepContainer />", () => {
   });
 
   it("updates tour state from url", () => {
-    location.search = "?tour=gettingStarted?tourStep=intro";
+    location.search = "?tour=gettingStarted&tourStep=intro";
     const p = fakeProps();
     p.helpState.currentTour = undefined;
     p.helpState.currentTourStep = undefined;
@@ -125,12 +125,13 @@ describe("<TourStepContainer />", () => {
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "intro";
-    mount(<TourStepContainer {...p} />);
-    expect(push).toHaveBeenCalledWith("?tour=gettingStarted?tourStep=intro");
+    mountWithContext(<TourStepContainer {...p} />);
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "?tour=gettingStarted&tourStep=intro");
   });
 
   it("dispatches", () => {
-    location.search = "?tour=monitoring?tourStep=logs";
+    location.search = "?tour=monitoring&tourStep=logs";
     const p = fakeProps();
     p.helpState.currentTour = "monitoring";
     p.helpState.currentTourStep = undefined;
@@ -141,7 +142,7 @@ describe("<TourStepContainer />", () => {
   });
 
   it("proceeds to next step", () => {
-    location.search = "?tour=gettingStarted?tourStep=intro";
+    location.search = "?tour=gettingStarted&tourStep=intro";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "intro";
@@ -151,7 +152,7 @@ describe("<TourStepContainer />", () => {
   });
 
   it("returns to previous step", () => {
-    location.search = "?tour=gettingStarted?tourStep=plants";
+    location.search = "?tour=gettingStarted&tourStep=plants";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "plants";
@@ -161,7 +162,7 @@ describe("<TourStepContainer />", () => {
   });
 
   it("exits tour", () => {
-    location.search = "?tour=gettingStarted?tourStep=end";
+    location.search = "?tour=gettingStarted&tourStep=end";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "end";
@@ -178,7 +179,7 @@ describe("<TourStepContainer />", () => {
     Object.defineProperty(document, "querySelector", {
       value: () => element, configurable: true,
     });
-    location.search = "?tour=gettingStarted?tourStep=end";
+    location.search = "?tour=gettingStarted&tourStep=end";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "end";
@@ -193,7 +194,7 @@ describe("<TourStepContainer />", () => {
     Object.defineProperty(document, "querySelector", {
       value: () => undefined, configurable: true,
     });
-    location.search = "?tour=gettingStarted?tourStep=end";
+    location.search = "?tour=gettingStarted&tourStep=end";
     const p = fakeProps();
     p.helpState.currentTour = "gettingStarted";
     p.helpState.currentTourStep = "end";
@@ -205,7 +206,7 @@ describe("<TourStepContainer />", () => {
 
 describe("tourStepBeacon()", () => {
   it("returns className", () => {
-    location.search = "?tour=gettingStarted?tourStep=plants";
+    location.search = "?tour=gettingStarted&tourStep=plants";
     const state = fakeHelpState();
     state.currentTour = "gettingStarted";
     state.currentTourStep = "plants";
@@ -223,17 +224,17 @@ describe("tourStepBeacon()", () => {
 
 describe("getCurrentTourStepBeacons()", () => {
   it("returns current step beacon", () => {
-    location.search = "?tour=gettingStarted?tourStep=plants";
+    location.search = "?tour=gettingStarted&tourStep=plants";
     expect(getCurrentTourStepBeacons()).toEqual(["plants", "plant-inventory"]);
   });
 
   it("doesn't return current step beacon", () => {
-    location.search = "?tour=gettingStarted?tourStep=nope";
+    location.search = "?tour=gettingStarted&tourStep=nope";
     expect(getCurrentTourStepBeacons()).toEqual(undefined);
   });
 
   it("handles unknown tour", () => {
-    location.search = "?tour=unknown?tourStep=nope";
+    location.search = "?tour=unknown&tourStep=nope";
     expect(getCurrentTourStepBeacons()).toEqual(undefined);
   });
 });

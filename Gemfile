@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-ruby "~> 3.1.6"
+ruby "~> 3.4.5"
 
 gem "rails", "~> 6"
 gem "active_model_serializers"
@@ -11,6 +11,7 @@ gem "discard"
 gem "google-cloud-storage", "~> 1.11"
 gem "jwt"
 gem "kaminari"
+gem "logger"
 gem "mutations"
 gem "pg"
 gem "rabbitmq_http_api_client"
@@ -23,10 +24,15 @@ gem "rollbar"
 gem "scenic"
 gem "secure_headers"
 gem "tzinfo" # For validation of user selected timezone names
+gem "tzinfo-data" # For validation of user selected timezone names
 gem "valid_url"
 gem "thwait"
 gem "lograge" # Used to filter repetitive RabbitMQ logs.
-gem "scout_apm"
+gem "drb"
+gem "benchmark"
+gem "ostruct"
+gem "bigdecimal"
+gem "mutex_m"
 
 group :development, :test do
   gem "climate_control"
@@ -41,7 +47,6 @@ group :development, :test do
   gem "rspec_junit_formatter"
   gem "simplecov"
   gem "simplecov-cobertura"
-  gem "smarf_doc", git: "https://github.com/RickCarlino/smarf_doc.git"
   gem "webmock"
 end
 

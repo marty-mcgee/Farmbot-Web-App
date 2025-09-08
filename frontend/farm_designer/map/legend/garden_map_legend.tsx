@@ -23,22 +23,30 @@ import { getModifiedClassName } from "../../../settings/default_values";
 import { Position } from "@blueprintjs/core";
 import { MapSizeInputs } from "../../map_size_setting";
 import { OriginSelector } from "../../../settings/farm_designer_settings";
+import { McuParams } from "farmbot";
 
-export const ZoomControls = ({ zoom, getConfigValue }: {
-  zoom: (value: number) => () => void,
-  getConfigValue: GetWebAppConfigValue
-}) => {
+export interface ZoomControlsProps {
+  zoom(value: number): () => void;
+  getConfigValue: GetWebAppConfigValue;
+}
+
+export const ZoomControls = (props: ZoomControlsProps) => {
+  const { zoom, getConfigValue } = props;
   const plusBtnClass = atMaxZoom(getConfigValue) ? "disabled" : "";
   const minusBtnClass = atMinZoom(getConfigValue) ? "disabled" : "";
   return <div className="zoom-buttons">
     <button
-      className={"fb-button gray zoom " + plusBtnClass}
+      className={[
+        "fb-button gray zoom", plusBtnClass,
+      ].join(" ")}
       title={t("zoom in")}
       onClick={zoom(1)}>
       <i className="fa fa-2x fa-plus" />
     </button>
     <button
-      className={"fb-button gray zoom zoom-out " + minusBtnClass}
+      className={[
+        "fb-button gray zoom zoom-out", minusBtnClass,
+      ].join(" ")}
       title={t("zoom out")}
       onClick={zoom(-1)}>
       <i className="fa fa-2x fa-minus" />
@@ -61,10 +69,13 @@ const NonLayerToggle = (props: NonLayerToggleProps) => {
   const { setting, getConfigValue } = props;
   const value = !!(setting ? getConfigValue(setting) : undefined);
   return <div
-    className={`non-layer-config-toggle ${props.disabled ? "disabled" : ""}`}>
+    className={[
+      "row grid-exp-1 align-baseline",
+    ].join(" ")}>
     <label>{t(props.label)}</label>
     {props.helpText && <Help text={props.helpText} />}
     {setting && <ToggleButton
+      disabled={props.disabled}
       className={getModifiedClassName(setting)}
       title={t(props.label)}
       toggleAction={() =>
@@ -77,6 +88,7 @@ const NonLayerToggle = (props: NonLayerToggleProps) => {
 export interface SettingsSubMenuProps {
   dispatch: Function;
   getConfigValue: GetWebAppConfigValue;
+  firmwareConfig: McuParams;
 }
 
 export const PointsSubMenu = (props: SettingsSubMenuProps) =>
@@ -87,7 +99,7 @@ export const PointsSubMenu = (props: SettingsSubMenuProps) =>
   </div>;
 
 export const PlantsSubMenu = (props: SettingsSubMenuProps) =>
-  <div className="map-plants-submenu">
+  <div className="grid">
     <NonLayerToggle {...props}
       setting={BooleanSetting.disable_animations}
       label={DeviceSetting.animations}
@@ -100,7 +112,7 @@ export const PlantsSubMenu = (props: SettingsSubMenuProps) =>
   </div>;
 
 export const FarmbotSubMenu = (props: SettingsSubMenuProps) =>
-  <div className="farmbot-layer-submenu">
+  <div className="grid">
     <NonLayerToggle {...props}
       setting={BooleanSetting.display_trail}
       label={DeviceSetting.trail}
@@ -112,9 +124,13 @@ export const FarmbotSubMenu = (props: SettingsSubMenuProps) =>
       disabled={!props.getConfigValue(BooleanSetting.display_trail)} />
   </div>;
 
-const LayerToggles = (props: GardenMapLegendProps) => {
-  const { toggle, getConfigValue, dispatch } = props;
-  const subMenuProps = { dispatch, getConfigValue };
+interface LayerTogglesProps extends GardenMapLegendProps { }
+
+const LayerToggles = (props: LayerTogglesProps) => {
+  const { toggle, getConfigValue, dispatch, firmwareConfig } = props;
+  const subMenuProps = { dispatch, getConfigValue, firmwareConfig };
+  const only2DClass =
+    getConfigValue(BooleanSetting.three_d_garden) ? "disabled" : "";
   return <div className="toggle-buttons">
     <LayerToggle
       settingName={BooleanSetting.show_plants}
@@ -129,6 +145,7 @@ const LayerToggles = (props: GardenMapLegendProps) => {
       label={DeviceSetting.showPoints}
       onClick={toggle(BooleanSetting.show_points)} />
     <LayerToggle
+      className={only2DClass}
       settingName={BooleanSetting.show_soil_interpolation_map}
       value={props.showSoilInterpolationMap}
       label={DeviceSetting.showSoil}
@@ -141,6 +158,7 @@ const LayerToggles = (props: GardenMapLegendProps) => {
       submenuTitle={t("extras")}
       popover={<PointsSubMenu {...subMenuProps} />} />
     <LayerToggle
+      className={only2DClass}
       settingName={BooleanSetting.show_spread}
       value={props.showSpread}
       label={DeviceSetting.showSpread}
@@ -153,12 +171,13 @@ const LayerToggles = (props: GardenMapLegendProps) => {
       submenuTitle={t("extras")}
       popover={<FarmbotSubMenu {...subMenuProps} />} />
     <LayerToggle
+      className={only2DClass}
       settingName={BooleanSetting.show_images}
       value={props.showImages}
       label={DeviceSetting.showPhotos}
       onClick={toggle(BooleanSetting.show_images)}
       submenuTitle={t("filter")}
-      popover={<div className={"image-options"}>
+      popover={<div className={"grid"}>
         <ImageFilterMenu {...subMenuProps}
           timeSettings={props.timeSettings}
           imageAgeInfo={props.imageAgeInfo} />
@@ -180,18 +199,21 @@ const LayerToggles = (props: GardenMapLegendProps) => {
           helpText={Content.SHOW_UNCROPPED_CAMERA_VIEW_AREA} />
       </div>} />
     <LayerToggle
+      className={only2DClass}
       settingName={BooleanSetting.show_zones}
       value={props.showZones}
       label={DeviceSetting.showAreas}
       onClick={toggle(BooleanSetting.show_zones)} />
     {props.hasSensorReadings &&
       <LayerToggle
+        className={only2DClass}
         settingName={BooleanSetting.show_sensor_readings}
         value={props.showSensorReadings}
         label={DeviceSetting.showReadings}
         onClick={toggle(BooleanSetting.show_sensor_readings)} />}
     {props.hasSensorReadings &&
       <LayerToggle
+        className={only2DClass}
         settingName={BooleanSetting.show_moisture_interpolation_map}
         value={props.showMoistureInterpolationMap}
         label={DeviceSetting.showMoisture}
@@ -200,15 +222,14 @@ const LayerToggles = (props: GardenMapLegendProps) => {
 };
 
 export const MapSettingsContent = (props: SettingsSubMenuProps) =>
-  <div className="map-settings-submenu">
+  <div className="grid">
     <NonLayerToggle {...props}
       setting={BooleanSetting.dynamic_map}
       label={DeviceSetting.dynamicMap}
       helpText={Content.DYNAMIC_MAP_SIZE} />
     <NonLayerToggle {...props}
       label={DeviceSetting.mapSize}
-      helpText={Content.MAP_SIZE}
-      disabled={!!props.getConfigValue(BooleanSetting.dynamic_map)}>
+      helpText={Content.MAP_SIZE}>
       <MapSizeInputs {...props} />
     </NonLayerToggle>
     <NonLayerToggle {...props}
@@ -251,9 +272,12 @@ export function GardenMapLegend(props: GardenMapLegendProps) {
       <div className="menu-content">
         <ZoomControls zoom={props.zoom} getConfigValue={getConfigValue} />
         <LayerToggles {...props} />
-        <MoveModeLink />
-        <MapSettings getConfigValue={getConfigValue} dispatch={props.dispatch} />
-        <SelectModeLink />
+        <MoveModeLink dispatch={props.dispatch} />
+        <MapSettings
+          getConfigValue={getConfigValue}
+          dispatch={props.dispatch}
+          firmwareConfig={props.firmwareConfig} />
+        <SelectModeLink dispatch={props.dispatch} />
         <BugsControls />
         <ZDisplayToggle open={zDisplayOpen} setOpen={setZDisplayOpen} />
       </div>

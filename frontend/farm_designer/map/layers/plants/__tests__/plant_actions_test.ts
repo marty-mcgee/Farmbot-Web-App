@@ -4,20 +4,14 @@ jest.mock("../../../../../api/crud", () => ({
   initSave: jest.fn(),
 }));
 
-const mockSpreads: { [x: string]: number } = { mint: 100 };
-jest.mock("../../../../../open_farm/cached_crop", () => ({
-  cachedCrop: jest.fn(p => Promise.resolve({ spread: mockSpreads[p] })),
-}));
-
 jest.mock("../../../actions", () => ({
   movePoints: jest.fn(),
   movePointTo: jest.fn(),
 }));
 
-import { Path } from "../../../../../internal_urls";
-let mockPath = Path.mock(Path.cropSearch("mint"));
-jest.mock("../../../../../history", () => ({
-  getPathArray: () => mockPath.split("/"),
+import { FAKE_CROPS } from "../../../../../__test_support__/fake_crops";
+jest.mock("../../../../../crops/constants", () => ({
+  CROPS: FAKE_CROPS,
 }));
 
 import {
@@ -33,19 +27,16 @@ import {
   fakeCurve, fakePlant,
 } from "../../../../../__test_support__/fake_state/resources";
 import { edit, save, initSave } from "../../../../../api/crud";
-import { cachedCrop } from "../../../../../open_farm/cached_crop";
 import {
   fakeMapTransformProps,
 } from "../../../../../__test_support__/map_transform_props";
 import { movePointTo, movePoints } from "../../../actions";
-import {
-  fakeCropLiveSearchResult,
-} from "../../../../../__test_support__/fake_crop_search_result";
 import { error } from "../../../../../toast/toast";
 import { BotOriginQuadrant } from "../../../../interfaces";
 import {
   fakeDesignerState,
 } from "../../../../../__test_support__/fake_designer_state";
+import { Path } from "../../../../../internal_urls";
 
 describe("newPlantKindAndBody()", () => {
   it("returns new PlantTemplate", () => {
@@ -101,16 +92,18 @@ describe("createPlant()", () => {
 });
 
 describe("dropPlant()", () => {
+  beforeEach(() => {
+    location.pathname = Path.mock(Path.cropSearch("mint"));
+  });
+
   const fakeProps = (): DropPlantProps => {
     const designer = fakeDesignerState();
-    designer.cropSearchResults = [fakeCropLiveSearchResult()];
     return {
       designer,
       gardenCoords: { x: 10, y: 20 },
       gridSize: { x: 1000, y: 2000 },
       dispatch: jest.fn(),
       getConfigValue: jest.fn(),
-      plants: [],
       curves: [],
     };
   };
@@ -131,34 +124,19 @@ describe("dropPlant()", () => {
 
   it("doesn't drop plant", () => {
     console.log = jest.fn();
-    mockPath = Path.mock(Path.cropSearch()) + "/";
+    location.pathname = Path.mock(Path.cropSearch()) + "/";
     dropPlant(fakeProps());
     expect(initSave).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("Missing slug.");
   });
 
-  it("doesn't drop plant: no crop", () => {
-    console.log = jest.fn();
-    mockPath = Path.mock(Path.cropSearch("mint"));
-    const p = fakeProps();
-    p.designer.companionIndex = 1;
-    p.designer.cropSearchResults = [];
-    dropPlant(p);
-    expect(initSave).not.toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledWith("Missing crop.");
-  });
-
   it("finds curves", () => {
     const p = fakeProps();
-    const result = fakeCropLiveSearchResult();
-    result.crop.slug = "mint";
-    p.designer.cropSearchResults = [result];
     const plant = fakePlant();
     plant.body.openfarm_slug = "mint";
     plant.body.water_curve_id = 1;
     plant.body.spread_curve_id = 2;
     plant.body.height_curve_id = 3;
-    p.plants = [plant];
     const wCurve = fakeCurve();
     wCurve.body.id = 1;
     wCurve.body.type = "water";
@@ -185,10 +163,6 @@ describe("dropPlant()", () => {
 
   it("doesn't find curves", () => {
     const p = fakeProps();
-    const result = fakeCropLiveSearchResult();
-    result.crop.slug = "mint";
-    p.designer.cropSearchResults = [result];
-    p.plants = [];
     p.curves = [];
     dropPlant(p);
     expect(initSave).toHaveBeenCalledWith("Point",
@@ -202,7 +176,7 @@ describe("dropPlant()", () => {
   });
 
   it("throws error", () => {
-    mockPath = Path.mock(Path.cropSearch("mint"));
+    location.pathname = Path.mock(Path.cropSearch("mint"));
     const p = fakeProps();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     p.gardenCoords = undefined as any;
@@ -360,7 +334,6 @@ describe("beginPlantDrag()", () => {
 
   it("starts drag: plant", () => {
     beginPlantDrag(fakeProps());
-    expect(cachedCrop).toHaveBeenCalled();
   });
 
   it("starts drag: not plant", () => {
@@ -368,7 +341,6 @@ describe("beginPlantDrag()", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     p.plant = undefined as any;
     beginPlantDrag(p);
-    expect(cachedCrop).not.toHaveBeenCalled();
   });
 });
 

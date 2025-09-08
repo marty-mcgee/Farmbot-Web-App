@@ -1,11 +1,11 @@
-import { isUndefined, last } from "lodash";
-import { getPathArray } from "./history";
+import { isUndefined, kebabCase, last } from "lodash";
 import { t } from "./i18next_wrapper";
 
 export namespace Path {
   const appended = (path: string | number | undefined) => path ? "/" + path : "";
   const highlight = (path: string | undefined) => path ? "?highlight=" + path : "";
   const page = (path: string | undefined) => path ? "?page=" + path : "";
+  export const getPathArray = () => window.location.pathname.split("/");
 
   export const startsWith = (path: string) =>
     getPathArray().join("/").startsWith(withApp(path));
@@ -15,7 +15,6 @@ export namespace Path {
   export const lastChunkEquals = (chunk: string) => chunk == getLastChunk();
   export const lastChunkIsNum = (): boolean => !isNaN(parseInt(getLastChunk()));
 
-  export const route = (path: string) => path.replace("/app", "");
   export const withApp = (path: string) =>
     path.startsWith("/app") ? path : "/app" + path;
   export const mock = withApp;
@@ -86,13 +85,14 @@ export namespace Path {
       }
       const { x, y, z } = props;
       return isUndefined(z)
-        ? Path.designer(`location?x=${x}?y=${y}`)
-        : Path.designer(`location?x=${x}?y=${y}?z=${z}`);
+        ? Path.designer(`location?x=${x}&y=${y}`)
+        : Path.designer(`location?x=${x}&y=${y}&z=${z}`);
     };
 
   export const idIndex = (path: string) => path.split("/").length + 0;
   export const getSlug = (path: string): string =>
     getPathArray()[Path.idIndex(path)] || "";
+  export const getCropSlug = () => kebabCase(Path.getSlug(Path.cropSearch()));
 }
 
 export namespace FilePath {
@@ -107,6 +107,7 @@ export namespace FilePath {
   export const emptyState = (bug: string) => `${images("empty_state")}/${bug}.png`;
   export const DEFAULT_ICON = image("generic-plant");
   export const DEFAULT_WEED_ICON = image("generic-weed");
+  export const THREE_D_GARDEN_LOADING = "/promo_loading_image.avif";
 }
 
 export enum Icon {

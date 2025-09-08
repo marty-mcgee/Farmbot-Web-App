@@ -2,6 +2,7 @@ require_relative "../app/models/transport.rb"
 require File.expand_path("../boot", __FILE__)
 require_relative "../app/lib/celery_script/cs_heap"
 require "rails/all"
+require_relative "./config_helpers/active_storage"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -12,8 +13,6 @@ module FarmBot
     Delayed::Worker.max_attempts = 4
     REDIS_ENV_KEY = ENV.fetch("WHERE_IS_REDIS_URL", "REDIS_URL")
     REDIS_URL = ENV.fetch(REDIS_ENV_KEY, "redis://redis:6379/0")
-    gcs_enabled =
-      %w[ GOOGLE_CLOUD_KEYFILE_JSON GCS_PROJECT GCS_BUCKET ].all? { |s| ENV.key? s }
     config.lograge.enabled = true
     config.lograge.ignore_actions = [
       "Api::RmqUtilsController#user_action",
@@ -22,8 +21,7 @@ module FarmBot
       "Api::RmqUtilsController#topic_action",
     ]
     config.load_defaults 6.0
-    config.active_storage.service = gcs_enabled ?
-      :google : :local
+    config.active_storage.service = ConfigHelpers::ActiveStorage.service
     config.cache_store = :redis_cache_store, { url: REDIS_URL, ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE } }
     config.middleware.use Rack::Attack
     config.active_record.schema_format = :sql
@@ -77,7 +75,6 @@ module FarmBot
         ENV["MQTT_HOST"],
         "api.github.com",
         "raw.githubusercontent.com",
-        "openfarm.cc",
         "api.rollbar.com",
         PARCELJS_URL,
         ENV["FORCE_SSL"] ? "wss:" : "ws:",
@@ -86,14 +83,13 @@ module FarmBot
         "browser-http-intake.logs.datadoghq.com",
         "#{ENV.fetch("API_HOST")}:#{API_PORT}",
         "#{ENV.fetch("API_HOST")}:3808",
+        "blob:", # 3D
       ]
       config.csp = {
         default_src: %w(https: 'self'),
         base_uri: %w('self'),
-        block_all_mixed_content: false, # :( Some webcam feeds use http://
         connect_src: connect_src,
         font_src: %w(
-          maxcdn.bootstrapcdn.com
           fonts.gstatic.com
           fonts.googleapis.com
           data:
@@ -102,7 +98,7 @@ module FarmBot
         ),
         form_action: %w('self'),
         frame_src: %w(*),       # We need "*" to support webcam users.
-        frame_ancestors: %w('none'),
+        frame_ancestors: %w('self' https://farm.bot https://*.shopify.com https://*.shopifypreview.com),
         img_src: %w(* data:),   # We need "*" to support webcam users.
         manifest_src: %w('self'),
         media_src: %w(),
@@ -114,6 +110,7 @@ module FarmBot
           allow-modals
           allow-popups
           allow-downloads
+          allow-top-navigation
         ),
         plugin_types: %w(),
         script_src: [
@@ -129,7 +126,6 @@ module FarmBot
           "blob:", # 3D
         ],
         style_src: %w(
-          maxcdn.bootstrapcdn.com
           fonts.gstatic.com
           fonts.googleapis.com
           cdnjs.cloudflare.com

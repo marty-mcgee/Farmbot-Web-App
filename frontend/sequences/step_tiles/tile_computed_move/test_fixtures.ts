@@ -15,6 +15,8 @@ export const fakeNumericMoveStepState: ComputedMoveState = ({
   variance: { x: 7, y: 8, z: 9 },
   speed: { x: 10, y: 10, z: 10 },
   safeZ: true,
+  axisGrouping: undefined,
+  axisRoute: undefined,
 });
 
 export const fakeNumericMoveStepCeleryScript: Move = {
@@ -144,6 +146,8 @@ export const fakeLuaMoveStepState: ComputedMoveState = ({
   variance: { x: 7, y: 8, z: 9 },
   speed: { x: "10", y: "10", z: "10" },
   safeZ: true,
+  axisGrouping: undefined,
+  axisRoute: undefined,
 });
 
 export const fakeLuaMoveStepCeleryScript: Move = {

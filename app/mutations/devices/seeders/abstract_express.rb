@@ -30,8 +30,8 @@ module Devices
       def tool_slots_slot_1
         add_tool_slot(name: ToolNames::SEED_TROUGH_1,
                       x: 0,
-                      y: 25,
-                      z: -100,
+                      y: TROUGH_Y,
+                      z: TROUGH_Z,
                       tool: tools_seed_trough_1,
                       pullout_direction: ToolSlot::NONE,
                       gantry_mounted: true)
@@ -40,8 +40,8 @@ module Devices
       def tool_slots_slot_2
         add_tool_slot(name: ToolNames::SEED_TROUGH_2,
                       x: 0,
-                      y: 50,
-                      z: -100,
+                      y: TROUGH_Y + TROUGH_SPACING,
+                      z: TROUGH_Z,
                       tool: tools_seed_trough_2,
                       pullout_direction: ToolSlot::NONE,
                       gantry_mounted: true)
@@ -75,6 +75,8 @@ module Devices
       def sequences_dismount_tool; end
       def sequences_mow_all_weeds; end
       def sequences_pick_from_seed_tray; end
+      def sequences_pick_from_seed_trough; end
+      def sequences_pick_from_seed_bin; end
 
       def sequences_pick_up_seed
         s = SequenceSeeds::PICK_UP_SEED_EXPRESS.deep_dup
@@ -109,11 +111,17 @@ module Devices
       end
 
       def settings_default_map_size_y
-        device.web_app_config.update!(map_size_y: 1_200)
+        device.web_app_config.update!(map_size_y: 930)
       end
 
       def settings_hide_sensors
         device.web_app_config.update!(hide_sensors: true)
+      end
+
+      def settings_three_d
+        FarmwareEnvs::Create.run(
+          {key: "3D_beamLength", value: "1200"},
+          device: device)
       end
 
       private

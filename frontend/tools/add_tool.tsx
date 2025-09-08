@@ -9,7 +9,6 @@ import { SaveBtn } from "../ui";
 import { SpecialStatus } from "farmbot";
 import { initSave, destroy, init, save } from "../api/crud";
 import { Panel } from "../farm_designer/panel_header";
-import { push } from "../history";
 import { selectAllTools } from "../resources/selectors";
 import { betterCompact } from "../util";
 import {
@@ -26,7 +25,8 @@ import { Path } from "../internal_urls";
 import {
   reduceToolName, ToolName,
 } from "../farm_designer/map/tool_graphics/all_tools";
-import { WaterFlowRateInput } from "./edit_tool";
+import { TipZOffsetInput, WaterFlowRateInput } from "./edit_tool";
+import { NavigationContext } from "../routes_helpers";
 
 export const mapStateToProps = (props: Everything): AddToolProps => ({
   dispatch: props.dispatch,
@@ -38,7 +38,13 @@ export const mapStateToProps = (props: Everything): AddToolProps => ({
 });
 
 export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
-  state: AddToolState = { toolName: "", toAdd: [], uuid: undefined, flowRate: 0 };
+  state: AddToolState = {
+    toolName: "",
+    toAdd: [],
+    uuid: undefined,
+    flowRate: 0,
+    tipZOffset: 80,
+  };
 
   filterExisting = (n: string) => !this.props.existingToolNames.includes(n);
 
@@ -54,12 +60,19 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
 
   newTool = (name: string) => this.props.dispatch(initSave("Tool", { name }));
 
-  back = () => push(Path.tools());
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
+
+  back = () => {
+    this.navigate(Path.tools());
+  };
 
   save = () => {
     const initTool = init("Tool", {
       name: this.state.toolName,
       flow_rate_ml_per_s: this.state.flowRate,
+      seeder_tip_z_offset: this.state.tipZOffset,
     });
     this.props.dispatch(initTool);
     const { uuid } = initTool.payload;
@@ -104,6 +117,7 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
         ];
       case "farmduino_k16":
       case "farmduino_k17":
+      case "farmduino_k18":
         return [
           ...BASE_TOOLS,
           t("Rotary Tool"),
@@ -151,7 +165,7 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
         title={add.length > 0 ? t("Add selected") : t("None to add")}
         onClick={() => {
           add.map(n => this.newTool(n));
-          push(Path.tools());
+          this.navigate(Path.tools());
         }}>
         <i className="fa fa-plus" />
         {t("selected")}
@@ -160,6 +174,7 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
   };
 
   changeFlowRate = (flowRate: number) => this.setState({ flowRate });
+  changeTipZOffset = (tipZOffset: number) => this.setState({ tipZOffset });
 
   render() {
     const { toolName, uuid } = this.state;
@@ -179,21 +194,26 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
         </div>
       </DesignerPanelHeader>
       <DesignerPanelContent panelName={panelName}>
-        <div className="add-new-tool">
+        <div className="add-new-tool grid">
           <ToolSVG toolName={this.state.toolName} profile={true} />
           <CustomToolGraphicsInput
             toolName={this.state.toolName}
             dispatch={this.props.dispatch}
             saveFarmwareEnv={this.props.saveFarmwareEnv}
             env={this.props.env} />
-          <label>{t("Name")}</label>
-          <input defaultValue={this.state.toolName}
-            name="toolName"
-            onChange={e =>
-              this.setState({ toolName: e.currentTarget.value })} />
+          <div className="row grid-exp-2">
+            <label>{t("Name")}</label>
+            <input defaultValue={this.state.toolName}
+              name="toolName"
+              onChange={e =>
+                this.setState({ toolName: e.currentTarget.value })} />
+          </div>
           {reduceToolName(toolName) == ToolName.wateringNozzle &&
             <WaterFlowRateInput value={this.state.flowRate}
               onChange={this.changeFlowRate} />}
+          {reduceToolName(toolName) == ToolName.seeder &&
+            <TipZOffsetInput value={this.state.tipZOffset}
+              onChange={this.changeTipZOffset} />}
           <p className="name-error">
             {alreadyAdded ? t("Already added.") : ""}
           </p>
@@ -205,3 +225,5 @@ export class RawAddTool extends React.Component<AddToolProps, AddToolState> {
 }
 
 export const AddTool = connect(mapStateToProps)(RawAddTool);
+// eslint-disable-next-line import/no-default-export
+export default AddTool;

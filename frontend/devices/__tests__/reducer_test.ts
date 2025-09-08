@@ -164,4 +164,88 @@ describe("botReducer", () => {
     const r = botReducer(state, action);
     expect(r.alreadyToldUserAboutMalformedMsg).toEqual(false);
   });
+
+  it("toggles demo pin: undefined", () => {
+    const state = initialState();
+    state.hardware.pins = {};
+    const action = { type: Actions.DEMO_TOGGLE_PIN, payload: 13 };
+    const r = botReducer(state, action);
+    expect(r.hardware.pins).toEqual({ 13: { value: 1, mode: 0 } });
+  });
+
+  it("toggles demo pin: defined", () => {
+    const state = initialState();
+    state.hardware.pins = { 13: { value: 1, mode: 0 } };
+    const action = { type: Actions.DEMO_TOGGLE_PIN, payload: 13 };
+    const r = botReducer(state, action);
+    expect(r.hardware.pins).toEqual({ 13: { value: 0, mode: 0 } });
+  });
+
+  it("writes demo pin: digital", () => {
+    const state = initialState();
+    const action = {
+      type: Actions.DEMO_WRITE_PIN,
+      payload: { pin: 13, mode: "digital", value: 1 },
+    };
+    const r = botReducer(state, action);
+    expect(r.hardware.pins).toEqual({ 13: { value: 1, mode: 0 } });
+  });
+
+  it("writes demo pin: analog", () => {
+    const state = initialState();
+    const action = {
+      type: Actions.DEMO_WRITE_PIN,
+      payload: { pin: 13, mode: "analog", value: 1 },
+    };
+    const r = botReducer(state, action);
+    expect(r.hardware.pins).toEqual({ 13: { value: 1, mode: 1 } });
+  });
+
+  it("sets position", () => {
+    const state = initialState();
+    const action = {
+      type: Actions.DEMO_SET_POSITION,
+      payload: { x: 1, y: 2, z: 3 },
+    };
+    const r = botReducer(state, action);
+    expect(r.hardware.location_data.position).toEqual({ x: 1, y: 2, z: 3 });
+  });
+
+  it("set job progress", () => {
+    const state = initialState();
+    const action = {
+      type: Actions.DEMO_SET_JOB_PROGRESS,
+      payload: ["job", { percent: 1, status: "working", time: 50 }],
+    };
+    const r = botReducer(state, action);
+    expect(r.hardware.jobs).toEqual({
+      job: {
+        percent: 1,
+        status: "working",
+        time: 50,
+      }
+    });
+  });
+
+  it("sets emergency stop", () => {
+    const state = initialState();
+    const action = { type: Actions.DEMO_SET_ESTOP, payload: true };
+    const r = botReducer(state, action);
+    expect(r.hardware.informational_settings.locked).toEqual(true);
+  });
+
+  it("unsets emergency stop", () => {
+    const state = initialState();
+    state.hardware.informational_settings.locked = true;
+    const action = { type: Actions.DEMO_SET_ESTOP, payload: false };
+    const r = botReducer(state, action);
+    expect(r.hardware.informational_settings.locked).toEqual(false);
+  });
+
+  it("sets demo queue length", () => {
+    const state = initialState();
+    const action = { type: Actions.DEMO_SET_QUEUE_LENGTH, payload: 5 };
+    const r = botReducer(state, action);
+    expect(r.demoQueueLength).toEqual(5);
+  });
 });

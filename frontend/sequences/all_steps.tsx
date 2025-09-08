@@ -22,7 +22,7 @@ export interface AllStepsProps {
   farmwareData?: FarmwareData;
   showPins?: boolean;
   expandStepOptions?: boolean;
-  visualized?: boolean;
+  visualized?: string | undefined;
   hoveredStep?: string | undefined;
   sequencesState: SequenceReducerState;
 }
@@ -85,6 +85,6 @@ export class AllSteps extends React.Component<AllStepsProps, {}> {
         </div>;
       });
 
-    return <div className="all-steps">{items}</div>;
+    return <div className="grid">{items}</div>;
   }
 }

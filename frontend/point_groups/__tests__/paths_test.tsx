@@ -6,7 +6,7 @@ jest.mock("../../api/crud", () => ({
 import React from "react";
 import { shallow, mount } from "enzyme";
 import {
-  PathInfoBar, nn, PathInfoBarProps, Paths, PathsProps,
+  PathInfoBar, PathInfoBarProps, Paths, PathsProps,
 } from "../paths";
 import {
   fakePointGroup, fakePoint,
@@ -15,6 +15,7 @@ import { Actions } from "../../constants";
 import { edit } from "../../api/crud";
 import { SORT_OPTIONS } from "../point_group_sort";
 import { PointGroupSortType } from "farmbot/dist/resources/api_resources";
+import { nn } from "../other_sort_methods";
 
 /**
  *  p1 -- p2 --

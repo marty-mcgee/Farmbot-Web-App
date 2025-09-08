@@ -142,6 +142,7 @@ describe("<PlantGrid />", () => {
     const p = fakeProps();
     p.openfarm_slug = "beet";
     const designer = fakeDesignerState();
+    designer.cropRadius = 100;
     designer.cropStage = "planted";
     designer.cropPlantedAt = "2020-01-20T20:00:00.000Z";
     designer.cropWaterCurveId = 1;
@@ -200,8 +201,8 @@ describe("<PlantGrid />", () => {
     const p = fakeProps();
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     expect(wrapper.state().offsetPacking).toBeFalsy();
-    wrapper.find(".grid-planting-toggle").first().find("button")
-      .simulate("click");
+    wrapper.find('[title="toggle packing method"]')
+      .first().simulate("click");
     expect(wrapper.state().offsetPacking).toBeTruthy();
     expect(wrapper.state().grid.spacingH).toEqual(217);
     expect(init).toHaveBeenCalledTimes(6);
@@ -212,8 +213,8 @@ describe("<PlantGrid />", () => {
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     wrapper.setState({ offsetPacking: true });
     expect(wrapper.state().offsetPacking).toBeTruthy();
-    wrapper.find(".grid-planting-toggle").first().find("button")
-      .simulate("click");
+    wrapper.find('[title="toggle packing method"]')
+      .first().simulate("click");
     expect(wrapper.state().offsetPacking).toBeFalsy();
     expect(wrapper.state().grid.spacingH).toEqual(250);
     expect(init).toHaveBeenCalledTimes(6);
@@ -224,8 +225,8 @@ describe("<PlantGrid />", () => {
     p.openfarm_slug = undefined;
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     expect(wrapper.state().cameraView).toBeFalsy();
-    wrapper.find(".grid-planting-toggle").at(1).find("button")
-      .simulate("click");
+    wrapper.find('[title="show camera view area"]')
+      .first().simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.SHOW_CAMERA_VIEW_POINTS,
       payload: wrapper.state().gridId,
@@ -239,8 +240,8 @@ describe("<PlantGrid />", () => {
     p.openfarm_slug = undefined;
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     wrapper.setState({ cameraView: true });
-    wrapper.find(".grid-planting-toggle").at(1).find("button")
-      .simulate("click");
+    wrapper.find('[title="show camera view area"]')
+      .first().simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.SHOW_CAMERA_VIEW_POINTS,
       payload: undefined,
@@ -253,7 +254,8 @@ describe("<PlantGrid />", () => {
     const p = fakeProps();
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     wrapper.setState({ autoPreview: true });
-    wrapper.find(".grid-planting-toggle").at(1).find("button").simulate("click");
+    wrapper.find('[title="automatically update preview"]')
+      .first().simulate("click");
     expect(wrapper.state().autoPreview).toBeFalsy();
   });
 
@@ -261,7 +263,19 @@ describe("<PlantGrid />", () => {
     const p = fakeProps();
     const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
     wrapper.setState({ autoPreview: false });
-    wrapper.find(".grid-planting-toggle").at(1).find("button").simulate("click");
+    wrapper.find('[title="automatically update preview"]')
+      .first().simulate("click");
     expect(wrapper.state().autoPreview).toBeTruthy();
+  });
+
+  it("collapses", () => {
+    const p = fakeProps();
+    p.collapsible = true;
+    const wrapper = mount<PlantGrid>(<PlantGrid {...p} />);
+    expect(wrapper.state().isOpen).toBeTruthy();
+    const chevron = wrapper.find("i").first();
+    expect(chevron.hasClass("fa-chevron-up")).toBeTruthy();
+    chevron.simulate("click");
+    expect(wrapper.state().isOpen).toBeFalsy();
   });
 });

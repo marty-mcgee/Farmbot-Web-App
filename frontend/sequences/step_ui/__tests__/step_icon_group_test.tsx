@@ -9,7 +9,6 @@ import { mount, shallow } from "enzyme";
 import { StepIconGroup, StepIconBarProps } from "../step_icon_group";
 import { fakeSequence } from "../../../__test_support__/fake_state/resources";
 import { splice, remove, move } from "../../step_tiles";
-import { push } from "../../../history";
 import { Path } from "../../../internal_urls";
 import { emptyState } from "../../../resources/reducer";
 import { StateToggleKey } from "../step_wrapper";
@@ -43,7 +42,7 @@ describe("<StepIconGroup />", () => {
       [StateToggleKey.monacoEditor]: { enabled: true, toggle: () => false }
     };
     const wrapper = mount(<StepIconGroup {...p} />);
-    expect(wrapper.find(".fa-font").hasClass("enabled")).toEqual(true);
+    expect(wrapper.find(".fa-font").hasClass("active")).toEqual(false);
   });
 
   it("renders monaco editor disabled", () => {
@@ -52,7 +51,7 @@ describe("<StepIconGroup />", () => {
       [StateToggleKey.monacoEditor]: { enabled: false, toggle: () => true }
     };
     const wrapper = mount(<StepIconGroup {...p} />);
-    expect(wrapper.find(".fa-font").hasClass("enabled")).toEqual(false);
+    expect(wrapper.find(".fa-font").hasClass("active")).toEqual(true);
   });
 
   it("renders expanded editor enabled", () => {
@@ -80,7 +79,7 @@ describe("<StepIconGroup />", () => {
     p.viewRaw = true;
     p.toggleViewRaw = () => false;
     const wrapper = mount(<StepIconGroup {...p} />);
-    expect(wrapper.find(".fa-code").hasClass("enabled")).toEqual(true);
+    expect(wrapper.find(".fa-code").hasClass("active")).toEqual(true);
   });
 
   it("renders prompt", () => {
@@ -97,7 +96,7 @@ describe("<StepIconGroup />", () => {
     p.viewRaw = false;
     p.toggleViewRaw = () => true;
     const wrapper = mount(<StepIconGroup {...p} />);
-    expect(wrapper.find(".fa-code").hasClass("enabled")).toEqual(false);
+    expect(wrapper.find(".fa-code").hasClass("active")).toEqual(false);
   });
 
   it("deletes step", () => {
@@ -131,6 +130,6 @@ describe("<StepIconGroup />", () => {
     p.executeSequenceName = "My Sequence";
     const wrapper = mount(<StepIconGroup {...p} />);
     wrapper.find(".fa-external-link").simulate("click");
-    expect(push).toHaveBeenCalledWith(Path.sequences("My_Sequence"));
+    expect(mockNavigate).toHaveBeenCalledWith(Path.sequences("My_Sequence"));
   });
 });

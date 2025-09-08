@@ -33,8 +33,8 @@ const DEFAULT_FIRMWARE_CONFIG_VALUES: Record<NumberFirmwareConfigKey, number> = 
   movement_axis_stealth_x: 1,
   movement_axis_stealth_y: 1,
   movement_axis_stealth_z: 1,
-  movement_calibration_deadzone_x: 50,
-  movement_calibration_deadzone_y: 50,
+  movement_calibration_deadzone_x: 250,
+  movement_calibration_deadzone_y: 250,
   movement_calibration_deadzone_z: 250,
   movement_calibration_retry_x: 1,
   movement_calibration_retry_y: 1,
@@ -156,6 +156,7 @@ export const getDefaultFwConfigValue =
         case "farmduino_k15":
         case "farmduino_k16":
         case "farmduino_k17":
+        case "farmduino_k18":
           return DEFAULT_GENESIS_FIRMWARE_CONFIG_VALUES[key];
         case "express_k10":
         case "express_k11":

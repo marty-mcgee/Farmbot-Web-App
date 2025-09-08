@@ -33,6 +33,7 @@ jest.mock("../../messages/actions", () => ({
 }));
 
 import React from "react";
+import { render, screen } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import { bot } from "../../__test_support__/fake_state/bot";
 import {
@@ -74,6 +75,10 @@ import {
   SelectMapOrigin,
   SensorsCheck,
   SetHome,
+  SlotCoordinateRows,
+  SlotCoordinateRowsProps,
+  SlotDropdownRows,
+  SlotDropdownRowsProps,
   SoilHeightMeasurementCheck,
   SwapJogButton,
   SwitchCameraCalibrationMethod,
@@ -85,6 +90,7 @@ import {
   fakeAlert,
   fakeFarmwareEnv, fakeFarmwareInstallation, fakeFbosConfig,
   fakeFirmwareConfig, fakeImage, fakeLog, fakePinBinding, fakeTool,
+  fakeToolSlot,
   fakeUser,
   fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
@@ -93,9 +99,10 @@ import { mockDispatch } from "../../__test_support__/fake_dispatch";
 import { calibrate } from "../../photos/camera_calibration/actions";
 import { FarmwareName } from "../../sequences/step_tiles/tile_execute_script";
 import { ExternalUrl } from "../../external_urls";
-import { push } from "../../history";
 import { PLACEHOLDER_FARMBOT } from "../../photos/images/image_flipper";
-import { changeBlurableInput, clickButton } from "../../__test_support__/helpers";
+import {
+  changeBlurableInput, changeBlurableInputRTL, clickButton,
+} from "../../__test_support__/helpers";
 import { Actions } from "../../constants";
 import { tourPath } from "../../help/tours";
 import { FBSelect } from "../../ui";
@@ -666,12 +673,12 @@ describe("<AxisActions />", () => {
     const config = fakeFirmwareConfig();
     p.resources = buildResourceIndex([config]).index;
     const wrapper = mount(<AxisActions {...p} />);
-    expect(wrapper.text().toLowerCase()).toContain("current position");
+    expect(wrapper.text().toLowerCase()).toContain("position (mm)");
   });
 
   it("handles missing settings", () => {
     const wrapper = mount(<AxisActions {...fakeProps()} />);
-    expect(wrapper.text().toLowerCase()).not.toContain("current position");
+    expect(wrapper.text().toLowerCase()).not.toContain("position (mm)");
   });
 });
 
@@ -783,6 +790,55 @@ describe("<CameraReplacement />", () => {
   });
 });
 
+describe("<SlotCoordinateRows />", () => {
+  const fakeProps = (): SlotCoordinateRowsProps => ({
+    resources: buildResourceIndex([fakeDevice(), fakeToolSlot()]).index,
+    bot: bot,
+    dispatch: jest.fn(),
+    indexValues: [0],
+  });
+
+  it("updates slot", () => {
+    const p = fakeProps();
+    render(<SlotCoordinateRows {...p} />);
+    const inputs = screen.getAllByDisplayValue(0);
+    expect(inputs.length).toEqual(3);
+    changeBlurableInputRTL(inputs[0], "100");
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { x: 100 });
+    expect(save).toHaveBeenCalledWith(expect.any(String));
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+
+  it("handles missing slots", () => {
+    const p = fakeProps();
+    p.indexValues = [0, 1];
+    render(<SlotCoordinateRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+});
+
+describe("<SlotDropdownRows />", () => {
+  const fakeProps = (): SlotDropdownRowsProps => ({
+    resources: buildResourceIndex([fakeDevice(), fakeToolSlot(), fakeTool()]).index,
+    bot: bot,
+    dispatch: jest.fn(),
+    indexValues: [0],
+  });
+
+  it("shows slots", () => {
+    const p = fakeProps();
+    render(<SlotDropdownRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+
+  it("handles missing slots", () => {
+    const p = fakeProps();
+    p.indexValues = [0, 1];
+    render(<SlotDropdownRows {...p} />);
+    expect(screen.getByText("Slot 1")).toBeInTheDocument();
+  });
+});
+
 describe("<Tour />", () => {
   it("starts tour", () => {
     const p = fakeProps();
@@ -792,6 +848,7 @@ describe("<Tour />", () => {
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.SET_TOUR, payload: "gettingStarted",
     });
-    expect(push).toHaveBeenCalledWith(tourPath("", "gettingStarted", "intro"));
+    expect(mockNavigate).toHaveBeenCalledWith(
+      tourPath("", "gettingStarted", "intro"));
   });
 });

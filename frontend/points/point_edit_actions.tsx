@@ -7,7 +7,7 @@ import {
 } from "farmbot";
 import { ListItem } from "../plants/plant_panel";
 import { round, cloneDeep } from "lodash";
-import { Row, Col, BlurableInput, ColorPicker } from "../ui";
+import { Row, BlurableInput, ColorPicker } from "../ui";
 import { parseIntInput } from "../util";
 import { plantAgeAndStage } from "../plants/map_state_to_props";
 import { EditWeedStatus } from "../plants/edit_plant_status";
@@ -31,24 +31,16 @@ export const updatePoint =
       }
     };
 
-interface EditPointPropertiesProps {
-  point: TaggedGenericPointer | TaggedWeedPointer;
-  updatePoint(update: PointUpdate): void;
-  botOnline: boolean;
-  defaultAxes: string;
-  arduinoBusy: boolean;
-  dispatch: Function;
-  currentBotLocation: BotPosition;
-  movementState: MovementState;
+interface EditPointPropertiesProps extends EditPointLocationBaseProps {
+  point: TaggedGenericPointer;
 }
 
-export interface AdditionalWeedPropertiesProps {
-  point: TaggedWeedPointer;
-  updatePoint(update: PointUpdate): void;
+export interface EditWeedPropertiesProps extends EditPointLocationBaseProps {
+  weed: TaggedWeedPointer;
 }
 
 export const EditPointProperties = (props: EditPointPropertiesProps) =>
-  <ul>
+  <ul className="grid">
     <ListItem>
       <EditPointLocation
         pointLocation={{
@@ -69,26 +61,66 @@ export const EditPointProperties = (props: EditPointPropertiesProps) =>
         radius={props.point.body.radius}
         updatePoint={props.updatePoint} />
     </ListItem>
-    {props.point.body.pointer_type == "GenericPointer" &&
-      <ListItem>
-        <EditPointSoilHeightTag
-          point={props.point}
-          updatePoint={props.updatePoint} />
-      </ListItem>}
-  </ul>;
-
-export const AdditionalWeedProperties = (props: AdditionalWeedPropertiesProps) =>
-  <ul className="additional-weed-properties">
-    <ListItem name={t("Age")}>
-      {daysOldText(plantAgeAndStage(props.point))}
-    </ListItem>
-    <ListItem name={t("Status")}>
-      <EditWeedStatus weed={props.point} updateWeed={props.updatePoint} />
+    <ListItem>
+      <EditPointSoilHeightTag
+        point={props.point}
+        updatePoint={props.updatePoint} />
     </ListItem>
     {Object.entries(props.point.body.meta).map(([key, value]) => {
       switch (key) {
         case "color":
-        case "type": return <div key={key}
+        case "at_soil_level":
+        case "removal_method":
+        case "type":
+        case "gridId":
+          return <div key={key} style={{ display: "none" }}
+            className={`meta-${key}-not-displayed`} />;
+        case "created_by":
+          return <ListItem name={t("Source")} key={key}>
+            {lookupPointSource(value)}
+          </ListItem>;
+        default:
+          return <ListItem key={key} name={key}>
+            {value || ""}
+          </ListItem>;
+      }
+    })}
+  </ul>;
+
+export const EditWeedProperties = (props: EditWeedPropertiesProps) =>
+  <ul className="grid">
+    <ListItem>
+      <EditPointLocation
+        pointLocation={{
+          x: props.weed.body.x,
+          y: props.weed.body.y,
+          z: props.weed.body.z,
+        }}
+        botOnline={props.botOnline}
+        dispatch={props.dispatch}
+        arduinoBusy={props.arduinoBusy}
+        currentBotLocation={props.currentBotLocation}
+        movementState={props.movementState}
+        defaultAxes={props.defaultAxes}
+        updatePoint={props.updatePoint} />
+    </ListItem>
+    <div className="row grid-exp-1 info-box">
+      <div className="grid half-gap">
+        <label>{t("Status")}</label>
+        <EditWeedStatus weed={props.weed} updateWeed={props.updatePoint} />
+      </div>
+      <EditPointRadius
+        radius={props.weed.body.radius}
+        updatePoint={props.updatePoint} />
+      <div className="grid half-gap">
+        <label>{t("Age")}</label>
+        {daysOldText(plantAgeAndStage(props.weed))}
+      </div>
+    </div>
+    {Object.entries(props.weed.body.meta).map(([key, value]) => {
+      switch (key) {
+        case "color":
+        case "type": return <div key={key} style={{ display: "none" }}
           className={`meta-${key}-not-displayed`} />;
         case "created_by":
           return <ListItem name={t("Source")} key={key}>
@@ -102,7 +134,7 @@ export const AdditionalWeedProperties = (props: AdditionalWeedPropertiesProps) =
                   <input type="radio" name="weed-removal-method"
                     checked={value == method}
                     onChange={() => {
-                      const newMeta = cloneDeep(props.point.body.meta);
+                      const newMeta = cloneDeep(props.weed.body.meta);
                       newMeta.removal_method = method;
                       props.updatePoint({ meta: newMeta });
                     }} />
@@ -135,20 +167,17 @@ export interface EditPointNameProps {
 }
 
 export const EditPointName = (props: EditPointNameProps) =>
-  <div className={"point-name-input"}>
-    <Col xs={10}>
-      <label>{t("Name")}</label>
-      <BlurableInput
-        type="text"
-        name="pointName"
-        value={props.name}
-        onCommit={e => props.updatePoint({ name: e.currentTarget.value })} />
-    </Col>
+  <div className={"point-name-input row grid-exp-2"}>
+    <label>{t("Name")}</label>
+    <BlurableInput
+      type="text"
+      name="pointName"
+      value={props.name}
+      onCommit={e => props.updatePoint({ name: e.currentTarget.value })} />
   </div>;
 
-export interface EditPointLocationProps {
+interface EditPointLocationBaseProps {
   updatePoint(update: PointUpdate): void;
-  pointLocation: Record<Xyz, number>;
   botOnline: boolean;
   defaultAxes: string;
   arduinoBusy: boolean;
@@ -157,10 +186,14 @@ export interface EditPointLocationProps {
   movementState: MovementState;
 }
 
+export interface EditPointLocationProps extends EditPointLocationBaseProps {
+  pointLocation: Record<Xyz, number>;
+}
+
 export const EditPointLocation = (props: EditPointLocationProps) =>
   <Row className={"edit-point-location"}>
     {["x", "y", "z"].map((axis: Xyz) =>
-      <Col xs={4} key={axis}>
+      <div key={axis}>
         <label style={{ marginTop: 0 }}>{t("{{axis}} (mm)", { axis })}</label>
         <BlurableInput
           type="number"
@@ -170,7 +203,7 @@ export const EditPointLocation = (props: EditPointLocationProps) =>
           onCommit={e => props.updatePoint({
             [axis]: round(parseIntInput(e.currentTarget.value))
           })} />
-      </Col>)}
+      </div>)}
     <GoToThisLocationButton
       dispatch={props.dispatch}
       locationCoordinate={props.pointLocation}
@@ -187,19 +220,17 @@ export interface EditPointRadiusProps {
 }
 
 export const EditPointRadius = (props: EditPointRadiusProps) =>
-  <Row>
-    <Col xs={6}>
-      <label style={{ marginTop: 0 }}>{t("radius (mm)")}</label>
-      <BlurableInput
-        type="number"
-        name="radius"
-        value={props.radius}
-        min={0}
-        onCommit={e => props.updatePoint({
-          radius: round(parseIntInput(e.currentTarget.value))
-        })} />
-    </Col>
-  </Row>;
+  <div className="grid half-gap">
+    <label style={{ marginTop: 0 }}>{t("radius (mm)")}</label>
+    <BlurableInput
+      type="number"
+      name="radius"
+      value={props.radius}
+      min={0}
+      onCommit={e => props.updatePoint({
+        radius: round(parseIntInput(e.currentTarget.value))
+      })} />
+  </div>;
 
 export interface EditPointColorProps {
   updatePoint(update: PointUpdate): void;
@@ -208,11 +239,9 @@ export interface EditPointColorProps {
 
 export const EditPointColor = (props: EditPointColorProps) =>
   <div className={"point-color-input"}>
-    <Col xs={2}>
-      <ColorPicker
-        current={(props.color || "green") as ResourceColor}
-        onChange={color => props.updatePoint({ meta: { color } })} />
-    </Col>
+    <ColorPicker
+      current={(props.color || "green") as ResourceColor}
+      onChange={color => props.updatePoint({ meta: { color } })} />
   </div>;
 
 export interface EditPointSoilHeightTagProps {
@@ -221,11 +250,9 @@ export interface EditPointSoilHeightTagProps {
 }
 
 export const EditPointSoilHeightTag = (props: EditPointSoilHeightTagProps) =>
-  <Row>
-    <Col xs={6} className={"soil-height-checkbox"}>
-      <label>{t("at soil level")}</label>
-      <input type="checkbox" name="is_soil_height"
-        onChange={() => props.updatePoint(toggleSoilHeight(props.point))}
-        checked={soilHeightPoint(props.point)} />
-    </Col>
+  <Row className="grid-exp-1">
+    <label>{t("at soil level")}</label>
+    <input type="checkbox" name="is_soil_height"
+      onChange={() => props.updatePoint(toggleSoilHeight(props.point))}
+      checked={soilHeightPoint(props.point)} />
   </Row>;

@@ -1,10 +1,5 @@
 const mockStorj: Dictionary<number | boolean> = {};
 
-let mockDemo = false;
-jest.mock("../../devices/must_be_online", () => ({
-  forceOnline: () => mockDemo,
-}));
-
 import React from "react";
 import { mount } from "enzyme";
 import { TickerList } from "../ticker_list";
@@ -16,8 +11,6 @@ import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { Actions } from "../../constants";
 
 describe("<TickerList />", () => {
-  beforeEach(() => { mockDemo = false; });
-
   const fakeTaggedLog = () => {
     const log = fakeLog();
     log.body.message = "Farmbot is up and Running!";
@@ -29,7 +22,6 @@ describe("<TickerList />", () => {
     dispatch: jest.fn(),
     timeSettings: fakeTimeSettings(),
     logs: [fakeTaggedLog(), fakeTaggedLog()],
-    toggle: jest.fn(),
     getConfigValue: x => mockStorj[x],
     botOnline: true,
     lastSeen: 0,
@@ -68,17 +60,6 @@ describe("<TickerList />", () => {
     expect(labels.length).toEqual(2);
     expect(labels.at(0).text()).toContain("FarmBot is offline");
     expect(labels.at(1).text()).toEqual("Last seen AUG 2, 7:50PM");
-  });
-
-  it("shows demo account log message", () => {
-    mockDemo = true;
-    const p = fakeProps();
-    p.botOnline = false;
-    const wrapper = mount(<TickerList {...p} />);
-    const labels = wrapper.find("label");
-    expect(labels.length).toEqual(2);
-    expect(labels.at(0).text()).toContain("Using a demo account");
-    expect(labels.at(1).text()).toEqual("");
   });
 
   it("shows empty log message", () => {

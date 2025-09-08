@@ -103,6 +103,7 @@ export class Peripherals
         ];
       case "farmduino_k16":
       case "farmduino_k17":
+      case "farmduino_k18":
         return [
           ...BASE_PERIPHERALS,
           ...ROTARY_TOOL,
@@ -121,7 +122,7 @@ export class Peripherals
     const editButtonText = isEditing
       ? t("Back")
       : t("Edit");
-    return <div className={"peripherals-widget"}>
+    return <div className={"peripherals-widget grid"}>
       {!this.props.hidePinBindings &&
         <BoxTop
           threeDimensions={!!this.props.getConfigValue(

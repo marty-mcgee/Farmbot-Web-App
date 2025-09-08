@@ -1,13 +1,14 @@
 import React from "react";
 import { mount } from "enzyme";
 import { ToolTip, ToolTipProps } from "../tooltip";
-import { push } from "../../history";
 
 describe("<ToolTip />", () => {
   const fakeProps = (): ToolTipProps => ({
     helpText: "such help",
-    docPage: "weed-detection"
+    docPage: "weed-detection",
+    dispatch: jest.fn(),
   });
+
   const p = fakeProps();
   const wrapper = mount(<ToolTip {...p} />);
 
@@ -33,7 +34,8 @@ describe("<ToolTip />", () => {
     expect(wrapper.text()).toContain("Documentation");
     expect(wrapper.find("i").at(2).html()).toContain("fa-external-link");
     wrapper.find("a").simulate("click");
-    expect(push).toHaveBeenCalledWith(expect.stringContaining("weed-detection"));
+    expect(mockNavigate).toHaveBeenCalledWith(
+      expect.stringContaining("weed-detection"));
   });
 
   it("stops propagation", () => {

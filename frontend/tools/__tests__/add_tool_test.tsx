@@ -12,7 +12,6 @@ import { RawAddTool as AddTool, mapStateToProps } from "../add_tool";
 import { fakeState } from "../../__test_support__/fake_state";
 import { SaveBtn } from "../../ui";
 import { initSave, init, destroy } from "../../api/crud";
-import { push } from "../../history";
 import { FirmwareHardware } from "farmbot";
 import { AddToolProps } from "../interfaces";
 import { mockDispatch } from "../../__test_support__/fake_dispatch";
@@ -39,11 +38,24 @@ describe("<AddTool />", () => {
     expect(wrapper.text().toLowerCase()).toContain("flow rate");
   });
 
+  it("renders seeder", () => {
+    const wrapper = mount(<AddTool {...fakeProps()} />);
+    wrapper.setState({ toolName: "seeder" });
+    expect(wrapper.text().toLowerCase()).toContain("tip z offset");
+  });
+
   it("changes flow rate", () => {
     const wrapper = shallow<AddTool>(<AddTool {...fakeProps()} />);
     expect(wrapper.state().flowRate).toEqual(0);
     wrapper.instance().changeFlowRate(1);
     expect(wrapper.state().flowRate).toEqual(1);
+  });
+
+  it("changes tip z offset", () => {
+    const wrapper = shallow<AddTool>(<AddTool {...fakeProps()} />);
+    expect(wrapper.state().tipZOffset).toEqual(80);
+    wrapper.instance().changeTipZOffset(1);
+    expect(wrapper.state().tipZOffset).toEqual(1);
   });
 
   it("edits tool name", () => {
@@ -77,12 +89,16 @@ describe("<AddTool />", () => {
     p.dispatch = mockDispatch();
     const wrapper = shallow<AddTool>(<AddTool {...p} />);
     wrapper.setState({ toolName: "Foo" });
+    const navigate = jest.fn();
+    wrapper.instance().navigate = navigate;
     await wrapper.find(SaveBtn).simulate("click");
     expect(init).toHaveBeenCalledWith("Tool", {
-      name: "Foo", flow_rate_ml_per_s: 0,
+      name: "Foo",
+      flow_rate_ml_per_s: 0,
+      seeder_tip_z_offset: 80,
     });
     expect(wrapper.state().uuid).toEqual(undefined);
-    expect(push).toHaveBeenCalledWith(Path.tools());
+    expect(navigate).toHaveBeenCalledWith(Path.tools());
   });
 
   it("removes unsaved tool on exit", async () => {
@@ -91,12 +107,16 @@ describe("<AddTool />", () => {
     p.dispatch = mockDispatch();
     const wrapper = shallow<AddTool>(<AddTool {...p} />);
     wrapper.setState({ toolName: "Foo" });
+    const navigate = jest.fn();
+    wrapper.instance().navigate = navigate;
     await wrapper.find(SaveBtn).simulate("click");
     expect(init).toHaveBeenCalledWith("Tool", {
-      name: "Foo", flow_rate_ml_per_s: 0,
+      name: "Foo",
+      flow_rate_ml_per_s: 0,
+      seeder_tip_z_offset: 80,
     });
     expect(wrapper.state().uuid).toEqual("fake uuid");
-    expect(push).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
     wrapper.unmount();
     expect(destroy).toHaveBeenCalledWith("fake uuid");
   });
@@ -108,26 +128,31 @@ describe("<AddTool />", () => {
     ["farmduino_k15", 8],
     ["farmduino_k16", 9],
     ["farmduino_k17", 9],
+    ["farmduino_k18", 9],
     ["express_k10", 3],
     ["express_k11", 3],
     ["express_k12", 3],
   ])("adds peripherals: %s", (firmware, expectedAdds) => {
     const p = fakeProps();
     p.firmwareHardware = firmware;
-    const wrapper = mount(<AddTool {...p} />);
+    const wrapper = mount<AddTool>(<AddTool {...p} />);
+    const navigate = jest.fn();
+    wrapper.instance().navigate = navigate;
     wrapper.find("button").last().simulate("click");
     expect(initSave).toHaveBeenCalledTimes(expectedAdds);
-    expect(push).toHaveBeenCalledWith(Path.tools());
+    expect(navigate).toHaveBeenCalledWith(Path.tools());
   });
 
   it("doesn't add stock tools twice", () => {
     const p = fakeProps();
     p.firmwareHardware = "express_k10";
     p.existingToolNames = ["Seed Trough 1"];
-    const wrapper = mount(<AddTool {...p} />);
+    const wrapper = mount<AddTool>(<AddTool {...p} />);
+    const navigate = jest.fn();
+    wrapper.instance().navigate = navigate;
     wrapper.find("button").last().simulate("click");
     expect(initSave).toHaveBeenCalledTimes(2);
-    expect(push).toHaveBeenCalledWith(Path.tools());
+    expect(navigate).toHaveBeenCalledWith(Path.tools());
   });
 
   it("copies a tool name", () => {

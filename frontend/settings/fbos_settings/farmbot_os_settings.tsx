@@ -17,12 +17,6 @@ import { FirmwarePathRow } from "../firmware/firmware_path";
 import { validFirmwareHardware } from "../firmware/firmware_hardware_support";
 import { RpiModel } from "./rpi_model";
 
-export enum ColWidth {
-  label = 3,
-  description = 7,
-  button = 2
-}
-
 export const FarmBotSettings = (props: FarmbotSettingsProps) => {
   const {
     dispatch, device, timeSettings, sourceFbosConfig, botOnline, showAdvanced, bot,
@@ -41,7 +35,7 @@ export const FarmBotSettings = (props: FarmbotSettingsProps) => {
       <NameRow {...commonProps} />
       <OrderNumberRow {...commonProps} />
       <TimezoneRow {...commonProps} />
-      <GardenLocationRow {...commonProps} />
+      <GardenLocationRow {...commonProps} farmwareEnvs={props.farmwareEnvs} />
       <OtaTimeSelectorRow {...commonProps}
         timeSettings={timeSettings} />
       <AutoUpdateRow {...commonProps} />

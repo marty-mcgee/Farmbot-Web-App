@@ -5,11 +5,13 @@ import { ready } from "./config/actions";
 import { Session } from "./session";
 import { attachToRoot } from "./util";
 import { ErrorBoundary } from "./error_boundary";
-import { Router } from "takeme";
-import { UnboundRouteConfig, UNBOUND_ROUTES } from "./route_config";
+import { Route, BrowserRouter, Routes } from "react-router";
+import { ROUTE_DATA } from "./route_config";
+import { Provider } from "react-redux";
+import { BlueprintProvider } from "@blueprintjs/core";
+import { Provider as RollbarProvider } from "@rollbar/react";
+import { NavigationProvider } from "./routes_helpers";
 import { App } from "./app";
-import { ConnectedComponent, Provider } from "react-redux";
-import { HotkeysProvider } from "@blueprintjs/core";
 
 interface RootComponentProps { store: Store; }
 
@@ -19,26 +21,8 @@ export const attachAppToDom = () => {
   _store.dispatch(ready() as any);
 };
 
-export type AnyConnectedComponent =
-  ConnectedComponent<React.ComponentType, unknown>;
-
-interface RootComponentState {
-  Route: AnyConnectedComponent | React.FunctionComponent;
-  ChildRoute?: AnyConnectedComponent;
-}
-
-export type ChangeRoute = (
-  Route: AnyConnectedComponent | React.FunctionComponent,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info?: UnboundRouteConfig<any, any> | undefined,
-  ChildRoute?: AnyConnectedComponent | undefined,
-) => void;
-
 export class RootComponent
-  extends React.Component<RootComponentProps, RootComponentState> {
-  state: RootComponentState = {
-    Route: (_: { children?: React.ReactElement }) => <div>Loading...</div>
-  };
+  extends React.Component<RootComponentProps> {
 
   UNSAFE_componentWillMount() {
     const notLoggedIn = !Session.fetchStoredToken();
@@ -47,33 +31,56 @@ export class RootComponent
     (notLoggedIn && restrictedArea && Session.clear());
   }
 
-  changeRoute: ChangeRoute = (Route, _info, ChildRoute) => {
-    this.setState({ Route, ChildRoute });
-  };
-
-  componentDidMount() {
-    const mainRoutes = UNBOUND_ROUTES.map(bindTo => bindTo(this.changeRoute));
-    new Router(mainRoutes).enableHtml5Routing("/app").init();
-  }
-
   render() {
-    const { ChildRoute } = this.state;
-    const Route = this.state.Route as React.FunctionComponent<{
-      children: React.ReactNode
-    }>;
-    return <ErrorBoundary>
-      <Provider store={_store}>
-        <HotkeysProvider>
-          <App>
-            <Route>
-              {ChildRoute &&
-                <ErrorBoundary>
-                  <ChildRoute />
-                </ErrorBoundary>}
-            </Route>
-          </App>
-        </HotkeysProvider>
-      </Provider>
-    </ErrorBoundary>;
+    const OuterWrapper = ({ children }: { children: React.ReactNode }) =>
+      globalConfig.ROLLBAR_CLIENT_TOKEN
+        ? <RollbarProvider config={{
+          accessToken: globalConfig.ROLLBAR_CLIENT_TOKEN,
+          captureUncaught: true,
+          captureUnhandledRejections: true,
+          payload: {
+            person: { id: "" + (Session.fetchStoredToken()?.user.id || 0) },
+            environment: window.location.host,
+            client: {
+              javascript: {
+                source_map_enabled: true,
+                code_version: globalConfig.SHORT_REVISION,
+                guess_uncaught_frames: true,
+              },
+            },
+          },
+        }}>{children}</RollbarProvider>
+        : <>{children}</>;
+
+    return <OuterWrapper>
+      <ErrorBoundary>
+        <Provider store={_store}>
+          <BlueprintProvider>
+            <BrowserRouter>
+              <NavigationProvider>
+                <React.Suspense>
+                  <Routes>
+                    <Route
+                      path={"/app"}
+                      element={<App />}>
+                      {ROUTE_DATA.map(appRoute =>
+                        <Route key={appRoute.path}
+                          path={appRoute.path}
+                          element={appRoute.element}>
+                          {appRoute.children &&
+                            appRoute.children.map(designerRoute =>
+                              <Route key={designerRoute.path}
+                                path={designerRoute.path}
+                                element={designerRoute.element} />)}
+                        </Route>)}
+                    </Route>
+                  </Routes>
+                </React.Suspense>
+              </NavigationProvider>
+            </BrowserRouter>
+          </BlueprintProvider>
+        </Provider>
+      </ErrorBoundary>
+    </OuterWrapper>;
   }
 }

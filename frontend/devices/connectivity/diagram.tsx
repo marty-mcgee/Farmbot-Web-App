@@ -2,6 +2,7 @@ import React from "react";
 import { StatusRowProps } from "./connectivity_row";
 import { Color } from "../../ui";
 import { t } from "../../i18next_wrapper";
+import { isMobile } from "../../screen_size";
 
 export interface ConnectivityDiagramProps {
   rowData: StatusRowProps[];
@@ -61,7 +62,10 @@ export function getTextPosition(
 }
 
 export function nodeLabel(
-  label: string, node: DiagramNodes, anchor = "middle"): JSX.Element {
+  label: string,
+  node: DiagramNodes,
+  anchor: "start" | "middle" | "end" = "middle",
+): React.ReactNode {
   const position = getTextPosition(node);
   return <text x={position.x} y={position.y} textAnchor={anchor}>
     {label}
@@ -98,15 +102,15 @@ export function getLineProps(
   return { x1: 0, y1: 0, x2: 0, y2: 0 }; // fallback
 }
 
-export function Connector(props: ConnectorProps): JSX.Element {
+export function Connector(props: ConnectorProps): React.ReactNode {
   const {
     connectionData, from, to, hover, hoveredConnection, customLineProps
   } = props;
   const lineProps = customLineProps ? customLineProps : getLineProps(from, to);
   const hoverIndicatorColor =
     hoveredConnection === connectionData.connectionName
-      ? Color.darkGray
-      : Color.white;
+      ? Color.white
+      : Color.darkGray;
   return <g
     id={connectionData.connectionName + "-connector"}
     strokeLinecap="round">
@@ -137,7 +141,7 @@ export function ConnectivityDiagram(props: ConnectivityDiagramProps) {
   const botAPI = rowData[3];
   const botFirmware = rowData[4];
   const board = botFirmware.to;
-  const browser = window.innerWidth <= 450 ? t("This phone") : t("This computer");
+  const browser = isMobile() ? t("This phone") : t("This computer");
   return <div className="connectivity-diagram">
     <svg
       id="connectivity-diagram"

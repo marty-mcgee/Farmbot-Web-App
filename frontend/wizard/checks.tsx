@@ -14,6 +14,7 @@ import {
   selectAllImages, selectAllLogs, selectAllPeripherals, selectAllSensors,
   selectAllTools,
   maybeGetTimeSettings,
+  selectAllToolSlotPointers,
 } from "../resources/selectors";
 import { last, some, uniq } from "lodash";
 import {
@@ -34,13 +35,13 @@ import {
 import { t } from "../i18next_wrapper";
 import {
   BlurableInput,
-  Checkbox, Col, docLink, DropDownItem, FBSelect, genesisDocLink, Row, ToggleButton,
+  Checkbox, docLink, DropDownItem, FBSelect, genesisDocLink, Row, ToggleButton,
 } from "../ui";
 import {
   changeFirmwareHardware, SEED_DATA_OPTIONS, SEED_DATA_OPTIONS_DDI,
 } from "../messages/cards";
 import { seedAccount } from "../messages/actions";
-import { FirmwareHardware, TaggedLog, Xyz } from "farmbot";
+import { FirmwareHardware, TaggedLog, TaggedToolSlotPointer, Xyz } from "farmbot";
 import { ConnectivityDiagram } from "../devices/connectivity/diagram";
 import { Diagnosis } from "../devices/connectivity/diagnosis";
 import { connectivityData } from "../devices/connectivity/generate_data";
@@ -87,7 +88,6 @@ import {
 } from "../photos/camera_calibration/constants";
 import { tourPath } from "../help/tours";
 import { TOURS } from "../help/tours/data";
-import { push } from "../history";
 import { FilePath } from "../internal_urls";
 import { BotPositionRows } from "../controls/move/bot_position_rows";
 import {
@@ -99,10 +99,13 @@ import { BotState } from "../devices/interfaces";
 import {
   reduceToolName, ToolName,
 } from "../farm_designer/map/tool_graphics/all_tools";
-import { WaterFlowRateInput } from "../tools/edit_tool";
+import { isActive, WaterFlowRateInput } from "../tools/edit_tool";
 import { RPI_OPTIONS } from "../settings/fbos_settings/rpi_model";
 import { BoxTop } from "../settings/pin_bindings/box_top";
 import { OtaTimeSelector } from "../settings/fbos_settings/ota_time_selector";
+import { useNavigate } from "react-router";
+import { SlotLocationInputRow } from "../tools/tool_slot_edit_components";
+import { ToolSlotInventoryItem } from "../tools";
 
 export const Language = (props: WizardStepComponentProps) => {
   const user = getUserAccountSettings(props.resources);
@@ -155,7 +158,7 @@ const CameraCheckBase = (props: CameraCheckBaseProps) => {
     setError(true);
   }
 
-  return <div className={"camera-check"}
+  return <div className={"camera-check grid"}
     onClick={() => {
       setPrevImageId(getLastImageId());
       setPrevLogTime(getLastLogTimestamp());
@@ -191,7 +194,10 @@ export const CameraCalibrationCard = (props: WizardStepComponentProps) => {
 
 export const SwitchCameraCalibrationMethod =
   (props: WizardOutcomeComponentProps) => {
+    const navigate = useNavigate();
     return <CameraCalibrationMethodConfig
+      navigate={navigate}
+      dispatch={props.dispatch}
       wdEnvGet={key => envGet(key, prepopulateEnv(getEnv(props.resources)))}
       saveEnvVar={(key, value) =>
         props.dispatch(saveOrEditFarmwareEnv(props.resources)(
@@ -229,7 +235,7 @@ const MeasureSoilHeight = (props: CameraCheckBaseProps) => {
       env={env}
       userEnv={userEnv}
       farmwareEnvs={farmwareEnvs}
-      saveFarmwareEnv={saveOrEditFarmwareEnv(props.resources)}
+      saveFarmwareEnv={saveOrEditFarmwareEnv(props.resources, true)}
       botOnline={botOnline}
       hideAdvanced={true}
       hideResets={true}
@@ -338,10 +344,12 @@ const SEED_DATA_OPTION_TO_FW_HARDWARE: Record<string, FirmwareHardware> = {
   "genesis_1.5": "farmduino_k15",
   "genesis_1.6": "farmduino_k16",
   "genesis_1.7": "farmduino_k17",
+  "genesis_1.8": "farmduino_k18",
   "genesis_xl_1.4": "farmduino_k14",
   "genesis_xl_1.5": "farmduino_k15",
   "genesis_xl_1.6": "farmduino_k16",
   "genesis_xl_1.7": "farmduino_k17",
+  "genesis_xl_1.8": "farmduino_k18",
   "express_1.0": "express_k10",
   "express_1.1": "express_k11",
   "express_1.2": "express_k12",
@@ -358,6 +366,7 @@ const FW_HARDWARE_TO_RPI: Record<FirmwareHardware, string | undefined> = {
   "farmduino_k15": "3",
   "farmduino_k16": undefined,
   "farmduino_k17": "4",
+  "farmduino_k18": "4",
   "express_k10": "01",
   "express_k11": "02",
   "express_k12": "02",
@@ -461,7 +470,7 @@ export const Connectivity = (props: WizardStepComponentProps) => {
   });
   return <div className={"connectivity"}>
     <ConnectivityDiagram rowData={data.rowData} />
-    <Diagnosis statusFlags={data.flags} />
+    <Diagnosis statusFlags={data.flags} dispatch={props.dispatch} />
   </div>;
 };
 
@@ -715,19 +724,15 @@ export const CameraOffset = (props: WizardStepComponentProps) => {
       props.dispatch(saveOrEditFarmwareEnv(props.resources)(
         key, JSON.stringify(formatEnvKey(key, value)))),
   };
-  return <Row>
-    <Col xs={6}>
-      <NumberBoxConfig {...common}
-        settingName={DeviceSetting.cameraOffsetX}
-        configKey={"CAMERA_CALIBRATION_camera_offset_x"}
-        helpText={helpText} />
-    </Col>
-    <Col xs={6}>
-      <NumberBoxConfig {...common}
-        settingName={DeviceSetting.cameraOffsetY}
-        configKey={"CAMERA_CALIBRATION_camera_offset_y"}
-        helpText={helpText} />
-    </Col>
+  return <Row className="grid-2-col">
+    <NumberBoxConfig {...common}
+      settingName={DeviceSetting.cameraOffsetX}
+      configKey={"CAMERA_CALIBRATION_camera_offset_x"}
+      helpText={helpText} />
+    <NumberBoxConfig {...common}
+      settingName={DeviceSetting.cameraOffsetY}
+      configKey={"CAMERA_CALIBRATION_camera_offset_y"}
+      helpText={helpText} />
   </Row>;
 };
 
@@ -735,20 +740,18 @@ export const CameraImageOrigin = (props: WizardStepComponentProps) => {
   const env = getEnv(props.resources);
   const wDEnv = prepopulateEnv(env);
   return <Row>
-    <Col xs={12}>
-      <DropdownConfig
-        settingName={DeviceSetting.originLocationInImage}
-        wdEnvGet={key => envGet(key, wDEnv)}
-        onChange={(key, value) =>
-          props.dispatch(saveOrEditFarmwareEnv(props.resources)(
-            key, JSON.stringify(formatEnvKey(key, value))))}
-        list={ORIGIN_DROPDOWNS()}
-        configKey={"CAMERA_CALIBRATION_image_bot_origin_location"}
-        helpText={t(ToolTips.IMAGE_BOT_ORIGIN_LOCATION, {
-          defaultOrigin: SPECIAL_VALUE_DDI()[WD_KEY_DEFAULTS[
-            "CAMERA_CALIBRATION_image_bot_origin_location"]].label
-        })} />
-    </Col>
+    <DropdownConfig
+      settingName={DeviceSetting.originLocationInImage}
+      wdEnvGet={key => envGet(key, wDEnv)}
+      onChange={(key, value) =>
+        props.dispatch(saveOrEditFarmwareEnv(props.resources)(
+          key, JSON.stringify(formatEnvKey(key, value))))}
+      list={ORIGIN_DROPDOWNS()}
+      configKey={"CAMERA_CALIBRATION_image_bot_origin_location"}
+      helpText={t(ToolTips.IMAGE_BOT_ORIGIN_LOCATION, {
+        defaultOrigin: SPECIAL_VALUE_DDI()[WD_KEY_DEFAULTS[
+          "CAMERA_CALIBRATION_image_bot_origin_location"]].label
+      })} />
   </Row>;
 };
 
@@ -805,15 +808,77 @@ export const CameraReplacement = () =>
     </p>
   </div>;
 
-export const Tour = (tourSlug: string) =>
-  (props: WizardStepComponentProps) =>
+export interface SlotCoordinateRowsProps {
+  dispatch: Function;
+  resources: ResourceIndex;
+  bot: BotState;
+  indexValues: number[];
+}
+
+export const SlotCoordinateRows = (props: SlotCoordinateRowsProps) => {
+  const locationData = validBotLocationData(props.bot.hardware.location_data);
+  const slots = selectAllToolSlotPointers(props.resources);
+  return <div className={"slot-coordinates grid"}>
+    {props.indexValues.map(index => {
+      const slot = slots[index];
+      if (!slot) { return; }
+      const updateSlot = (update: Partial<TaggedToolSlotPointer["body"]>) => {
+        props.dispatch(edit(slot, update));
+        props.dispatch(save(slot.uuid));
+      };
+      return <div className={"row double-gap align-baseline info-box"} key={index}>
+        <label>{`${t("Slot")} ${index + 1}`}</label>
+        <SlotLocationInputRow
+          slotLocation={slot.body}
+          gantryMounted={slot.body.gantry_mounted}
+          botPosition={locationData.position}
+          onChange={updateSlot} />
+      </div>;
+    })}
+  </div>;
+};
+
+export interface SlotDropdownRowsProps {
+  dispatch: Function;
+  resources: ResourceIndex;
+  bot: BotState;
+  indexValues: number[];
+}
+
+export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
+  const slots = selectAllToolSlotPointers(props.resources);
+  const tools = selectAllTools(props.resources);
+  return <div className={"slot-coordinates grid"}>
+    {props.indexValues.map(index => {
+      const slot = slots[index];
+      if (!slot) { return; }
+      return <div className={"row double-gap align-baseline info-box grid-exp-2"} key={index}>
+        <label>{`${t("Slot")} ${index + 1}`}</label>
+        <ToolSlotInventoryItem key={slot.uuid}
+          hovered={false}
+          dispatch={props.dispatch}
+          toolSlot={slot}
+          isActive={isActive(selectAllToolSlotPointers(props.resources))}
+          tools={tools}
+          noUTM={false}
+          disableNavigate={true}
+          toolTransformProps={{ quadrant: 2, xySwap: false }} />
+      </div>;
+    })}
+  </div>;
+};
+
+export const Tour = (tourSlug: string) => {
+  const navigate = useNavigate();
+  return (props: WizardStepComponentProps) =>
     <button className={"fb-button green tour-start"}
       title={t("Start tour")}
       onClick={() => {
         const firstStep = TOURS()[tourSlug].steps[0];
         props.dispatch({ type: Actions.SET_TOUR, payload: tourSlug });
         props.dispatch({ type: Actions.SET_TOUR_STEP, payload: firstStep.slug });
-        push(tourPath(firstStep.url, tourSlug, firstStep.slug));
+        navigate(tourPath(firstStep.url, tourSlug, firstStep.slug));
       }}>
       {t("Start tour")}
     </button>;
+};

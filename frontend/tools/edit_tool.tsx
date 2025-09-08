@@ -5,7 +5,6 @@ import {
 } from "../farm_designer/designer_panel";
 import { Everything } from "../interfaces";
 import { t } from "../i18next_wrapper";
-import { push } from "../history";
 import { TaggedTool, SpecialStatus, TaggedToolSlotPointer } from "farmbot";
 import {
   maybeFindToolById, getDeviceAccountSettings, selectAllToolSlotPointers,
@@ -28,6 +27,8 @@ import {
 } from "../farm_designer/map/tool_graphics/all_tools";
 import { ToolTips } from "../constants";
 import { sendRPC } from "../devices/actions";
+import { NavigationContext } from "../routes_helpers";
+import { Navigate } from "react-router";
 
 export const isActive = (toolSlots: TaggedToolSlotPointer[]) =>
   (toolId: number | undefined) =>
@@ -46,7 +47,7 @@ export interface WaterFlowRateInputProps {
 }
 
 export const WaterFlowRateInput = (props: WaterFlowRateInputProps) => {
-  return <div className={"flow-rate-input"}>
+  return <div className={"flow-rate-input row grid-exp-3"}>
     <label>{t("Water Flow Rate (mL/s)")}</label>
     {!props.hideTooltip && <Help text={ToolTips.WATER_FLOW_RATE}
       enableMarkdown={true} />}
@@ -54,6 +55,21 @@ export const WaterFlowRateInput = (props: WaterFlowRateInputProps) => {
       onClick={() => sendRPC({ kind: "lua", args: { lua: LUA_WATER_FLOW_RATE } })}>
       {t("run water for 5 seconds")}
     </button>
+    <input
+      value={props.value}
+      type={"number"}
+      onChange={e => props.onChange(parseInt(e.currentTarget.value))} />
+  </div>;
+};
+
+export interface TipZOffsetInputProps {
+  value: number;
+  onChange(value: number): void;
+}
+
+export const TipZOffsetInput = (props: TipZOffsetInputProps) => {
+  return <div className={"row grid-exp-3"}>
+    <label>{t("Seeder Tip Z Offset (mm)")}</label>
     <input
       value={props.value}
       type={"number"}
@@ -78,21 +94,27 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
   state: EditToolState = {
     toolName: this.tool?.body.name || "",
     flowRate: this.tool?.body.flow_rate_ml_per_s || 0,
+    tipZOffset: this.tool?.body.seeder_tip_z_offset || 0,
   };
 
   get stringyID() { return Path.getSlug(Path.tools()); }
 
   get tool() { return this.props.findTool(this.stringyID); }
 
+  static contextType = NavigationContext;
+  context!: React.ContextType<typeof NavigationContext>;
+  navigate = this.context;
+
   fallback = () => {
     const toolsPath = Path.tools();
-    Path.startsWith(toolsPath) && push(toolsPath);
     return <this.PanelWrapper>
+      {Path.startsWith(toolsPath) && <Navigate to={toolsPath} />}
       <span>{t("Redirecting")}...</span>
     </this.PanelWrapper>;
   };
 
   changeFlowRate = (flowRate: number) => this.setState({ flowRate });
+  changeTipZOffset = (tipZOffset: number) => this.setState({ tipZOffset });
 
   default = (tool: TaggedTool) => {
     const { dispatch } = this.props;
@@ -111,14 +133,15 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
             this.props.dispatch(edit(tool, {
               name: toolName,
               flow_rate_ml_per_s: this.state.flowRate,
+              seeder_tip_z_offset: this.state.tipZOffset,
             }));
             this.props.dispatch(save(tool.uuid));
-            push(Path.tools());
+            this.navigate(Path.tools());
           }}
           disabled={!toolName || nameTaken}
           status={SpecialStatus.DIRTY} />
         <i
-          className={`fa fa-trash fb-icon-button ${activeOrMounted
+          className={`fa fa-trash fb-icon-button invert ${activeOrMounted
             ? "pseudo-disabled"
             : ""}`}
           title={activeOrMounted ? message : t("delete")}
@@ -126,20 +149,25 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
             ? error(t(message))
             : dispatch(destroy(tool.uuid))} />
       </div>}>
-      <div className="edit-tool">
+      <div className="edit-tool grid">
         <ToolSVG toolName={toolName} profile={true} />
         <CustomToolGraphicsInput
           toolName={toolName}
           dispatch={this.props.dispatch}
           saveFarmwareEnv={this.props.saveFarmwareEnv}
           env={this.props.env} />
-        <label>{t("Name")}</label>
-        <input name="toolName"
-          value={toolName}
-          onChange={e => this.setState({ toolName: e.currentTarget.value })} />
+        <div className="row grid-exp-2">
+          <label>{t("Name")}</label>
+          <input name="toolName"
+            value={toolName}
+            onChange={e => this.setState({ toolName: e.currentTarget.value })} />
+        </div>
         {reduceToolName(toolName) == ToolName.wateringNozzle &&
           <WaterFlowRateInput value={this.state.flowRate}
             onChange={this.changeFlowRate} />}
+        {reduceToolName(toolName) == ToolName.seeder &&
+          <TipZOffsetInput value={this.state.tipZOffset}
+            onChange={this.changeTipZOffset} />}
         <p className="name-error">
           {nameTaken ? t("Name already taken.") : ""}
         </p>
@@ -148,7 +176,7 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
   };
 
   PanelWrapper = (props: {
-    children: React.ReactChild | React.ReactChild[],
+    children: React.ReactNode,
     headerElement?: React.ReactElement,
   }) => {
     const panelName = "edit-tool";
@@ -172,3 +200,5 @@ export class RawEditTool extends React.Component<EditToolProps, EditToolState> {
 }
 
 export const EditTool = connect(mapStateToProps)(RawEditTool);
+// eslint-disable-next-line import/no-default-export
+export default EditTool;

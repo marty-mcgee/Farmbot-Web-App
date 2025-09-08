@@ -1,5 +1,5 @@
 import React from "react";
-import { Color } from "../../../../ui/index";
+import { Color } from "../../../../ui";
 import { BotOriginQuadrant } from "../../../interfaces";
 import { ToolPulloutDirection } from "farmbot/dist/resources/api_resources";
 
@@ -15,7 +15,7 @@ export const textAnchorPosition = (
   quadrant: BotOriginQuadrant,
   xySwap: boolean,
   gantryMounted: boolean,
-): { x: number, y: number, anchor: string } => {
+): { x: number, y: number, anchor: "start" | "middle" | "end" } => {
   const rawAnchor = () => {
     const noDirection = !pulloutDirection || gantryMounted;
     const noDirectionXY = xySwap
