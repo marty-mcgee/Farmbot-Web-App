@@ -25,7 +25,9 @@ import {
   AmbientLight, AxesHelper, Group, MeshBasicMaterial,
 } from "./components";
 import { ICON_URLS } from "../crops/constants";
-import { TaggedGenericPointer, TaggedWeedPointer } from "farmbot";
+import {
+  TaggedGenericPointer, TaggedPoint, TaggedPointGroup, TaggedWeedPointer,
+} from "farmbot";
 import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
 import { cameraInit } from "./camera";
@@ -34,6 +36,7 @@ import { computeSurface } from "./triangles";
 import { BigDistance } from "./constants";
 import { precomputeTriangles, getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
+import { GroupOrderVisual } from "./group_order_visual";
 
 const AnimatedGroup = animated(Group);
 
@@ -48,6 +51,8 @@ export interface GardenModelProps {
   toolSlots?: SlotWithTool[];
   mountedToolName?: string | undefined;
   startTimeRef?: React.RefObject<number>;
+  allPoints?: TaggedPoint[];
+  groups?: TaggedPointGroup[];
 }
 
 // eslint-disable-next-line complexity
@@ -216,6 +221,12 @@ export const GardenModel = (props: GardenModelProps) => {
           getZ={getZ}
           dispatch={dispatch} />)}
     </Group>
+    <GroupOrderVisual
+      allPoints={props.allPoints || []}
+      groups={props.groups || []}
+      config={config}
+      tryGroupSortType={props.addPlantProps?.designer.tryGroupSortType}
+      getZ={getZ} />
     <Visualization
       visualizedSequenceUUID={props.addPlantProps?.designer.visualizedSequence}
       config={config} />

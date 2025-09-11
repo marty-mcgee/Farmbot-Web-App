@@ -12,6 +12,7 @@ export interface TextProps {
   name?: string;
   visible?: boolean;
   renderOrder?: RenderOrder;
+  thickness?: number;
 }
 
 export const Text = (props: TextProps) => {
@@ -23,7 +24,7 @@ export const Text = (props: TextProps) => {
     <Text3D
       font={ASSETS.fonts.cabinBold}
       size={props.fontSize}
-      height={0.01}
+      height={props.thickness || 0.01}
       rotation={props.rotation}>
       {props.children}
       <MeshPhongMaterial color={props.color} />

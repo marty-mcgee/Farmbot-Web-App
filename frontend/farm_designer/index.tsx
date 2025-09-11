@@ -233,6 +233,8 @@ export class RawFarmDesigner
           mountedToolName={this.props.mountedToolInfo.name}
           botPosition={this.props.botLocationData.position}
           peripheralValues={this.props.peripheralValues}
+          allPoints={this.props.allPoints}
+          groups={this.props.groups}
           getWebAppConfigValue={this.props.getConfigValue} />
         : <div
           className={`farm-designer-map ${this.mapPanelClassName}`}

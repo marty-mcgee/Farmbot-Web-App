@@ -25,6 +25,13 @@ import { FirmwareHardware } from "farmbot";
 import { CROPS } from "../../crops/constants";
 import { fakeDevice } from "../../__test_support__/resource_index_builder";
 
+const EMPTY_PROPS = {
+  mapPoints: [],
+  weeds: [],
+  allPoints: [],
+  groups: [],
+};
+
 describe("<ThreeDGardenMap />", () => {
   const fakeProps = (): ThreeDGardenMapProps => ({
     mapTransformProps: fakeMapTransformProps(),
@@ -44,6 +51,8 @@ describe("<ThreeDGardenMap />", () => {
     negativeZ: false,
     mountedToolName: undefined,
     peripheralValues: [],
+    allPoints: [],
+    groups: [],
   });
 
   it("converts props", () => {
@@ -108,8 +117,7 @@ describe("<ThreeDGardenMap />", () => {
         y: 201,
       }],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -122,8 +130,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ x: 0, y: 0, z: 0 }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -137,8 +144,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ negativeZ: true, x: 0, y: 0, z: -100 }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -157,8 +163,7 @@ describe("<ThreeDGardenMap />", () => {
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
     const callArgs = (ThreeDGarden as jest.Mock).mock.calls[0][0];
     expect(callArgs.config.sunInclination).toBeCloseTo(28.64788975654116, 4);
@@ -179,8 +184,7 @@ describe("<ThreeDGardenMap />", () => {
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -197,8 +201,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ kitVersion }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -211,8 +214,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ waterFlow: true }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -233,8 +235,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ rotary: exp }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 });
