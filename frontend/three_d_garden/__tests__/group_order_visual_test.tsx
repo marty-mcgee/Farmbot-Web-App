@@ -1,5 +1,7 @@
 import {
-  fakePlant, fakePointGroup,
+  fakePlant, fakePoint, fakePointGroup,
+  fakeToolSlot,
+  fakeWeed,
 } from "../../__test_support__/fake_state/resources";
 
 let mockGroup: TaggedPointGroup | undefined = fakePointGroup();
@@ -7,7 +9,7 @@ jest.mock("../../point_groups/group_detail", () => ({
   findGroupFromUrl: () => mockGroup,
 }));
 
-let mockGroupPoints = [fakePlant(), fakePlant()];
+let mockGroupPoints = [fakePlant(), fakeToolSlot(), fakePoint(), fakeWeed()];
 jest.mock("../../point_groups/criteria/apply", () => ({
   pointsSelectedByGroup: () => mockGroupPoints,
 }));
@@ -42,7 +44,7 @@ describe("<GroupOrderVisual />", () => {
     const p = fakeProps();
     mockGroup = fakePointGroup();
     mockGroup.body.sort_type = "random";
-    mockGroupPoints = [fakePlant(), fakePlant()];
+    mockGroupPoints = [fakePlant(), fakeToolSlot(), fakePoint(), fakeWeed()];
     p.tryGroupSortType = undefined;
     const { container } = render(<GroupOrderVisual {...p} />);
     expect(container).toContainHTML("group-order");

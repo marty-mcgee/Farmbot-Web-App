@@ -51,11 +51,18 @@ const GroupOrder = (props: GroupOrderProps) => {
   const { sortType, groupPoints, config, getZ, tryGroupSortType } = props;
   const sortedPoints = sortGroupBy(tryGroupSortType || sortType, groupPoints);
   const positions: [number, number, number][] = sortedPoints
-    .map(p => [
-      threeSpace(p.body.x, config.bedLengthOuter) + config.bedXOffset,
-      threeSpace(p.body.y, config.bedWidthOuter) + config.bedYOffset,
-      zZeroFunc(config) + getZ(p.body.x, p.body.y) + 25,
-    ]);
+    .map(p => {
+      const x = threeSpace(p.body.x, config.bedLengthOuter) + config.bedXOffset;
+      const y = threeSpace(p.body.y, config.bedWidthOuter) + config.bedYOffset;
+      const zZero = zZeroFunc(config);
+      if (p.body.pointer_type == "ToolSlot") {
+        return [x, y, zZero + p.body.z + 25];
+      }
+      if (p.body.pointer_type == "GenericPointer") {
+        return [x, y, zZero + getZ(p.body.x, p.body.y) + 75];
+      }
+      return [x, y, zZero + getZ(p.body.x, p.body.y) + p.body.radius + 10];
+    });
   return <Group name={"group-order"}>
     <Line name={"group-order-line"}
       color={"gray"}
