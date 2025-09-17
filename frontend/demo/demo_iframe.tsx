@@ -69,6 +69,17 @@ export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAcc
     this.connectMqtt().then(this.connectApi);
   };
 
+  protected seedDataSelect = (): React.ReactElement => {
+    const selection = this.state.productLine;
+    return <FBSelect
+      key={selection}
+      extraClass={"demo-options"}
+      list={SEED_DATA_OPTIONS(true).filter(x => x.value != "none")}
+      customNullLabel={t("Select a model")}
+      selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
+      onChange={ddi => this.setState({ productLine: "" + ddi.value })} />;
+  };
+
   protected abstract ok(): React.ReactNode;
 
   no = () => {
@@ -84,7 +95,6 @@ export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAcc
 
 export class DemoIframe extends DemoAccountBase {
   ok = () => {
-    const selection = this.state.productLine;
     return <div className="demo-container">
       <video muted={true} autoPlay={true} loop={true} className="demo-video">
         <source src={ExternalUrl.Video.desktop} type="video/mp4" />
@@ -95,13 +105,7 @@ export class DemoIframe extends DemoAccountBase {
         onClick={this.requestAccount}>
         {this.state.stage}
       </button>
-      <FBSelect
-        key={selection}
-        extraClass={"demo-options"}
-        list={SEED_DATA_OPTIONS(true).filter(x => x.value != "none")}
-        customNullLabel={t("Select a model")}
-        selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
-        onChange={ddi => this.setState({ productLine: "" + ddi.value })} />
+      {this.seedDataSelect()}
     </div>;
   };
 }

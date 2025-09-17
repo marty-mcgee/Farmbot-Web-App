@@ -16,6 +16,7 @@ jest.mock("mqtt", () => ({ connect: () => mockMqttClient }));
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { shallow } from "enzyme";
 import { DemoLoginOption } from "../demo_login_option";
 import axios from "axios";
 import { MQTT_CHAN } from "../../demo/demo_iframe";
@@ -49,5 +50,12 @@ describe("<DemoLoginOption />", () => {
       expect(axios.post).toHaveBeenCalledWith(
         "/api/demo_account",
         expect.objectContaining({ product_line: expect.any(String) })));
+  });
+
+  it("changes model", () => {
+    const wrapper = shallow<DemoLoginOption>(<DemoLoginOption />);
+    expect(wrapper.state().productLine).toEqual("genesis_1.8");
+    wrapper.find("FBSelect").simulate("change", { value: "express_1.2" });
+    expect(wrapper.state().productLine).toEqual("express_1.2");
   });
 });
