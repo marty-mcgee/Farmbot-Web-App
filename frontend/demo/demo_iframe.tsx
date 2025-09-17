@@ -9,7 +9,7 @@ import { Path } from "../internal_urls";
 import { FBSelect } from "../ui";
 import { SEED_DATA_OPTIONS, SEED_DATA_OPTIONS_DDI } from "../messages/cards";
 
-interface State {
+export interface DemoAccountState {
   error: Error | undefined;
   stage: string;
   productLine: string;
@@ -27,8 +27,8 @@ export const EASTER_EGG = "BIRDS AREN'T REAL";
 export const WAITING_ON_API = "Planting your demo garden...";
 
 // APPLICATION CODE ==============================
-export class DemoIframe extends React.Component<{}, State> {
-  state: State = {
+export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAccountState> {
+  state: DemoAccountState = {
     error: undefined,
     stage: t("DEMO THE APP"),
     productLine: "genesis_1.8",
@@ -69,6 +69,20 @@ export class DemoIframe extends React.Component<{}, State> {
     this.connectMqtt().then(this.connectApi);
   };
 
+  protected abstract ok(): React.ReactNode;
+
+  no = () => {
+    console.error(this.state.error);
+    const message = JSON.stringify(this.state.error, undefined, 2);
+    return <pre>{message}: {"" + this.state.error}</pre>;
+  };
+
+  render() {
+    return this.state.error ? this.no() : this.ok();
+  }
+}
+
+export class DemoIframe extends DemoAccountBase {
   ok = () => {
     const selection = this.state.productLine;
     return <div className="demo-container">
@@ -90,14 +104,4 @@ export class DemoIframe extends React.Component<{}, State> {
         onChange={ddi => this.setState({ productLine: "" + ddi.value })} />
     </div>;
   };
-
-  no = () => {
-    console.error(this.state.error);
-    const message = JSON.stringify(this.state.error, undefined, 2);
-    return <pre>{message}: {"" + this.state.error}</pre>;
-  };
-
-  render() {
-    return this.state.error ? this.no() : this.ok();
-  }
 }
