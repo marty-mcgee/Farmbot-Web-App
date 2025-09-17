@@ -2,8 +2,8 @@
 @use "sass:color";
 
 .jobs-and-logs {
-  grid-template-rows: 10rem 25rem;
-  height: 35.5rem;
+  grid-template-rows: 14rem 23rem;
+  height: 37.5rem;
 
   .jobs-section,
   .logs-section {
@@ -64,6 +64,7 @@
   }
   table {
     text-align: left;
+    border-radius: 0;
     p {
       padding: 1rem;
     }
