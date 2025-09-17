@@ -96,6 +96,20 @@ const LOG_TABLE_CLASS = [
 
 /** All log messages with select data in table form for display in the app. */
 export const LogsTable = (props: LogsTableProps) => {
+  const retentionDays = props.device.body.max_log_age_in_days || 60;
+  const rows = filterByVerbosity(getFilterLevel(props.state), props.logs)
+    .filter(bySearchTerm(props.state.searchTerm, props.timeSettings))
+    .filter(log => !props.state.currentFbosOnly || !props.fbosVersion ||
+      logVersionMatch(log, props.fbosVersion))
+    .map((log: TaggedLog) =>
+      <LogsRow
+        key={log.uuid}
+        tlog={log}
+        dispatch={props.dispatch}
+        markdown={props.state.markdown}
+        fbosVersion={props.fbosVersion}
+        timeSettings={props.timeSettings} />);
+
   return <div className={"logs-table-wrapper"}>
     <table className={LOG_TABLE_CLASS}>
       <thead>
@@ -107,25 +121,18 @@ export const LogsTable = (props: LogsTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {filterByVerbosity(getFilterLevel(props.state), props.logs)
-          .filter(bySearchTerm(props.state.searchTerm, props.timeSettings))
-          .filter(log => !props.state.currentFbosOnly || !props.fbosVersion ||
-            logVersionMatch(log, props.fbosVersion))
-          .map((log: TaggedLog) =>
-            <LogsRow
-              key={log.uuid}
-              tlog={log}
-              dispatch={props.dispatch}
-              markdown={props.state.markdown}
-              fbosVersion={props.fbosVersion}
-              timeSettings={props.timeSettings} />)}
+        {rows}
       </tbody>
+      <tfoot>
+        <tr className={"logs-retention-row"} key={"logs-retention-notice"}>
+          <td colSpan={4}>
+            {t("Logs older than {{ days }} days are automatically deleted", {
+              days: retentionDays,
+            })}
+          </td>
+        </tr>
+      </tfoot>
     </table>
-    <p className={"notice"}>
-      {t("Logs older than {{ days }} days are automatically deleted", {
-        days: props.device.body.max_log_age_in_days || 60,
-      })}
-    </p>
   </div>;
 };
 

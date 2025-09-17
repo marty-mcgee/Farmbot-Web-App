@@ -6,10 +6,9 @@
   .fa-trash {
     display: none;
   }
-  tr {
-    vertical-align: top;
+  tbody tr {
     &:hover {
-      background: $translucent2_white;
+      background: var(--secondary-bg);
       .fa-trash {
         display: inline;
         margin-left: 6px;
@@ -20,6 +19,9 @@
         display: none;
       }
     }
+  }
+  tr {
+    vertical-align: top;
   }
   .fa-filter {
     border: 1px black solid;
@@ -51,12 +53,6 @@
       font-size: 1.4rem;
       font-weight: bold;
     }
-  }
-  .notice {
-    font-style: italic;
-    text-align: center;
-    font-size: 1.4rem;
-    padding: 1rem;
   }
 }
 
@@ -93,6 +89,8 @@
   display: block;
   overflow: scroll;
   max-height: 42rem;
+  padding-top: 0.5rem;
+  border-radius: 0;
   .log-verbosity-saucer .saucer {
     text-align: center;
     margin-left: 6px;
@@ -103,15 +101,11 @@
   button {
     float: none;
   }
+  table {
+    border-radius: 0;
+  }
   thead {
     text-align: left;
-    background: var(--main-bg);
-  }
-  thead,
-  th {
-    position: sticky;
-    top: 0;
-    z-index: 999;
   }
   td {
     word-break: break-word;
@@ -131,6 +125,16 @@
   td:nth-child(3),
   td:nth-child(4) {
     white-space: nowrap;
+  }
+
+  .logs-retention-row {
+    td {
+      font-style: italic;
+      text-align: center;
+      padding: 0.7rem 1rem 1rem;
+      white-space: normal;
+      background: var(--secondary-bg);
+    }
   }
 }
 
