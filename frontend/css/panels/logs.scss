@@ -25,7 +25,7 @@
     vertical-align: top;
   }
   .fa-filter {
-    border: 1px black solid;
+    border: 1px var(--border-color) solid;
     border-radius: 50%;
     padding: 0.25rem;
     width: 2rem;
@@ -67,7 +67,7 @@
   .line {
     position: absolute;
     width: 0.5rem;
-    height: 86.5%;
+    height: 85%;
     border-right: 1.5px $light_gray solid;
     .line-label {
       position: absolute;
@@ -77,6 +77,10 @@
   }
   .bp6-slider-unlabeled {
     margin: 0 1rem;
+  }
+  .current-version-only {
+    margin-left: 2.5rem;
+    margin-top: 0.5rem;
   }
 }
 
