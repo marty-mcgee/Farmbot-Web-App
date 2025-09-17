@@ -321,7 +321,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         this.isStaff ? "red" : "",
       ].join(" ")}>
         <nav role="navigation">
-          <div className="nav-bar">
+          <div className="nav-bar grid no-gap">
             <this.TickerList />
             <div className="nav-group">
               <div className="nav-left">

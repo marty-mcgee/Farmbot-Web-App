@@ -3,6 +3,7 @@
 
 .logs-table-wrapper {
   border: none;
+  overflow: scroll;
   .fa-trash {
     display: none;
   }
@@ -86,10 +87,9 @@
 }
 
 .logs-table {
-  display: block;
-  overflow: scroll;
+  display: table;
   max-height: 42rem;
-  padding-top: 0.5rem;
+  margin-top: 0.5rem;
   border-radius: 0;
   .log-verbosity-saucer .saucer {
     text-align: center;

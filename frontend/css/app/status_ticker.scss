@@ -2,10 +2,6 @@
 @use "sass:color";
 
 .ticker-list {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 3;
   background: var(--main-bg);
   backdrop-filter: var(--blur);
