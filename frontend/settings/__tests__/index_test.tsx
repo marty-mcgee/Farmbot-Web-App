@@ -138,7 +138,7 @@ describe("<DesignerSettings />", () => {
     const p = fakeProps();
     p.settingsPanelState = settingsPanelState();
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 0, "");
+    clickButton(wrapper, 1, "");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.BULK_TOGGLE_SETTINGS_PANEL,
       payload: true,
@@ -150,7 +150,7 @@ describe("<DesignerSettings />", () => {
     p.settingsPanelState = settingsPanelState();
     p.settingsPanelState.motors = true;
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 0, "");
+    clickButton(wrapper, 1, "");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.BULK_TOGGLE_SETTINGS_PANEL,
       payload: false,
@@ -265,7 +265,7 @@ describe("<DesignerSettings />", () => {
     const p = fakeProps();
     p.searchTerm = "";
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 1, "cancel");
+    clickButton(wrapper, 2, "cancel");
     expect(mockNavigate).toHaveBeenCalledWith("path");
   });
 

@@ -151,16 +151,20 @@ describe("<NavBar />", () => {
 
   it("displays connectivity saucer", () => {
     mockIsMobile = true;
-    const wrapper = mount(<NavBar {...fakeProps()} />);
+    const p = fakeProps();
+    p.device.body.name = "broccolibot";
+    const wrapper = mount(<NavBar {...p} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
-    expect(wrapper.text().toLowerCase()).not.toContain("connectivity");
+    expect(wrapper.text().toLowerCase()).not.toContain("broccolibot");
   });
 
   it("displays connectivity saucer and button", () => {
     mockIsMobile = false;
-    const wrapper = mount(<NavBar {...fakeProps()} />);
+    const p = fakeProps();
+    p.device.body.name = "broccolibot";
+    const wrapper = mount(<NavBar {...p} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
-    expect(wrapper.text().toLowerCase()).toContain("connectivity");
+    expect(wrapper.text().toLowerCase()).toContain("broccolibot");
   });
 
   it("displays setup button", () => {

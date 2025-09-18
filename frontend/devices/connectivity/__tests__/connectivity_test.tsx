@@ -184,7 +184,7 @@ describe("<Connectivity />", () => {
     p.flags.botFirmware = false;
     const wrapper = mount(<Connectivity {...p} />);
     expect(wrapper.find(".fix-firmware-buttons").length).toBeGreaterThan(0);
-    clickButton(wrapper, 1, "restart firmware");
+    clickButton(wrapper, 2, "restart firmware");
   });
 
   it("doesn't display fix firmware buttons", () => {
