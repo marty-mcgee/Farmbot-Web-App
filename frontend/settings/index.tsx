@@ -34,13 +34,14 @@ import { ReSeedAccount } from "../messages/cards";
 import {
   InterpolationSettings,
 } from "../farm_designer/map/layers/points/interpolation_map";
-import { getUrlQuery } from "../util";
+import { getUrlQuery, shortRevision } from "../util";
 import { Popover, ToggleButton } from "../ui";
 import { Position } from "@blueprintjs/core";
 import { ThreeDSettings } from "./three_d_settings";
 import { useLocation, useNavigate } from "react-router";
 import { Path } from "../internal_urls";
 import { setWebAppConfigValue } from "../config_storage/actions";
+import { ExternalUrl } from "../external_urls";
 
 export const RawDesignerSettings = (props: DesignerSettingsProps) => {
   const navigate = useNavigate();
@@ -212,6 +213,12 @@ export const RawDesignerSettings = (props: DesignerSettingsProps) => {
         <DevSettingsRows />}
       {showByEveryTerm("surprise", props.searchTerm) &&
         <BugsSettings />}
+      <div className="app-version row grid-exp-2 no-gap">
+        <label>{t("APP VERSION")}</label>
+        <a href={ExternalUrl.webAppRepo} target="_blank" rel={"noreferrer"}>
+          {shortRevision()}
+        </a>
+      </div>
     </DesignerPanelContent>
   </DesignerPanel>;
 };

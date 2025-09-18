@@ -1,9 +1,7 @@
 import React from "react";
 import { AccountMenuProps } from "./interfaces";
 import { Link } from "../link";
-import { shortRevision } from "../util";
 import { t } from "../i18next_wrapper";
-import { ExternalUrl } from "../external_urls";
 import { FilePath, Icon, Path } from "../internal_urls";
 import { logout } from "../logout";
 import { setPanelOpen } from "../farm_designer/panel_header";
@@ -52,12 +50,5 @@ export const AdditionalMenu = (props: AccountMenuProps) => {
         {t("Logout and destroy token")}
       </a>
     </div>}
-    <div className="app-version row grid-exp-2 no-gap">
-      <img width={12} height={12} src={FilePath.icon(Icon.developer)} />
-      <label>{t("APP VERSION")}</label>
-      <a href={ExternalUrl.webAppRepo} target="_blank" rel={"noreferrer"}>
-        {shortRevision().slice(0, 8)}
-      </a>
-    </div>
   </div>;
 };

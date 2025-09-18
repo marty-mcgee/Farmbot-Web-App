@@ -19,7 +19,6 @@ describe("AdditionalMenu", () => {
     const text = wrapper.text();
     expect(text).toContain("Account Settings");
     expect(text).toContain("Logout");
-    expect(text).toContain("VERSION");
     expect(text).not.toContain("destroy token");
   });
 

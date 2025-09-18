@@ -102,6 +102,16 @@
       }
     }
   }
+  .app-version {
+    border-top: 1.5px solid var(--border-color);
+    padding: 1rem 2.3rem;
+    margin: -1rem -1rem -1.3rem;
+    font-size: 1.3rem;
+    a {
+      font-weight: bold;
+      justify-self: end;
+    }
+  }
 }
 
 .setting {

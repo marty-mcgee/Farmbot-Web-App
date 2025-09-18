@@ -84,6 +84,7 @@ describe("<DesignerSettings />", () => {
     expect(settings.length).toBeGreaterThanOrEqual(8);
     expect(wrapper.text().toLowerCase()).not.toContain("unstable fe");
     expect(wrapper.text().toLowerCase()).not.toContain("reporting");
+    expect(wrapper.text().toLowerCase()).toContain("version");
   });
 
   it("renders all settings", () => {
