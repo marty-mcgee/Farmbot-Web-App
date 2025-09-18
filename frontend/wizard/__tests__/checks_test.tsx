@@ -116,13 +116,21 @@ const fakeProps = (): WizardStepComponentProps => ({
 });
 
 describe("<Language />", () => {
-  it("changes setting", () => {
+  it("displays and changes setting", () => {
     const p = fakeProps();
-    p.resources = buildResourceIndex([fakeUser()]).index;
-    const wrapper = shallow(<Language {...p} />);
-    wrapper.find("BlurableInput").simulate("commit",
-      { currentTarget: { value: "English" } });
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), { language: "English" });
+    const user = fakeUser();
+    p.resources = buildResourceIndex([user]).index;
+    const { container, rerender } = render(<Language {...p} />);
+    const input = container.querySelector<HTMLInputElement>("input[name=\"language\"]");
+    expect(input?.value).toEqual("English");
+    input && changeBlurableInputRTL(input, "New Language");
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { language: "New Language" });
+    user.body.language = undefined as unknown as string;
+    p.resources = buildResourceIndex([user]).index;
+    rerender(<Language {...p} />);
+    const updatedInput = container
+      .querySelector<HTMLInputElement>("input[name=\"language\"]");
+    expect(updatedInput?.value).toEqual("");
   });
 });
 
