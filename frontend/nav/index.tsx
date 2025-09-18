@@ -117,7 +117,8 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           title={t("FarmBot position (X, Y, Z)")}
           aria-expanded={isOpen}>
           <img
-            src={TAB_ICON[Panel.Controls]} />
+            src={TAB_ICON[Panel.Controls]}
+            alt={t("controls icon")} />
           <p>
             {botPositionLabel(validBotLocationData(hardware.location_data)
               .position, { rounded: true })}

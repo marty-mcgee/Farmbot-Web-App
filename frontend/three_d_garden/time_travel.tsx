@@ -47,7 +47,7 @@ export const TimeTravelTarget = (props: TimeTravelTargetProps) => {
     ].join(" ")}
     onClick={props.click}
     title={t("Time Travel")}>
-    <img src={TAB_ICON[Panel.Settings]} />
+    <img src={TAB_ICON[Panel.Settings]} alt={t("sun icon")} />
     <p>{formatTime(get3DTime(threeDTime), props.timeSettings)}</p>
   </div>;
 };
