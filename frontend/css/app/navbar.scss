@@ -176,8 +176,7 @@ nav {
   .nav-coordinates,
   .jobs-button,
   .setup-button,
-  .connectivity-button,
-  .nav-name {
+  .connectivity-button {
     display: flex;
     position: relative;
     gap: 0.5rem;
@@ -273,71 +272,13 @@ nav {
   }
 }
 
-.menu-popover {
-  .bp6-popover-content {
-    position: relative;
-    width: 22rem;
-    padding: 0;
-    font-size: 1.2rem;
-    letter-spacing: 1.2px;
-    color: var(--text-color);
-    i {
-      margin-right: 0.8rem;
-    }
-    a:not(.app-version) {
-      display: inline-block;
-      width: 100%;
-      text-transform: uppercase;
-      padding: 0.5rem 1rem;
-    }
-    img {
-      margin-right: 0.8rem;
-    }
-    .app-version {
-      padding: 0.5rem 1rem 0;
-      margin-top: 0.5rem;
-      border-top: 1px solid var(--border-color);
-      label {
-        font-weight: normal;
-      }
-      a {
-        text-align: right;
-        border-radius: 0.5rem;
-      }
-    }
-  }
-  .bp6-popover-arrow {
-    visibility: hidden;
-  }
-  .fa-user {
-    width: 2.75rem;
-    height: 2.75rem;
-    padding: 0.75rem;
-    border-radius: 5px;
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-  }
-}
-
-body:has(.app.dark) {
-  .menu-popover {
-    .bp6-popover-content {
-      img {
-        filter: invert(0.75);
-      }
-    }
-  }
-}
-
 body:has(.app.light) {
   .nav-right {
     .time-travel-button,
     .nav-coordinates,
     .jobs-button,
     .setup-button,
-    .connectivity-button,
-    .nav-name {
+    .connectivity-button {
       &.hover {
         background: var(--main-bg);
         color: var(--text-color);
@@ -397,13 +338,6 @@ body:has(.app.light) {
       margin-left: 1rem;
       margin-top: 0.4rem;
     }
-  }
-}
-
-.nav-additional-menu {
-  padding: 0.5rem 0;
-  a:hover {
-    background: var(--secondary-bg);
   }
 }
 

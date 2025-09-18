@@ -170,14 +170,6 @@ export const TOURS = (
         ],
       },
       {
-        slug: "accountMenu",
-        title: t("Account Menu"),
-        content: TourContent.ACCOUNT_MENU,
-        beacons: undefined,
-        activeBeacons: [{ class: "nav-name", type: "soft", keep: true }],
-        url: undefined,
-      },
-      {
         slug: "end",
         title: t("What's next?"),
         content: TourContent.GETTING_STARTED_END,

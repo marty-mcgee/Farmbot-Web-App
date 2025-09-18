@@ -6,7 +6,6 @@ import { updatePageInfo } from "../util";
 import { validBotLocationData } from "../util/location";
 import { NavLinks } from "./nav_links";
 import { demoAccountLog, TickerList } from "./ticker_list";
-import { AdditionalMenu } from "./additional_menu";
 import { MobileMenu } from "./mobile_menu";
 import { Position } from "@blueprintjs/core";
 import { ErrorBoundary } from "../error_boundary";
@@ -41,7 +40,6 @@ import {
 export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   state: NavBarState = {
     mobileMenuOpen: false,
-    accountMenuOpen: false,
     documentTitle: "",
   };
 
@@ -66,11 +64,11 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
     return this.props.logs.concat(forceOnline() ? [demoAccountLog()] : []);
   }
 
-  toggle = (key: keyof NavBarState) => () =>
-    this.setState({ [key]: !this.state[key] });
+  toggleMobileMenu = () =>
+    this.setState({ mobileMenuOpen: !this.state.mobileMenuOpen });
 
-  close = (key: keyof NavBarState) => () =>
-    this.setState({ [key]: false });
+  closeMobileMenu = () =>
+    this.setState({ mobileMenuOpen: false });
 
   ReadOnlyStatus = () =>
     <ReadOnlyIcon locked={!!this.props.getConfigValue(
@@ -153,31 +151,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         forceUnlock={!!this.props.getConfigValue(
           BooleanSetting.disable_emergency_unlock_confirmation)} />
     </div>;
-
-  AccountMenu = () => {
-    const hasName = this.props.user?.body.name;
-    const firstName = hasName
-      ? `${hasName.split(" ")[0].slice(0, 9)} ▾`
-      : `${t("Menu")} ▾`;
-    return <div className="menu-popover">
-      <Popover
-        popoverClassName={"menu-popover"}
-        position={Position.BOTTOM_RIGHT}
-        isOpen={this.state.accountMenuOpen}
-        onClose={this.close("accountMenuOpen")}
-        target={isMobile()
-          ? <i className={"fa fa-user"} onClick={this.toggle("accountMenuOpen")} />
-          : <div className={`nav-name ${this.state.accountMenuOpen ? "hover" : ""}`}
-            data-title={firstName}
-            onClick={this.toggle("accountMenuOpen")}>
-            {firstName}
-          </div>}
-        content={<AdditionalMenu
-          close={this.close("accountMenuOpen")}
-          dispatch={this.props.dispatch}
-          isStaff={this.isStaff} />} />
-    </div>;
-  };
 
   ConnectionStatus = () => {
     const data = connectivityData({
@@ -281,12 +254,12 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   AppNavLinks = () =>
     <div className={"app-nav-links"}>
       <i className={"fa fa-bars mobile-menu-icon"}
-        onClick={this.toggle("mobileMenuOpen")} />
+        onClick={this.toggleMobileMenu} />
       <span className="mobile-menu-container">
         <MobileMenu
           designer={this.props.designer}
           dispatch={this.props.dispatch}
-          close={this.close("mobileMenuOpen")}
+          close={this.closeMobileMenu}
           alertCount={this.props.alertCount}
           mobileMenuOpen={this.state.mobileMenuOpen}
           helpState={this.props.helpState} />
@@ -295,7 +268,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         <NavLinks
           designer={this.props.designer}
           dispatch={this.props.dispatch}
-          close={this.close("mobileMenuOpen")}
+          close={this.closeMobileMenu}
           alertCount={this.props.alertCount}
           helpState={this.props.helpState} />
       </span>
@@ -329,7 +302,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
               <div className="nav-right">
                 <ErrorBoundary>
                   <this.ReadOnlyStatus />
-                  <this.AccountMenu />
                   <this.EstopButton />
                   <this.ConnectionStatus />
                   <this.SetupButton />

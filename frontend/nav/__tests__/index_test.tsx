@@ -125,17 +125,10 @@ describe("<NavBar />", () => {
     expect(maybeSetTimezone).toHaveBeenCalledWith(p.dispatch, p.device);
   });
 
-  it("handles missing user", () => {
-    const p = fakeProps();
-    p.user = undefined;
-    const wrapper = mount(<NavBar {...p} />);
-    expect(wrapper.text().toLowerCase()).toContain("menu");
-  });
-
   it("toggles state value", () => {
     const wrapper = shallow<NavBar>(<NavBar {...fakeProps()} />);
     expect(wrapper.state().mobileMenuOpen).toEqual(false);
-    wrapper.instance().toggle("mobileMenuOpen")();
+    wrapper.instance().toggleMobileMenu();
     expect(wrapper.state().mobileMenuOpen).toEqual(true);
   });
 
@@ -233,11 +226,4 @@ describe("<NavBar />", () => {
     expect(props.firmwareSettings).toEqual(p.bot.hardware.mcu_params);
   });
 
-  it("opens account menu", () => {
-    mockIsMobile = false;
-    const wrapper = mount<NavBar>(<NavBar {...fakeProps()} />);
-    wrapper.instance().toggle("accountMenuOpen")();
-    wrapper.update();
-    expect(wrapper.find(".nav-name").first().hasClass("hover")).toBeTruthy();
-  });
 });

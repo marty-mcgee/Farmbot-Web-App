@@ -1491,10 +1491,6 @@ export namespace TourContent {
     same button to UNLOCK the device before resuming execution of any
     commands.`);
 
-  export const ACCOUNT_MENU =
-    trim(`This is the account menu, providing you with links to other pages
-    in the app, and for logging out.`);
-
   export const GETTING_STARTED_END =
     trim(`Thanks for taking the Getting Started Tour! You're now ready to
     dive into the details of each panel and begin planting your first
