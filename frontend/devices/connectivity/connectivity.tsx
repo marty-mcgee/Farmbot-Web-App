@@ -26,6 +26,7 @@ import { Actions } from "../../constants";
 import { forceOnline } from "../must_be_online";
 import { isMobile } from "../../screen_size";
 import { NavigationContext } from "../../routes_helpers";
+import { logout } from "../../logout";
 
 export interface ConnectivityProps {
   bot: BotState;
@@ -179,14 +180,21 @@ export class Connectivity
   render() {
     const { realtime, network, history } = this.props.metricPanelState;
     return <div className="connectivity">
-      <div className={"connectivity-content"}>
-        <div className={"tabs"}>
-          <label className={realtime ? "selected" : ""}
-            onClick={this.setPanelState("realtime")}>{t("realtime")}</label>
-          <label className={network ? "selected" : ""}
-            onClick={this.setPanelState("network")}>{t("network")}</label>
-          <label className={history ? "selected" : ""}
-            onClick={this.setPanelState("history")}>{t("history")}</label>
+      <div className={"connectivity-content grid"}>
+        <div className={"row space-between"}>
+          <div className={"tabs"}>
+            <label className={realtime ? "selected" : ""}
+              onClick={this.setPanelState("realtime")}>{t("realtime")}</label>
+            <label className={network ? "selected" : ""}
+              onClick={this.setPanelState("network")}>{t("network")}</label>
+            <label className={history ? "selected" : ""}
+              onClick={this.setPanelState("history")}>{t("history")}</label>
+          </div>
+          <button className="fb-button gray logout-button"
+            type="button"
+            onClick={logout()}>
+            {t("Logout")}
+          </button>
         </div>
         {realtime && <this.Realtime />}
         {network && <this.Network />}

@@ -57,6 +57,10 @@
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
+.space-between {
+  justify-content: space-between;
+}
+
 .key-value-edit-row {
   grid-template-columns: 1fr 1fr auto;
 }
