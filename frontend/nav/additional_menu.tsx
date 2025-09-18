@@ -6,9 +6,6 @@ import { t } from "../i18next_wrapper";
 import { ExternalUrl } from "../external_urls";
 import { FilePath, Icon, Path } from "../internal_urls";
 import { logout } from "../logout";
-import { setWebAppConfigValue } from "../config_storage/actions";
-import { BooleanSetting } from "../session_keys";
-import { ToggleButton } from "../ui";
 import { setPanelOpen } from "../farm_designer/panel_header";
 
 export const AdditionalMenu = (props: AccountMenuProps) => {
@@ -55,17 +52,6 @@ export const AdditionalMenu = (props: AccountMenuProps) => {
         {t("Logout and destroy token")}
       </a>
     </div>}
-    <div className={"dark-mode-toggle"}>
-      <i className="fa fa-moon-o" />
-      <label>{t("Dark Mode")}</label>
-      <ToggleButton
-        toggleValue={props.darkMode}
-        toggleAction={() => {
-          props.dispatch(setWebAppConfigValue(
-            BooleanSetting.dark_mode, !props.darkMode));
-        }}
-        customText={{ textFalse: t("off"), textTrue: t("on") }} />
-    </div>
     <div className="app-version row grid-exp-2 no-gap">
       <img width={12} height={12} src={FilePath.icon(Icon.developer)} />
       <label>{t("APP VERSION")}</label>

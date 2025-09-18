@@ -254,6 +254,7 @@ nav {
   .connectivity-button {
     p {
       font-weight: bold;
+      max-width: 17rem;
     }
   }
   .connection-status-popover {
@@ -302,16 +303,6 @@ nav {
       a {
         text-align: right;
         border-radius: 0.5rem;
-      }
-    }
-    .dark-mode-toggle {
-      padding: 0.5rem 1rem;
-      line-height: 1.8rem;
-      label {
-        font-weight: normal;
-      }
-      .fb-button {
-        margin: 0;
       }
     }
   }

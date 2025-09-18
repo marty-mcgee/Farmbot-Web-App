@@ -84,7 +84,6 @@ export interface AccountMenuProps {
   isStaff: boolean;
   close(): void;
   dispatch: Function;
-  darkMode: boolean;
 }
 
 export interface EStopButtonProps {

@@ -214,6 +214,14 @@ describe("<DesignerSettings />", () => {
     expect(mockNavigate).toHaveBeenCalledWith(Path.setup());
   });
 
+  it("toggles dark mode", () => {
+    const p = fakeProps();
+    const wrapper = mount(<DesignerSettings {...p} />);
+    wrapper.find(".dark-mode-toggle button").simulate("click");
+    expect(setWebAppConfigValue)
+      .toHaveBeenCalledWith(BooleanSetting.dark_mode, true);
+  });
+
   it("renders extra setting", () => {
     const p = fakeProps();
     p.searchTerm = "re-seed";

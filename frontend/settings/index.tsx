@@ -35,11 +35,12 @@ import {
   InterpolationSettings,
 } from "../farm_designer/map/layers/points/interpolation_map";
 import { getUrlQuery } from "../util";
-import { Popover } from "../ui";
+import { Popover, ToggleButton } from "../ui";
 import { Position } from "@blueprintjs/core";
 import { ThreeDSettings } from "./three_d_settings";
 import { useLocation, useNavigate } from "react-router";
 import { Path } from "../internal_urls";
+import { setWebAppConfigValue } from "../config_storage/actions";
 
 export const RawDesignerSettings = (props: DesignerSettingsProps) => {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export const RawDesignerSettings = (props: DesignerSettingsProps) => {
   }, [location]);
 
   const showAdvanced = !!getConfigValue(BooleanSetting.show_advanced_settings);
+  const darkMode = !!getConfigValue(BooleanSetting.dark_mode);
   const commonProps = { dispatch, settingsPanelState, showAdvanced };
   const { value } = sourceFbosConfig("firmware_hardware");
   const firmwareHardware = validFirmwareHardware(value);
@@ -80,6 +82,16 @@ export const RawDesignerSettings = (props: DesignerSettingsProps) => {
           });
         }} />
       <div className="row no-gap">
+        <div className="dark-mode-toggle row half-gap">
+          <label>{t("Dark Mode")}</label>
+          <ToggleButton
+            toggleValue={darkMode}
+            toggleAction={() => {
+              dispatch(setWebAppConfigValue(
+                BooleanSetting.dark_mode, !darkMode));
+            }}
+            customText={{ textFalse: t("off"), textTrue: t("on") }} />
+        </div>
         <Popover
           position={Position.BOTTOM}
           popoverClassName={"settings-panel-settings-menu"}

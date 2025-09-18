@@ -175,7 +175,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         content={<AdditionalMenu
           close={this.close("accountMenuOpen")}
           dispatch={this.props.dispatch}
-          darkMode={!!this.props.getConfigValue(BooleanSetting.dark_mode)}
           isStaff={this.isStaff} />} />
     </div>;
   };
@@ -201,7 +200,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             <DiagnosisSaucer {...data.flags}
               className={"nav"}
               syncStatus={sync_status} />
-            {!isMobile() && <p>{t("Connectivity")}</p>}
+            {!isMobile() && <p>{this.props.device.body.name || t("FarmBot")}</p>}
           </div>}
           content={<ErrorBoundary>
             <Connectivity

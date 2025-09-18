@@ -1,6 +1,14 @@
 @use "../variables" as *;
 @use "sass:color";
 
+.settings-panel {
+  .panel-top {
+    .dark-mode-toggle {
+      margin-right: 1rem;
+    }
+  }
+}
+
 .settings-panel-content {
   overflow-y: auto;
   overflow-x: hidden;
