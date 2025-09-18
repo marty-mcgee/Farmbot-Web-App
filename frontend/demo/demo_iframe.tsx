@@ -80,6 +80,16 @@ export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAcc
       onChange={ddi => this.setState({ productLine: "" + ddi.value })} />;
   };
 
+  protected demoButton = (className: string): React.ReactElement => {
+    return <button
+      className={className}
+      title={t("demo the app")}
+      onClick={this.requestAccount}
+      type="button">
+      {this.state.stage}
+    </button>;
+  };
+
   protected abstract ok(): React.ReactNode;
 
   no = () => {
@@ -100,11 +110,7 @@ export class DemoIframe extends DemoAccountBase {
         <source src={ExternalUrl.Video.desktop} type="video/mp4" />
       </video>
       <img className="demo-phone" src={ExternalUrl.Video.mobile} />
-      <button className="demo-button"
-        title={t("demo the app")}
-        onClick={this.requestAccount}>
-        {this.state.stage}
-      </button>
+      {this.demoButton("demo-button")}
       {this.seedDataSelect()}
     </div>;
   };

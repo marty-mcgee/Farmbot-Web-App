@@ -14,12 +14,7 @@ export class DemoLoginOption extends DemoAccountBase {
             {this.seedDataSelect()}
           </div>
           <div className="demo-widget-actions">
-            <button className="fb-button dark-blue"
-              type="button"
-              title={t("demo the app")}
-              onClick={this.requestAccount}>
-              {this.state.stage}
-            </button>
+            {this.demoButton("fb-button dark-blue")}
           </div>
         </div>
       </WidgetBody>
