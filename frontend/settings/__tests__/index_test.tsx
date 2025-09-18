@@ -38,6 +38,7 @@ import {
 } from "../../__test_support__/fake_state/resources";
 import { API } from "../../api";
 import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
+import { Path } from "../../internal_urls";
 
 const getSetting =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -199,6 +200,18 @@ describe("<DesignerSettings />", () => {
     p.searchTerm = "setup";
     const wrapper = mount(<DesignerSettings {...p} />);
     expect(wrapper.text().toLowerCase()).toContain("setup");
+  });
+
+  it("navigates to setup wizard", () => {
+    const p = fakeProps();
+    const wrapper = mount(<DesignerSettings {...p} />);
+    const popover = wrapper.find("Popover").first();
+    const content = shallow(<div>{popover.prop("content")}</div>);
+    const button = content.find("button")
+      .filterWhere(btn => btn.text().toLowerCase() == "setup wizard");
+    expect(button).toHaveLength(1);
+    button.simulate("click");
+    expect(mockNavigate).toHaveBeenCalledWith(Path.setup());
   });
 
   it("renders extra setting", () => {

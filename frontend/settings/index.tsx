@@ -39,6 +39,7 @@ import { Popover } from "../ui";
 import { Position } from "@blueprintjs/core";
 import { ThreeDSettings } from "./three_d_settings";
 import { useLocation, useNavigate } from "react-router";
+import { Path } from "../internal_urls";
 
 export const RawDesignerSettings = (props: DesignerSettingsProps) => {
   const navigate = useNavigate();
@@ -83,9 +84,19 @@ export const RawDesignerSettings = (props: DesignerSettingsProps) => {
           position={Position.BOTTOM}
           popoverClassName={"settings-panel-settings-menu"}
           target={<i className={"fa fa-gear fb-icon-button invert"} />}
-          content={<ShowAdvancedToggle
-            dispatch={dispatch}
-            getConfigValue={getConfigValue} />} />
+          content={<div className="grid">
+            <ShowAdvancedToggle
+              dispatch={dispatch}
+              getConfigValue={getConfigValue} />
+            <button className="fb-button gray"
+              type="button"
+              title={t("Open setup wizard")}
+              onClick={() => {
+                navigate(Path.setup());
+              }}>
+              {t("Setup wizard")}
+            </button>
+          </div>} />
         <ToggleSettingsOpen dispatch={dispatch} panels={settingsPanelState} />
       </div>
     </DesignerPanelTop>
