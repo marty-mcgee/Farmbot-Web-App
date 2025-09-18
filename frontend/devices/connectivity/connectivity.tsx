@@ -78,7 +78,7 @@ export class Connectivity
       firmware_version, target, memory_usage, sync_status,
       video_devices,
     } = informational_settings;
-    const { id, fbos_version } = this.props.device.body;
+    const { id, fbos_version, fb_order_number } = this.props.device.body;
     return <div className={"realtime-wrapper"}>
       <div className={"connectivity-left-column"}>
         <ConnectivityDiagram
@@ -88,6 +88,8 @@ export class Connectivity
         <div className="fbos-info">
           <label>{t("FarmBot Info")}</label>
           <p><b>{t("Device ID")}: </b>{id}</p>
+          <p><b>{t("Order number")}: </b>
+            {fb_order_number || t("Unset")}</p>
           {controller_version
             ? <p><b>{t("Version")}: </b>{
               reformatFbosVersion(controller_version)}</p>
