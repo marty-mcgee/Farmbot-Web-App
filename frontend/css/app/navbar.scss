@@ -10,6 +10,10 @@
   background: linear-gradient(0deg, transparent, $translucent3 60%, $translucent5), linear-gradient(0deg, transparent 30%, $translucent3);
 }
 
+.skip-nav-link {
+  display: none;
+}
+
 nav {
   button {
     margin: 1.8rem 1.8rem 0 0;

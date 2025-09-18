@@ -299,6 +299,9 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         "nav-wrapper",
         this.isStaff ? "red" : "",
       ].join(" ")}>
+        <a href="#main-content" className="skip-nav-link">
+          {t("Skip to main content")}
+        </a>
         <nav role="navigation">
           <div className="nav-bar grid no-gap">
             <this.TickerList />
