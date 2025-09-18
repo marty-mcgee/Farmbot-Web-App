@@ -111,9 +111,11 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         popoverClassName={"controls-popover"}
         isOpen={isOpen}
         enforceFocus={false}
-        target={<div className={`nav-coordinates ${isOpen ? "hover" : ""}`}
+        target={<button type="button"
+          className={`nav-coordinates ${isOpen ? "hover" : ""}`}
           onClick={this.togglePopup("controls")}
-          title={t("FarmBot position (X, Y, Z)")}>
+          title={t("FarmBot position (X, Y, Z)")}
+          aria-expanded={isOpen}>
           <img
             src={TAB_ICON[Panel.Controls]} />
           <p>
@@ -124,7 +126,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             ? <div className={"movement-progress"}
               style={{ width: `${remaining}%` }} />
             : <></>}
-        </div>}
+        </button>}
         content={<ControlsPanel
           dispatch={this.props.dispatch}
           appState={this.props.appState}
@@ -168,13 +170,15 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           popoverClassName={"connectivity-popover"}
           isOpen={isOpen}
           enforceFocus={false}
-          target={<div className={`connectivity-button ${isOpen ? "hover" : ""}`}
-            onClick={click}>
+          target={<button type="button"
+            className={`connectivity-button ${isOpen ? "hover" : ""}`}
+            onClick={click}
+            aria-expanded={isOpen}>
             <DiagnosisSaucer {...data.flags}
               className={"nav"}
               syncStatus={sync_status} />
             {!isMobile() && <p>{this.props.device.body.name || t("FarmBot")}</p>}
-          </div>}
+          </button>}
           content={<ErrorBoundary>
             <Connectivity
               bot={this.props.bot}
@@ -216,7 +220,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
     const isPercent = job?.unit == "percent";
     const percent = isPercent ? round(job.percent, 1) : "";
     const activeText = !isMobile() ? jobNameLookup(job) : "";
-    const inactiveText = !isMobile() ? t("idle") : t("jobs");
+    const inactiveText = !isMobile() ? t("Idle") : t("jobs");
     const jobProgress = isPercent ? `${percent}%` : "";
     const isOpen = this.props.appState.popups.jobs;
     return <div className={"nav-popup-button-wrapper"}>
@@ -225,8 +229,10 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         popoverClassName={"jobs-panel"}
         isOpen={isOpen}
         enforceFocus={false}
-        target={<a className={`jobs-button ${isOpen ? "hover" : ""}`}
-          onClick={this.togglePopup("jobs")}>
+        target={<button type="button"
+          className={`jobs-button ${isOpen ? "hover" : ""}`}
+          onClick={this.togglePopup("jobs")}
+          aria-expanded={isOpen}>
           <i className={"fa fa-history"} />
           {!isMobile() &&
             <div className={"nav-job-info"}>
@@ -236,7 +242,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             </div>}
           {jobActive && <div className={"jobs-button-progress-bar"}
             style={{ width: jobProgress }} />}
-        </a>}
+        </button>}
         content={<JobsAndLogs
           dispatch={this.props.dispatch}
           bot={this.props.bot}

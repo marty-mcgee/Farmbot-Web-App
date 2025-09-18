@@ -2254,7 +2254,7 @@
     "height curves": "height curves",
     "Here you can control your FarmBot in realtime by pressing the movement arrow buttons, toggling peripherals, and executing pinned sequences. You can also view current status information about your FarmBot including its position and an optional webcam stream.": "Here you can control your FarmBot in realtime by pressing the movement arrow buttons, toggling peripherals, and executing pinned sequences. You can also view current status information about your FarmBot including its position and an optional webcam stream.",
     "Here you can view running and completed jobs as well as log messages.": "Here you can view running and completed jobs as well as log messages.",
-    "idle": "idle",
+    "Idle": "Idle",
     "If you are upgrading your FarmBot, you may need to manually add any new peripherals, sensors, and tools that your new electronics board supports.": "If you are upgrading your FarmBot, you may need to manually add any new peripherals, sensors, and tools that your new electronics board supports.",
     "Insert the microSD card into FarmBot": "Insert the microSD card into FarmBot",
     "Inspect the ports on the top edge of the Raspberry Pi and select which Raspberry Pi model is in your FarmBot.": "Inspect the ports on the top edge of the Raspberry Pi and select which Raspberry Pi model is in your FarmBot.",

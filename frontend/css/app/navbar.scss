@@ -177,6 +177,7 @@ nav {
   .jobs-button,
   .setup-button,
   .connectivity-button {
+    margin: 0;
     display: flex;
     position: relative;
     gap: 0.5rem;
@@ -184,6 +185,9 @@ nav {
     height: 2.9rem;
     overflow: hidden;
     border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
     padding-left: 0.8rem;
     padding-right: 0.8rem;
     font-weight: bold;
