@@ -26,23 +26,14 @@
   font-style: normal;
   font-weight: normal;
   font-display: swap;
-  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0")
-      format("woff2"),
-    url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff?v=4.7.0")
-      format("woff"),
-    url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.ttf?v=4.7.0")
-      format("truetype");
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0") format("woff2"),
+  url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff?v=4.7.0") format("woff"),
+  url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.ttf?v=4.7.0") format("truetype");
 }
 
-$cabin: 'Cabin',
-  'Cabin Fallback',
-  Arial,
-  Helvetica,
-  sans-serif;
+$cabin: 'Cabin', 'Cabin Fallback', Arial, Helvetica, sans-serif;
 
-$inknut: 'Inknut Antiqua',
-  'Inknut Antiqua Fallback',
-  serif;
+$inknut: 'Inknut Antiqua', 'Inknut Antiqua Fallback', serif;
 
 body,
 html {
