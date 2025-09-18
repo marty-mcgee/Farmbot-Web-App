@@ -62,6 +62,7 @@
     }
     .wizard-section {
       h2 {
+        padding: 0.5rem 1.5rem;
         margin-top: 0;
       }
       .bp6-collapse-body {
@@ -89,7 +90,6 @@
     }
     h2,
     .wizard-step-header {
-      padding: 0.5rem 1.5rem;
       cursor: pointer;
       &.open {
         background: var(--secondary-bg);
@@ -101,8 +101,11 @@
         background: var(--secondary-bg);
       }
     }
+    .wizard-step-header {
+      padding: 0.5rem 1.5rem 0.5rem 4rem;
+    }
     .wizard-step-content {
-      padding: 0.5rem 1.5rem 2rem;
+      padding: 0.5rem 1.5rem 1rem 4rem;
       background: var(--secondary-bg);
       .markdown {
         display: contents;
