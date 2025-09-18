@@ -1,10 +1,32 @@
 @use "../variables" as *;
 @use "sass:color";
 
+// Fallback font metrics tuned to match web fonts and reduce layout shift.
+@font-face {
+  font-family: "Cabin Fallback";
+  src: local("Arial");
+  ascent-override: 96.5%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Inknut Antiqua Fallback";
+  src: local("Times New Roman");
+  ascent-override: 170.3%;
+  descent-override: 87.6%;
+  line-gap-override: 0%;
+}
+
 $cabin: 'Cabin',
-Arial,
-Helvetica,
-sans-serif;
+  'Cabin Fallback',
+  Arial,
+  Helvetica,
+  sans-serif;
+
+$inknut: 'Inknut Antiqua',
+  'Inknut Antiqua Fallback',
+  serif;
 
 body,
 html {

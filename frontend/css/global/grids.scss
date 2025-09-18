@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "./fonts" as *;
 
 .grid {
   display: grid;
@@ -89,7 +90,7 @@ fieldset {
 
 .panel-title {
   display: grid;
-  font-family: 'Inknut Antiqua', serif;
+  font-family: $inknut;
   font-weight: bold;
   grid-template-columns: auto 1fr auto;
   align-items: center;

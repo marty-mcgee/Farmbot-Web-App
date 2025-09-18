@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .setup-panel {
   .panel-top {
@@ -54,7 +55,7 @@
     .wizard-header {
       padding: 1.5rem;
       h1 {
-        font-family: 'Inknut Antiqua', serif;
+        font-family: $inknut;
         font-weight: bold;
         font-size: 2rem;
         margin: 0;
