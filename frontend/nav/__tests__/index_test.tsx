@@ -167,6 +167,13 @@ describe("<NavBar />", () => {
     expect(wrapper.text().toLowerCase()).toContain("broccolibot");
   });
 
+  it("displays default device name when none is provided", () => {
+    const props = fakeProps();
+    props.device.body.name = "";
+    render(<NavBar {...props} />);
+    expect(screen.getByText("FarmBot")).toBeInTheDocument();
+  });
+
   it("displays setup button", () => {
     const wrapper = mountWithContext(<NavBar {...fakeProps()} />);
     wrapper.find(".setup-button").simulate("click");
