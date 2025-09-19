@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .three-d-garden-loading-container,
 .promo-loading-container {
@@ -26,7 +27,7 @@
 
 .three-d-garden-loading-text,
 .promo-loading-text {
-  font-family: 'Inknut Antiqua', sans-serif;
+  font-family: $inknut;
   font-size: 2rem;
   font-weight: bold;
   color: $off_white;
@@ -131,7 +132,7 @@
 
       .setting-title {
         color: $off_white;
-        font-family: 'Inknut Antiqua';
+        font-family: $inknut;
         text-shadow: 0 0 10px black;
         line-height: 1.8rem;
         text-align: center;
@@ -371,7 +372,7 @@
 
     .title {
       margin: 0;
-      font-family: 'Inknut Antiqua';
+      font-family: $inknut;
       font-size: 3.5rem;
       line-height: 5rem;
       font-weight: bold;
@@ -477,7 +478,7 @@
       font-size: 1rem;
       h2 {
         margin: 0;
-        font-family: 'Inknut Antiqua';
+        font-family: $inknut;
         line-height: 100%;
         font-weight: bold;
       }

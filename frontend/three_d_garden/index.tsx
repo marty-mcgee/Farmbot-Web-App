@@ -118,7 +118,11 @@ export const ThreeDGardenToggle = (props: ThreeDGardenToggleProps) => {
     <div className={"three-d-map-toggle row"}>
       <div className={"row half-gap"}>
         <label>{t(DeviceSetting.show3DMap)}</label>
-        {threeDGarden && <Help text={description} enableMarkdown={true} />}
+        {threeDGarden &&
+          <Help
+            text={description}
+            enableMarkdown={true}
+            ariaLabel={`${t(DeviceSetting.show3DMap)} help`} />}
       </div>
       <LayerToggle
         settingName={BooleanSetting.three_d_garden}

@@ -2,10 +2,6 @@
 @use "sass:color";
 
 .ticker-list {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 3;
   background: var(--main-bg);
   backdrop-filter: var(--blur);
@@ -98,8 +94,8 @@
 
 // background: linear-gradient(to top, black 0%, transparent 30%);
 .status-ticker-message {
-  display: inline;
-  letter-spacing: 0.1rem;
+  letter-spacing: 0.05rem;
+  overflow: hidden;
   span {
     -webkit-animation: flash 1.5s ease-in;
     animation: flash 1.5s ease-in;

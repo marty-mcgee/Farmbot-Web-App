@@ -15,7 +15,6 @@ import moment from "moment";
 import { betterCompact, formatTime } from "../util";
 import { Color } from "../ui";
 import { cloneDeep, round, sortBy } from "lodash";
-import { Actions } from "../constants";
 import { BotState, SourceFbosConfig } from "./interfaces";
 import { GetWebAppConfigValue } from "../config_storage/actions";
 import { LogsPanel } from "../logs";
@@ -62,12 +61,6 @@ export interface JobsAndLogsProps {
 export class JobsAndLogs
   extends React.Component<JobsAndLogsProps> {
 
-  setPanelState = (key: keyof JobsAndLogsState) => () =>
-    this.props.dispatch({
-      type: Actions.SET_JOBS_PANEL_OPTION,
-      payload: key,
-    });
-
   Jobs = () => {
     return <div className={"jobs-tab"}>
       <JobsTable jobs={this.props.bot.hardware.jobs}
@@ -89,16 +82,13 @@ export class JobsAndLogs
   };
 
   render() {
-    const { jobs, logs } = this.props.jobsPanelState;
-    return <div className={"jobs-and-logs grid double-gap"}>
-      <div className={"tabs"}>
-        <label className={jobs ? "selected" : ""}
-          onClick={this.setPanelState("jobs")}>{t("jobs")}</label>
-        <label className={logs ? "selected" : ""}
-          onClick={this.setPanelState("logs")}>{t("logs")}</label>
+    return <div className={"jobs-and-logs grid half-gap"}>
+      <div className={"jobs-section"}>
+        <this.Jobs />
       </div>
-      {jobs && <this.Jobs />}
-      {logs && <this.Logs />}
+      <div className={"logs-section"}>
+        <this.Logs />
+      </div>
     </div>;
   }
 }

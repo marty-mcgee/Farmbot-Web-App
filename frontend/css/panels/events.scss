@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .farm-event {
   align-items: start!important;
@@ -12,7 +13,7 @@
 .farm-event-year {
   text-align: center;
   font-size: 2rem;
-  font-family: 'Inknut Antiqua', serif;
+  font-family: $inknut;
   font-weight: bold;
 }
 

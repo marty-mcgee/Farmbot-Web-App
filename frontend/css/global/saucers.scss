@@ -9,6 +9,10 @@
   background: $dark_gray;
   border-radius: 50%;
   cursor: pointer;
+  &.hollow {
+    background: transparent;
+    border: 2px solid var(--border-color);
+  }
   &.active {
     border: 2px solid $dark_gray;
   }

@@ -38,6 +38,7 @@ import {
 } from "../../__test_support__/fake_state/resources";
 import { API } from "../../api";
 import { FbosConfig } from "farmbot/dist/resources/configs/fbos";
+import { Path } from "../../internal_urls";
 
 const getSetting =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,6 +84,7 @@ describe("<DesignerSettings />", () => {
     expect(settings.length).toBeGreaterThanOrEqual(8);
     expect(wrapper.text().toLowerCase()).not.toContain("unstable fe");
     expect(wrapper.text().toLowerCase()).not.toContain("reporting");
+    expect(wrapper.text().toLowerCase()).toContain("version");
   });
 
   it("renders all settings", () => {
@@ -136,7 +138,7 @@ describe("<DesignerSettings />", () => {
     const p = fakeProps();
     p.settingsPanelState = settingsPanelState();
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 0, "");
+    clickButton(wrapper, 1, "");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.BULK_TOGGLE_SETTINGS_PANEL,
       payload: true,
@@ -148,7 +150,7 @@ describe("<DesignerSettings />", () => {
     p.settingsPanelState = settingsPanelState();
     p.settingsPanelState.motors = true;
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 0, "");
+    clickButton(wrapper, 1, "");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.BULK_TOGGLE_SETTINGS_PANEL,
       payload: false,
@@ -201,6 +203,26 @@ describe("<DesignerSettings />", () => {
     expect(wrapper.text().toLowerCase()).toContain("setup");
   });
 
+  it("navigates to setup wizard", () => {
+    const p = fakeProps();
+    const wrapper = mount(<DesignerSettings {...p} />);
+    const popover = wrapper.find("Popover").first();
+    const content = shallow(<div>{popover.prop("content")}</div>);
+    const button = content.find("button")
+      .filterWhere(btn => btn.text().toLowerCase() == "setup wizard");
+    expect(button).toHaveLength(1);
+    button.simulate("click");
+    expect(mockNavigate).toHaveBeenCalledWith(Path.setup());
+  });
+
+  it("toggles dark mode", () => {
+    const p = fakeProps();
+    const wrapper = mount(<DesignerSettings {...p} />);
+    wrapper.find(".dark-mode-toggle button").simulate("click");
+    expect(setWebAppConfigValue)
+      .toHaveBeenCalledWith(BooleanSetting.dark_mode, true);
+  });
+
   it("renders extra setting", () => {
     const p = fakeProps();
     p.searchTerm = "re-seed";
@@ -243,7 +265,7 @@ describe("<DesignerSettings />", () => {
     const p = fakeProps();
     p.searchTerm = "";
     const wrapper = mount(<DesignerSettings {...p} />);
-    clickButton(wrapper, 1, "cancel");
+    clickButton(wrapper, 2, "cancel");
     expect(mockNavigate).toHaveBeenCalledWith("path");
   });
 

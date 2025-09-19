@@ -9,7 +9,7 @@ import { Path } from "../internal_urls";
 import { FBSelect } from "../ui";
 import { SEED_DATA_OPTIONS, SEED_DATA_OPTIONS_DDI } from "../messages/cards";
 
-interface State {
+export interface DemoAccountState {
   error: Error | undefined;
   stage: string;
   productLine: string;
@@ -27,8 +27,8 @@ export const EASTER_EGG = "BIRDS AREN'T REAL";
 export const WAITING_ON_API = "Planting your demo garden...";
 
 // APPLICATION CODE ==============================
-export class DemoIframe extends React.Component<{}, State> {
-  state: State = {
+export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAccountState> {
+  state: DemoAccountState = {
     error: undefined,
     stage: t("DEMO THE APP"),
     productLine: "genesis_1.8",
@@ -69,27 +69,28 @@ export class DemoIframe extends React.Component<{}, State> {
     this.connectMqtt().then(this.connectApi);
   };
 
-  ok = () => {
+  protected seedDataSelect = (): React.ReactElement => {
     const selection = this.state.productLine;
-    return <div className="demo-container">
-      <video muted={true} autoPlay={true} loop={true} className="demo-video">
-        <source src={ExternalUrl.Video.desktop} type="video/mp4" />
-      </video>
-      <img className="demo-phone" src={ExternalUrl.Video.mobile} />
-      <button className="demo-button"
-        title={t("demo the app")}
-        onClick={this.requestAccount}>
-        {this.state.stage}
-      </button>
-      <FBSelect
-        key={selection}
-        extraClass={"demo-options"}
-        list={SEED_DATA_OPTIONS(true).filter(x => x.value != "none")}
-        customNullLabel={t("Select a model")}
-        selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
-        onChange={ddi => this.setState({ productLine: "" + ddi.value })} />
-    </div>;
+    return <FBSelect
+      key={selection}
+      extraClass={"demo-options"}
+      list={SEED_DATA_OPTIONS(true).filter(x => x.value != "none")}
+      customNullLabel={t("Select a model")}
+      selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
+      onChange={ddi => this.setState({ productLine: "" + ddi.value })} />;
   };
+
+  protected demoButton = (className: string): React.ReactElement => {
+    return <button
+      className={className}
+      title={t("demo the app")}
+      onClick={this.requestAccount}
+      type="button">
+      {this.state.stage}
+    </button>;
+  };
+
+  protected abstract ok(): React.ReactNode;
 
   no = () => {
     console.error(this.state.error);
@@ -100,4 +101,17 @@ export class DemoIframe extends React.Component<{}, State> {
   render() {
     return this.state.error ? this.no() : this.ok();
   }
+}
+
+export class DemoIframe extends DemoAccountBase {
+  ok = () => {
+    return <div className="demo-container">
+      <video muted={true} autoPlay={true} loop={true} className="demo-video">
+        <source src={ExternalUrl.Video.desktop} type="video/mp4" />
+      </video>
+      <img className="demo-phone" src={ExternalUrl.Video.mobile} />
+      {this.demoButton("demo-button")}
+      {this.seedDataSelect()}
+    </div>;
+  };
 }

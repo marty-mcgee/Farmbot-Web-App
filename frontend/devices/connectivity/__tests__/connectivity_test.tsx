@@ -132,6 +132,22 @@ describe("<Connectivity />", () => {
     expect(wrapper.text().toLowerCase()).toContain("version: v1.0.0");
   });
 
+  it("displays order number", () => {
+    const p = fakeProps();
+    p.metricPanelState.realtime = true;
+    p.device.body.fb_order_number = "FB1234";
+    const wrapper = mount(<Connectivity {...p} />);
+    expect(wrapper.text().toLowerCase()).toContain("order number: fb1234");
+  });
+
+  it("displays order number as 'Unset' when undefined", () => {
+    const p = fakeProps();
+    p.metricPanelState.realtime = true;
+    p.device.body.fb_order_number = undefined;
+    const wrapper = mount(<Connectivity {...p} />);
+    expect(wrapper.text().toLowerCase()).toContain("order number: unset");
+  });
+
   it("renders network tab", () => {
     mockIsMobile = true;
     const p = fakeProps();
@@ -168,7 +184,7 @@ describe("<Connectivity />", () => {
     p.flags.botFirmware = false;
     const wrapper = mount(<Connectivity {...p} />);
     expect(wrapper.find(".fix-firmware-buttons").length).toBeGreaterThan(0);
-    clickButton(wrapper, 1, "restart firmware");
+    clickButton(wrapper, 2, "restart firmware");
   });
 
   it("doesn't display fix firmware buttons", () => {

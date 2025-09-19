@@ -96,8 +96,8 @@ export class LogsPanel extends React.Component<LogsProps, Partial<LogsState>> {
 
   render() {
     const { dispatch, bot } = this.props;
-    return <div className={"logs-tab grid"}>
-      <div className={"search-row row grid-exp-1"}>
+    return <div className={"logs-tab grid no-gap"}>
+      <div className={"search-row row grid-exp-1 half-gap"}>
         <SearchField nameKey={"logs"}
           placeholder={t("Search logs...")}
           searchTerm={this.state.searchTerm}

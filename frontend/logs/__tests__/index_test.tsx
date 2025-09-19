@@ -53,6 +53,8 @@ describe("<Logs />", () => {
       .map(string =>
         expect(wrapper.text().toLowerCase()).toContain(string.toLowerCase()));
     verifyFilterState(wrapper, true);
+    expect(wrapper.find(".logs-retention-row").text().toLowerCase())
+      .toContain("logs older than");
   });
 
   it("handles unknown log type", () => {

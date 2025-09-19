@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .toast-container {
   display: flex;
@@ -95,7 +96,7 @@
   pointer-events: none;
   font-size: 1.6rem;
   font-weight: bold;
-  font-family: 'Inknut Antiqua', serif;
+  font-family: $inknut;
 }
 
 .toast-message {

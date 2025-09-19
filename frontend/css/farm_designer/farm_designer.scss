@@ -14,7 +14,7 @@
       }
       &.panel-closed-mobile,
       &.panel-closed {
-        top: 15rem;
+        top: 13rem;
       }
     }
   }
@@ -535,8 +535,8 @@
 }
 
 .garden-map-legend {
-  position: fixed;
-  top: 8rem;
+  position: absolute;
+  top: 7.5rem;
   right: -155px;
   z-index: 3;
   transition: all 0.3s ease;
@@ -628,7 +628,6 @@
     }
     button {
       margin: 0;
-      width: 5rem;
     }
   }
   .move-to-mode {
