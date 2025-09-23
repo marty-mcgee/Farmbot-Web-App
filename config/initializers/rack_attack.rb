@@ -27,7 +27,7 @@ class Rack::Attack
   end
 
   ### Don't allow too many demo account requests ###
-  throttle("demo_accounts/ip", limit: 10, period: 10.minutes) do |req|
+  throttle("demo_accounts/ip", limit: 50, period: 1.hour) do |req|
     case req.path.downcase
     when "/demo", "/try_farmbot"
       req.ip
