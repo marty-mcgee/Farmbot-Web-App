@@ -27,7 +27,8 @@ export const EASTER_EGG = "BIRDS AREN'T REAL";
 export const WAITING_ON_API = "Planting your demo garden...";
 
 // APPLICATION CODE ==============================
-export abstract class DemoAccountBase<P = {}> extends React.Component<P, DemoAccountState> {
+export abstract class DemoAccountBase<P = {}>
+  extends React.Component<P, DemoAccountState> {
   state: DemoAccountState = {
     error: undefined,
     stage: t("DEMO THE APP"),

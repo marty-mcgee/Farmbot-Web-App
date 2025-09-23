@@ -4,7 +4,7 @@ import {
   DesignerPanel, DesignerPanelContent, DesignerPanelTop,
 } from "../farm_designer/designer_panel";
 import { Panel } from "../farm_designer/panel_header";
-import { Everything, JobsAndLogsState, TimeSettings } from "../interfaces";
+import { Everything, TimeSettings } from "../interfaces";
 import {
   BytesProgress, Dictionary, JobProgress, PercentageProgress, TaggedDevice,
   TaggedLog,
@@ -53,7 +53,6 @@ export interface JobsAndLogsProps {
   getConfigValue: GetWebAppConfigValue;
   bot: BotState;
   fbosVersion: string | undefined;
-  jobsPanelState: JobsAndLogsState;
   jobs: Dictionary<JobProgress | undefined>;
   device: TaggedDevice;
 }

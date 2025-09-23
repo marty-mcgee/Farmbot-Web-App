@@ -100,7 +100,6 @@ export const TickerList = (props: TickerListProps) => {
   return <ErrorBoundary>
     <div className={"ticker-list"} onClick={() => {
       props.dispatch({ type: Actions.TOGGLE_POPUP, payload: "jobs" });
-      props.dispatch({ type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
     }}>
       <div className="first-ticker">
         <TickerLog log={firstTickerLog} timeSettings={timeSettings}

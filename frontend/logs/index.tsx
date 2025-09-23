@@ -20,7 +20,6 @@ import { mapStateToProps } from "./state_to_props";
 
 export const RawLogs = (props: LogsPanelProps) => {
   props.dispatch({ type: Actions.OPEN_POPUP, payload: "jobs" });
-  props.dispatch({ type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
   return <Page className="logs-page">
     <Navigate to={Path.plants()} />
     <p>Logs have moved to the navigation bar.</p>

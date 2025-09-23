@@ -6,7 +6,6 @@ import {
   SequencesPanelState,
   MetricPanelState,
   CurvesPanelState,
-  JobsAndLogsState,
   ControlsState,
   PopupsState,
 } from "../interfaces";
@@ -73,11 +72,6 @@ export const controlsState = (): ControlsState => ({
   move: true,
   peripherals: false,
   webcams: false,
-});
-
-export const jobsState = (): JobsAndLogsState => ({
-  jobs: true,
-  logs: false,
 });
 
 export const popUpsState = (): PopupsState => ({
