@@ -20,7 +20,6 @@ import { mapStateToProps } from "./state_to_props";
 
 export const RawLogs = (props: LogsPanelProps) => {
   props.dispatch({ type: Actions.OPEN_POPUP, payload: "jobs" });
-  props.dispatch({ type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
   return <Page className="logs-page">
     <Navigate to={Path.plants()} />
     <p>Logs have moved to the navigation bar.</p>
@@ -96,8 +95,8 @@ export class LogsPanel extends React.Component<LogsProps, Partial<LogsState>> {
 
   render() {
     const { dispatch, bot } = this.props;
-    return <div className={"logs-tab grid"}>
-      <div className={"search-row row grid-exp-1"}>
+    return <div className={"logs-tab grid no-gap"}>
+      <div className={"search-row row grid-exp-1 half-gap"}>
         <SearchField nameKey={"logs"}
           placeholder={t("Search logs...")}
           searchTerm={this.state.searchTerm}

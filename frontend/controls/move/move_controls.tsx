@@ -11,11 +11,14 @@ import { MotorPositionPlot } from "./motor_position_plot";
 import { MoveWidgetSettingsMenu } from "./settings_menu";
 import { Popover } from "../../ui";
 import { getImageJobs } from "../../photos/state_to_props";
-import { hasEncoders } from "../../settings/firmware/firmware_hardware_support";
+import {
+  hasEncoders, isExpress,
+} from "../../settings/firmware/firmware_hardware_support";
 
 export const MoveControls = (props: MoveControlsProps) => {
   const { location_data, informational_settings } = props.bot.hardware;
-  const locationData = validBotLocationData(location_data);
+  const locationData = validBotLocationData(location_data,
+    isExpress(props.firmwareHardware));
   const botOnline = isBotOnlineFromState(props.bot);
   const { busy, locked } = props.bot.hardware.informational_settings;
   return <div className={"move grid double-gap"}>

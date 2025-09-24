@@ -146,6 +146,11 @@ export const botReducer = generateReducer<BotState>(initialState())
     })
   .add<Record<Xyz, number>>(Actions.DEMO_SET_POSITION, (s, { payload }) => {
     s.hardware.location_data.position = payload;
+    updateMotorHistoryArray({
+      position: payload,
+      raw_encoders: { x: undefined, y: undefined, z: undefined },
+      scaled_encoders: payload,
+    });
     return s;
   })
   .add<[string, PercentageProgress]>(Actions.DEMO_SET_JOB_PROGRESS,

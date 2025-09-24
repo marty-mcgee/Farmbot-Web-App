@@ -23,7 +23,7 @@ export const WizardStepHeader = (props: WizardStepHeaderProps) => {
   const resultDate = props.stepResult?.updated_at;
   const stepDone = props.stepResult?.answer;
   const stepFail = stepDone == false;
-  const normalStepColor = stepDone ? "green" : "gray";
+  const normalStepColor = stepDone ? "green" : "hollow";
   const stepColor = stepFail ? "red" : normalStepColor;
 
   return <div

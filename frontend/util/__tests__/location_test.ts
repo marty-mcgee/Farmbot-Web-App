@@ -33,7 +33,7 @@ describe("validBotLocationData()", () => {
 
   it("returns 0s for demo accounts", () => {
     mockDemo = true;
-    const result = validBotLocationData(undefined);
+    const result = validBotLocationData(undefined, true);
     expect(result).toEqual({
       position: { x: 0, y: 0, z: 0 },
       scaled_encoders: { x: 0, y: 0, z: 0 },
@@ -46,12 +46,12 @@ describe("validBotLocationData()", () => {
   it("returns location for demo accounts", () => {
     mockDemo = true;
     const result = validBotLocationData(
-      { position: { x: 1, y: 2, z: 3 } } as BotLocationData);
+      { position: { x: 1, y: 2, z: 3 } } as BotLocationData, false);
     expect(result).toEqual({
       position: { x: 1, y: 2, z: 3 },
       scaled_encoders: { x: 0, y: 0, z: 0 },
       raw_encoders: { x: 0, y: 0, z: 0 },
-      load: { x: 0, y: 0, z: 0 },
+      load: { x: undefined, y: undefined, z: undefined },
       axis_states: { x: "idle", y: "idle", z: "idle" },
     });
   });

@@ -141,7 +141,6 @@ export const TOURS = (
         url: undefined,
         dispatchActions: [
           { type: Actions.OPEN_POPUP, payload: "jobs" },
-          { type: Actions.SET_JOBS_PANEL_OPTION, payload: "jobs" },
         ],
       },
       {
@@ -168,14 +167,6 @@ export const TOURS = (
         dispatchActions: [
           { type: Actions.CLOSE_POPUP, payload: undefined },
         ],
-      },
-      {
-        slug: "accountMenu",
-        title: t("Account Menu"),
-        content: TourContent.ACCOUNT_MENU,
-        beacons: undefined,
-        activeBeacons: [{ class: "nav-name", type: "soft", keep: true }],
-        url: undefined,
       },
       {
         slug: "end",
@@ -450,7 +441,6 @@ export const TOURS = (
         dispatchActions: [
           { type: Actions.SET_PROFILE_OPEN, payload: false },
           { type: Actions.OPEN_POPUP, payload: "jobs" },
-          { type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" },
         ],
       },
       {

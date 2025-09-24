@@ -213,12 +213,14 @@ export class RawApp extends React.Component<AppProps, {}> {
         appState={this.props.appState}
         menuOpen={this.props.menuOpen}
         pings={this.props.pings} />}
-      {syncLoaded && this.props.children}
-      <ErrorBoundary>
-        <React.Suspense>
-          {syncLoaded && <Outlet />}
-        </React.Suspense>
-      </ErrorBoundary>
+      <main id="main-content" tabIndex={-1}>
+        {syncLoaded && this.props.children}
+        <ErrorBoundary>
+          <React.Suspense>
+            {syncLoaded && <Outlet />}
+          </React.Suspense>
+        </ErrorBoundary>
+      </main>
       <div className={"toast-container"}>
         <TourStepContainer
           key={JSON.stringify(this.props.helpState)}

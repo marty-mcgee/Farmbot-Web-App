@@ -128,7 +128,13 @@ export class RawPlants
         <Popover
           position={Position.BOTTOM}
           popoverClassName={"plants-panel-settings-menu"}
-          target={<i className={"fa fa-gear fb-icon-button invert"} />}
+          target={<button type="button"
+            className={"fb-icon-button invert"}
+            title={t("open plant settings menu")}
+            aria-label={t("open plant settings menu")}
+            aria-haspopup="menu">
+            <i className={"fa fa-gear"} aria-hidden={true} />
+          </button>}
           content={<Row>
             <label>{t(DeviceSetting.defaultPlantDepth)}</label>
             <Help text={Content.DEFAULT_PLANT_DEPTH} />

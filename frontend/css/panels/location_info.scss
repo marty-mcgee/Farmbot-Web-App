@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .location-info-panel {
   .panel-content {
@@ -20,7 +21,7 @@
       }
     }
     h2 {
-      font-family: 'Inknut Antiqua';
+      font-family: $inknut;
       font-weight: bold;
       margin: 0;
       font-size: 2rem;

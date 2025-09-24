@@ -47,8 +47,6 @@ describe("<TickerList />", () => {
     wrapper.find(".ticker-list").simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith(
       { type: Actions.TOGGLE_POPUP, payload: "jobs" });
-    expect(p.dispatch).toHaveBeenCalledWith(
-      { type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
   });
 
   it("shows bot offline log message", () => {

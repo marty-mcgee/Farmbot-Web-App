@@ -58,7 +58,8 @@ export const PlantInventoryItem = (props: PlantInventoryItemProps) => {
     onClick={click}>
     <img
       className="plant-search-item-image"
-      src={icon} />
+      src={icon}
+      alt={label} />
     <span className="plant-search-item-name">
       {label}
     </span>

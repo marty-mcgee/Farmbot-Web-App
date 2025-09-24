@@ -7,7 +7,8 @@ import {
 import { clone } from "lodash";
 import { BotPosition, SourceFbosConfig } from "../devices/interfaces";
 import {
-  ConfigurationName, TaggedCurve, TaggedGenericPointer, TaggedWeedPointer,
+  ConfigurationName, TaggedCurve, TaggedGenericPointer, TaggedPoint,
+  TaggedPointGroup, TaggedWeedPointer,
 } from "farmbot";
 import { DesignerState } from "./interfaces";
 import { GetWebAppConfigValue } from "../config_storage/actions";
@@ -40,6 +41,8 @@ export interface ThreeDGardenMapProps {
   mountedToolName: string | undefined;
   peripheralValues: PeripheralValues;
   device: DeviceAccountSettings;
+  allPoints: TaggedPoint[];
+  groups: TaggedPointGroup[];
 }
 
 export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
@@ -148,6 +151,8 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
     weeds={props.weeds}
     toolSlots={props.toolSlots}
     mountedToolName={props.mountedToolName}
+    allPoints={props.allPoints}
+    groups={props.groups}
     addPlantProps={{
       gridSize: props.mapTransformProps.gridSize,
       dispatch: props.dispatch,

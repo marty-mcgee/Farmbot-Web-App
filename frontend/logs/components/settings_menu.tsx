@@ -53,7 +53,7 @@ const LogSetting = (props: LogSettingProps) => {
   const config = sourceFbosConfig(setting);
   const firmwareHardware = validFirmwareHardware(
     sourceFbosConfig("firmware_hardware").value);
-  return <fieldset>
+  return <fieldset className="row half-gap grid-exp-2">
     <label>
       {t(label)}
     </label>
@@ -105,8 +105,8 @@ export class LogsSettingsMenu extends React.Component<LogsSettingsMenuProps> {
         getConfigValue={getConfigValue} />;
     };
     const { private_ip } = this.props.bot.hardware.informational_settings;
-    return <div className={"logs-settings-menu"}>
-      <fieldset>
+    return <div className={"logs-settings-menu grid"}>
+      <fieldset className={"row half-gap grid-exp-1"}>
         <label>
           {t("Display raw")}
         </label>
@@ -115,8 +115,10 @@ export class LogsSettingsMenu extends React.Component<LogsSettingsMenuProps> {
           className={getModifiedClassNameSpecifyDefault(this.props.markdown, true)}
           toggleAction={this.props.toggleMarkdown} />
       </fieldset>
-      {t("Sequence logs:")}
-      {SEQUENCE_LOG_SETTINGS().map(p => <LogSettingRow key={p.setting} {...p} />)}
+      <div className="grid half-gap">
+        {t("Sequence logs:")}
+        {SEQUENCE_LOG_SETTINGS().map(p => <LogSettingRow key={p.setting} {...p} />)}
+      </div>
       {DevSettings.futureFeaturesEnabled() && private_ip &&
         <div className={"log-stream-link"}>
           <a href={`http://${private_ip}/logger`}
@@ -125,7 +127,7 @@ export class LogsSettingsMenu extends React.Component<LogsSettingsMenuProps> {
             <i className="fa fa-external-link" />
           </a>
         </div>}
-      <fieldset className={"delete-all"}>
+      <fieldset className={"delete-all row"}>
         <button className={"fb-button red"}
           onClick={() => {
             this.props.dispatch(destroyAll("Log", false,

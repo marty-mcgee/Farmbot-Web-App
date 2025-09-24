@@ -3,13 +3,13 @@
 
 .logs-table-wrapper {
   border: none;
+  overflow: scroll;
   .fa-trash {
     display: none;
   }
-  tr {
-    vertical-align: top;
+  tbody tr {
     &:hover {
-      background: $translucent2_white;
+      background: var(--secondary-bg);
       .fa-trash {
         display: inline;
         margin-left: 6px;
@@ -21,8 +21,11 @@
       }
     }
   }
+  tr {
+    vertical-align: top;
+  }
   .fa-filter {
-    border: 1px black solid;
+    border: 1px var(--border-color) solid;
     border-radius: 50%;
     padding: 0.25rem;
     width: 2rem;
@@ -52,12 +55,6 @@
       font-weight: bold;
     }
   }
-  .notice {
-    font-style: italic;
-    text-align: center;
-    font-size: 1.4rem;
-    padding: 1rem;
-  }
 }
 
 .logs-filter-menu {
@@ -70,7 +67,7 @@
   .line {
     position: absolute;
     width: 0.5rem;
-    height: 86.5%;
+    height: 85%;
     border-right: 1.5px $light_gray solid;
     .line-label {
       position: absolute;
@@ -81,6 +78,10 @@
   .bp6-slider-unlabeled {
     margin: 0 1rem;
   }
+  .current-version-only {
+    margin-left: 2.5rem;
+    margin-top: 0.5rem;
+  }
 }
 
 .logs-tab {
@@ -90,9 +91,10 @@
 }
 
 .logs-table {
-  display: block;
-  overflow: scroll;
+  display: table;
   max-height: 42rem;
+  margin-top: 0.5rem;
+  border-radius: 0;
   .log-verbosity-saucer .saucer {
     text-align: center;
     margin-left: 6px;
@@ -103,15 +105,11 @@
   button {
     float: none;
   }
+  table {
+    border-radius: 0;
+  }
   thead {
     text-align: left;
-    background: var(--main-bg);
-  }
-  thead,
-  th {
-    position: sticky;
-    top: 0;
-    z-index: 999;
   }
   td {
     word-break: break-word;
@@ -131,6 +129,16 @@
   td:nth-child(3),
   td:nth-child(4) {
     white-space: nowrap;
+  }
+
+  .logs-retention-row {
+    td {
+      font-style: italic;
+      text-align: center;
+      padding: 0.7rem 1rem 1rem;
+      white-space: normal;
+      background: var(--secondary-bg);
+    }
   }
 }
 

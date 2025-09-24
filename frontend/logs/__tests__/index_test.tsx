@@ -53,6 +53,8 @@ describe("<Logs />", () => {
       .map(string =>
         expect(wrapper.text().toLowerCase()).toContain(string.toLowerCase()));
     verifyFilterState(wrapper, true);
+    expect(wrapper.find(".logs-retention-row").text().toLowerCase())
+      .toContain("logs older than");
   });
 
   it("handles unknown log type", () => {
@@ -254,8 +256,6 @@ describe("<RawLogs />", () => {
     expect(wrapper.text()).toContain("moved");
     expect(p.dispatch).toHaveBeenCalledWith(
       { type: Actions.OPEN_POPUP, payload: "jobs" });
-    expect(p.dispatch).toHaveBeenCalledWith(
-      { type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
   });
 });
 
