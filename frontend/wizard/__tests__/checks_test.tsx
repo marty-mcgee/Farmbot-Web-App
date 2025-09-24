@@ -121,10 +121,12 @@ describe("<Language />", () => {
     const user = fakeUser();
     p.resources = buildResourceIndex([user]).index;
     const { container, rerender } = render(<Language {...p} />);
-    const input = container.querySelector<HTMLInputElement>("input[name=\"language\"]");
+    const input =
+      container.querySelector<HTMLInputElement>("input[name=\"language\"]");
     expect(input?.value).toEqual("English");
     input && changeBlurableInputRTL(input, "New Language");
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), { language: "New Language" });
+    expect(edit).toHaveBeenCalledWith(expect.any(Object),
+      { language: "New Language" });
     user.body.language = undefined as unknown as string;
     p.resources = buildResourceIndex([user]).index;
     rerender(<Language {...p} />);

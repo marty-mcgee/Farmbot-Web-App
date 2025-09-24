@@ -14,7 +14,11 @@ jest.mock("../../../resources/getters", () => ({
   getFbosConfig: () => mockFbosConfig,
 }));
 
-import { getDefaultAxisOrder, getGardenSize, getSafeZ } from "../stubs";
+import {
+  getDefaultAxisOrder,
+  getGardenSize,
+  getSafeZ,
+} from "../stubs";
 
 describe("getGardenSize()", () => {
   it("gets garden size: axis lengths", () => {

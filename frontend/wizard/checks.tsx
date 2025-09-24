@@ -667,12 +667,13 @@ export const SetHome = (axis: Xyz) => (props: WizardStepComponentProps) => {
 };
 
 export const AxisActions = (props: WizardStepComponentProps) => {
-  const locationData = validBotLocationData(props.bot.hardware.location_data);
+  const firmwareHardware = getFwHardwareValue(getFbosConfig(props.resources));
+  const locationData = validBotLocationData(props.bot.hardware.location_data,
+    isExpress(firmwareHardware));
   const firmwareSettings = getFirmwareConfig(props.resources)?.body;
   const sourceFwConfig = sourceFwConfigValue(validFwConfig(getFirmwareConfig(
     props.resources)), props.bot.hardware.mcu_params);
   if (!firmwareSettings) { return <div />; }
-  const firmwareHardware = getFwHardwareValue(getFbosConfig(props.resources));
   const botOnline = isBotOnlineFromState(props.bot);
   const { busy, locked } = props.bot.hardware.informational_settings;
   return <BotPositionRows
@@ -852,7 +853,8 @@ export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
     {props.indexValues.map(index => {
       const slot = slots[index];
       if (!slot) { return; }
-      return <div className={"row double-gap align-baseline info-box grid-exp-2"} key={index}>
+      return <div key={index}
+        className={"row double-gap align-baseline info-box grid-exp-2"}>
         <label>{`${t("Slot")} ${index + 1}`}</label>
         <ToolSlotInventoryItem key={slot.uuid}
           hovered={false}

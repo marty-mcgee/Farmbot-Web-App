@@ -14,9 +14,12 @@ export interface ValidLocationData {
 }
 
 export function validBotLocationData(
-  botLocationData: BotLocationData | undefined): ValidLocationData {
-  return forceOnline()
-    ? {
+  botLocationData: BotLocationData | undefined,
+  isExpress?: boolean,
+): ValidLocationData {
+  if (forceOnline()) {
+    const load = isExpress ? 0 : undefined;
+    return {
       position: {
         x: botLocationData?.position.x ?? 0,
         y: botLocationData?.position.y ?? 0,
@@ -24,8 +27,9 @@ export function validBotLocationData(
       },
       scaled_encoders: { x: 0, y: 0, z: 0 },
       raw_encoders: { x: 0, y: 0, z: 0 },
-      load: { x: 0, y: 0, z: 0 },
+      load: { x: load, y: load, z: load },
       axis_states: { x: "idle", y: "idle", z: "idle" },
-    }
-    : fullLocationData(botLocationData);
+    };
+  }
+  return fullLocationData(botLocationData);
 }

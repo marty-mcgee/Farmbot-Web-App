@@ -4,7 +4,6 @@ import { ToastMessageProps, ToastMessages } from "./toast/interfaces";
 import {
   ControlsState,
   CurvesPanelState,
-  JobsAndLogsState,
   MetricPanelState,
   MovementState,
   PlantsPanelState,
@@ -26,7 +25,6 @@ export interface AppState {
   metricPanelState: MetricPanelState;
   toasts: ToastMessages;
   movement: MovementState,
-  jobs: JobsAndLogsState;
   controls: ControlsState;
   popups: PopupsState;
 }
@@ -88,10 +86,6 @@ export const emptyState = (): AppState => {
       move: true,
       peripherals: false,
       webcams: false,
-    },
-    jobs: {
-      jobs: true,
-      logs: false,
     },
     movement: {
       start: { x: undefined, y: undefined, z: undefined },
@@ -171,13 +165,6 @@ export const appReducer =
         s.controls.peripherals = false;
         s.controls.webcams = false;
         s.controls[payload] = true;
-        return s;
-      })
-    .add<keyof JobsAndLogsState>(
-      Actions.SET_JOBS_PANEL_OPTION, (s, { payload }) => {
-        s.jobs.jobs = false;
-        s.jobs.logs = false;
-        s.jobs[payload] = true;
         return s;
       })
     .add<keyof PopupsState>(Actions.TOGGLE_POPUP, (s, { payload }) => {

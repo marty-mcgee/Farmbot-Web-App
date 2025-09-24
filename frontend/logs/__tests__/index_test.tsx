@@ -256,8 +256,6 @@ describe("<RawLogs />", () => {
     expect(wrapper.text()).toContain("moved");
     expect(p.dispatch).toHaveBeenCalledWith(
       { type: Actions.OPEN_POPUP, payload: "jobs" });
-    expect(p.dispatch).toHaveBeenCalledWith(
-      { type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs" });
   });
 });
 

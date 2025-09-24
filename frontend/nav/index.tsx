@@ -249,7 +249,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           bot={this.props.bot}
           getConfigValue={this.props.getConfigValue}
           logs={this.logs}
-          jobsPanelState={this.props.appState.jobs}
           sourceFbosConfig={this.props.sourceFbosConfig}
           fbosVersion={this.props.device.body.fbos_version}
           jobs={this.props.bot.hardware.jobs}

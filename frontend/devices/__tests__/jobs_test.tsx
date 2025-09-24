@@ -9,7 +9,6 @@ import { fakeState } from "../../__test_support__/fake_state";
 import { fakeBytesJob, fakePercentJob } from "../../__test_support__/fake_bot_data";
 import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { bot } from "../../__test_support__/fake_state/bot";
-import { jobsState } from "../../__test_support__/panel_state";
 import { fakeDevice } from "../../__test_support__/resource_index_builder";
 
 describe("<JobsPanel />", () => {
@@ -44,7 +43,6 @@ describe("<JobsAndLogs />", () => {
     getConfigValue: jest.fn(),
     bot,
     fbosVersion: undefined,
-    jobsPanelState: jobsState(),
     jobs: {},
     device: fakeDevice(),
   });
