@@ -174,7 +174,7 @@ export namespace ToolTips {
     soil height measurements, run a sequence with the MEASURE SOIL HEIGHT
     command in a grid over your garden. Alternatively, use a ruler to
     manually measure the height at various locations in the garden and add
-    corresponding soil height points from the points panel. (default: 0)`);
+    corresponding soil height points from the points panel. (default: -500)`);
 
   export const DEFAULT_AXIS_ORDER =
     trim(`Default axis order for movement. (default: X and Y together)`);

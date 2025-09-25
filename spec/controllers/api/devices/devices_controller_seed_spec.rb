@@ -71,10 +71,6 @@ describe Api::DevicesController do
       return c.movement_motor_current_x == 1646
     end
 
-    def settings_soil_height?(device)
-      device.fbos_config.soil_height
-    end
-
     def settings_gantry_height?(device)
       device.fbos_config.gantry_height
     end
@@ -341,7 +337,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to be_kind_of(Sensor)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("arduino")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -418,7 +413,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -494,7 +488,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k14")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -570,7 +563,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k15")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -648,7 +640,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k16")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -727,7 +718,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k17")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -805,7 +795,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k18")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -883,7 +872,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k14")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -959,7 +947,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k15")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -1037,7 +1024,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k17")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -1115,7 +1101,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k18")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -1193,7 +1178,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device).pin).to eq(63)
       expect(settings_device_name?(device)).to eq(Names::GENESIS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(true)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(120)
       expect(settings_firmware?(device)).to eq("farmduino_k16")
       expect(settings_hide_sensors?(device)).to be(false)
@@ -1272,7 +1256,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k10")
       expect(settings_hide_sensors?(device)).to be(true)
@@ -1344,7 +1327,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k11")
       expect(settings_hide_sensors?(device)).to be(true)
@@ -1416,7 +1398,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k12")
       expect(settings_hide_sensors?(device)).to be(true)
@@ -1488,7 +1469,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k10")
       expect(settings_hide_sensors?(device)).to be(true)
@@ -1560,7 +1540,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k11")
       expect(settings_hide_sensors?(device)).to be(true)
@@ -1632,7 +1611,6 @@ describe Api::DevicesController do
       expect(sensors_tool_verification?(device)).to_not be
       expect(settings_device_name?(device)).to eq(Names::EXPRESS_XL)
       expect(settings_change_firmware_config_defaults?(device)).to be(false)
-      expect(settings_soil_height?(device)).to eq(-500)
       expect(settings_gantry_height?(device)).to eq(140)
       expect(settings_firmware?(device)).to eq("express_k12")
       expect(settings_hide_sensors?(device)).to be(true)
