@@ -8,6 +8,7 @@ import {
 import { getFwHardwareValue } from "../settings/firmware/firmware_hardware_support";
 import { ResourceIndex } from "../resources/interfaces";
 import { Alert } from "farmbot";
+import { forceOnline } from "../devices/must_be_online";
 
 export const mapStateToProps = (props: Everything): MessagesProps => {
   return {
@@ -22,7 +23,7 @@ export const mapStateToProps = (props: Everything): MessagesProps => {
 export const getAllAlerts = (resources: Everything["resources"]) => ([
   ...getApiAlerts(resources.index),
   ...getLocalAlerts(resources.consumers.alerts),
-  ...(maybeGetDevice(resources.index)?.body.setup_completed_at
+  ...((maybeGetDevice(resources.index)?.body.setup_completed_at || forceOnline())
     ? []
     : [setupIncompleteAlert]),
 ]);
@@ -36,6 +37,6 @@ const getLocalAlerts = ({ alerts }: AlertReducerState): Alert[] =>
 export const setupIncompleteAlert = {
   created_at: 1,
   problem_tag: "api.setup.not_completed",
-  priority: 500,
+  priority: 200,
   slug: "setup-incomplete",
 };

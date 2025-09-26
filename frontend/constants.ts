@@ -1670,6 +1670,12 @@ export namespace SetupWizardContent {
     while answering no will display a list of results that can be selected for
     specific troubleshooting tips.`);
 
+  export const FB_ORDER_NUMBER =
+    trim(`Please enter your FarmBot order number. This is not necessary to
+    use the app but is helpful if you ever need additional support.
+    If you do not have your original order number you may leave this field
+    blank.`);
+
   export const RPI =
     trim(`Inspect the ports on the top edge of the Raspberry Pi and select
     which Raspberry Pi model is in your FarmBot.`);
@@ -1983,6 +1989,12 @@ export namespace SetupWizardContent {
     trim(`Customize which Action or Sequence you want FarmBot to execute
     when you press Button 3, 4, or 5 on the electronics box. To start, we
     recommend setting Button 5 to the 'Find Home' sequence. You can change
+    this later from the controls pop-up.`);
+
+  export const CUSTOM_BUTTONS_v18 =
+    trim(`Customize which Action or Sequence you want FarmBot to execute
+    when you press Button 3 on the electronics box. To start, we
+    recommend setting Button 3 to the 'Find Home' sequence. You can change
     this later from the controls pop-up.`);
 
   export const PROBLEM_GETTING_IMAGE =

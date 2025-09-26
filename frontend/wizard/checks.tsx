@@ -631,15 +631,17 @@ export const PinBinding = (props: PinBindingProps) => {
       onClick={() => emergencyUnlock()}>
       {t("UNLOCK")}
     </button>
-    : <BoxTop
-      threeDimensions={!!props.getConfigValue(
-        BooleanSetting.enable_3d_electronics_box_top)}
-      firmwareHardware={firmwareHardware}
-      resources={props.resources}
-      dispatch={props.dispatch}
-      botOnline={isBotOnlineFromState(props.bot)}
-      bot={props.bot}
-      isEditing={props.pinBindingOptions.editing} />;
+    : <div style={{ width: "99%" }}>
+      <BoxTop
+        threeDimensions={!!props.getConfigValue(
+          BooleanSetting.enable_3d_electronics_box_top)}
+        firmwareHardware={firmwareHardware}
+        resources={props.resources}
+        dispatch={props.dispatch}
+        botOnline={isBotOnlineFromState(props.bot)}
+        bot={props.bot}
+        isEditing={props.pinBindingOptions.editing} />
+    </div>;
 };
 
 export const FindHome = (axis: Xyz) => (props: WizardStepComponentProps) => {

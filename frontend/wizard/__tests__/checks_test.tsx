@@ -630,8 +630,10 @@ describe("<PeripheralsCheck />", () => {
 describe("<PinBinding />", () => {
   it("renders pin binding inputs", () => {
     const p = fakeProps();
+    const fbosConfig = fakeFbosConfig();
+    fbosConfig.body.firmware_hardware = "farmduino_k17";
     const pinBinding = fakePinBinding();
-    p.resources = buildResourceIndex([pinBinding]).index;
+    p.resources = buildResourceIndex([pinBinding, fbosConfig]).index;
     p.getConfigValue = () => false;
     const wrapper = mount(<PinBinding {...p}
       pinBindingOptions={{ editing: false }} />);

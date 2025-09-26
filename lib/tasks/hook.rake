@@ -70,11 +70,11 @@ def links_block(environment)
   pre = environment == "production" ? "my" : environment
   base = "#{pre}.farm.bot"
   [
+    "",
     "promo",
     "promo?config=true&otherPreset=Minimal",
-    "demo",
-    "try_farmbot",
     "os",
+    "try_farmbot",
   ].map do |path|
     url = "#{base}/#{path}"
     output += "\n<https://#{url}|#{url}>"

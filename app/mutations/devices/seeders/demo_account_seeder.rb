@@ -151,6 +151,7 @@ module Devices
       DEMO_ALERTS = [
         Alert::DEMO,
         Alert::BULLETIN.merge(slug: "buy-a-farmbot", priority: 9999),
+        Alert::TOUR,
       ]
 
       DEMO_LOGS = [

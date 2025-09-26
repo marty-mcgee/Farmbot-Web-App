@@ -2,9 +2,11 @@ import React from "react";
 import { t } from "../../i18next_wrapper";
 import { Color } from "../../ui/colors";
 import { FirmwareHardware, SyncStatus } from "farmbot";
-import { hasExtraButtons } from "../firmware/firmware_hardware_support";
+import {
+  btnIndexList, hasExtraButtons,
+} from "../firmware/firmware_hardware_support";
 import { BindingTargetDropdown, pinBindingLabel } from "./pin_binding_input_group";
-import { isUndefined } from "lodash";
+import { isUndefined, range } from "lodash";
 import { findBinding, setPinBinding, triggerBinding } from "./actions";
 import { BoxTopBaseProps } from "./interfaces";
 
@@ -24,33 +26,35 @@ interface CirclesProps {
   clean: boolean;
 }
 
-const CIRCLES = ({ firmwareHardware, clean }: CirclesProps) => [
-  ...(hasExtraButtons(firmwareHardware)
-    ? [{ cx: 20, cy: 20, r: 7, pin: 20, label: t("Button 5"), color: Color.white }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware)
-    ? [{ cx: 40, cy: 20, r: 7, pin: 5, label: t("Button 4"), color: Color.white }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware)
-    ? [{ cx: 60, cy: 20, r: 7, pin: 26, label: t("Button 3"), color: Color.white }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware) || !clean
-    ? [{ cx: 80, cy: 20, r: 7, pin: 22, label: t("Button 2"), color: Color.yellow }]
-    : []),
+const BTNS = [
   { cx: 100, cy: 20, r: 7, pin: 16, label: t("Button 1"), color: Color.red },
-  ...(hasExtraButtons(firmwareHardware)
-    ? [{ cx: 30, cy: 38, r: 4, pin: 0, label: t("LED 4"), color: Color.white }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware)
-    ? [{ cx: 50, cy: 38, r: 4, pin: 0, label: t("LED 3"), color: Color.white }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware) || !clean
-    ? [{ cx: 70, cy: 38, r: 4, pin: 0, label: t("Connection"), color: Color.blue }]
-    : []),
-  ...(hasExtraButtons(firmwareHardware) || !clean
-    ? [{ cx: 90, cy: 38, r: 4, pin: 0, label: t("Sync LED"), color: Color.green }]
-    : []),
+  { cx: 80, cy: 20, r: 7, pin: 22, label: t("Button 2"), color: Color.yellow },
+  { cx: 60, cy: 20, r: 7, pin: 26, label: t("Button 3"), color: Color.white },
+  { cx: 40, cy: 20, r: 7, pin: 5, label: t("Button 4"), color: Color.white },
+  { cx: 20, cy: 20, r: 7, pin: 20, label: t("Button 5"), color: Color.white },
 ];
+
+const LEDS = [
+  { cx: 90, cy: 38, r: 4, pin: 0, label: t("Sync LED"), color: Color.green },
+  { cx: 70, cy: 38, r: 4, pin: 0, label: t("Connection"), color: Color.blue },
+  { cx: 50, cy: 38, r: 4, pin: 0, label: t("LED 3"), color: Color.white },
+  { cx: 30, cy: 38, r: 4, pin: 0, label: t("LED 4"), color: Color.white },
+];
+
+const btns = ({ firmwareHardware, clean }: CirclesProps) => {
+  const indexList = btnIndexList(firmwareHardware).btns;
+  if (!clean) { indexList.push(1); }
+  return BTNS.filter((_, i) => indexList.includes(i)).reverse();
+};
+
+const boxLeds = ({ firmwareHardware, clean }: CirclesProps) => {
+  const indexList = btnIndexList(firmwareHardware).leds;
+  if (!clean) { indexList.push(0, 1); }
+  return LEDS.filter((_, i) => indexList.includes(i)).reverse();
+};
+
+const btnsAndLeds = (props: CirclesProps) =>
+  btns(props).concat(boxLeds(props));
 
 interface ButtonProps {
   cx: number;
@@ -105,7 +109,7 @@ export class BoxTopGpioDiagram
     return <svg id={"box-top-gpio"}
       width={"100%"} height={"100%"} viewBox={"0 0 120 52"}
       style={{ maxHeight: "300px", maxWidth: "500px" }}>
-      {CIRCLES({ firmwareHardware, clean: false }).map(circle =>
+      {btnsAndLeds({ firmwareHardware, clean: false }).map(circle =>
         <Button key={circle.cx}
           cx={circle.cx} cy={circle.cy} r={circle.r} color={circle.color}
           hover={this.hover} hovered={(this.state.hoveredPin == circle.pin)
@@ -144,8 +148,8 @@ export class BoxTopButtons
     const { locked, sync_status } = bot.hardware.informational_settings;
     const syncStatus = sync_status;
     const circlesProps = { firmwareHardware, clean: true };
-    const buttons = CIRCLES(circlesProps).filter(circle => circle.r > 4);
-    const leds = CIRCLES(circlesProps).filter(circle => circle.r < 5);
+    const buttons = btns(circlesProps);
+    const leds = boxLeds(circlesProps);
     return <div className={"box-top-2d-wrapper"}>
       <div className={"box-top-buttons"}
         style={hasExtraButtons(firmwareHardware) ? {} : { display: "block" }}>
@@ -168,6 +172,7 @@ export class BoxTopButtons
               }) || circle).label}
             </p>;
         })}
+        {range(5 - buttons.length).map(i => <p key={i}></p>)}
         {buttons.map(circle => {
           const { color } = circle;
           const statusProps = { botOnline, color, locked, syncStatus };

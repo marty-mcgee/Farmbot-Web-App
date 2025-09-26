@@ -29,7 +29,7 @@ describe("<BoxTopGpioDiagram />", () => {
     boundPins: [16],
     setSelectedPin: jest.fn(),
     selectedPin: undefined,
-    firmwareHardware: undefined,
+    firmwareHardware: "farmduino_k17",
   });
 
   it("renders", () => {
@@ -81,7 +81,7 @@ describe("<BoxTopButtons />", () => {
     bot.hardware.informational_settings.sync_status = "synced";
     bot.hardware.informational_settings.locked = false;
     return {
-      firmwareHardware: "arduino",
+      firmwareHardware: "farmduino_k17",
       isEditing: true,
       dispatch: jest.fn(),
       resources,
@@ -92,7 +92,7 @@ describe("<BoxTopButtons />", () => {
 
   it("renders: genesis", () => {
     const p = fakeProps();
-    p.firmwareHardware = "arduino";
+    p.firmwareHardware = "farmduino_k17";
     const wrapper = mount(<BoxTopButtons {...p} />);
     expect(wrapper.find("#button").length).toEqual(9);
   });
