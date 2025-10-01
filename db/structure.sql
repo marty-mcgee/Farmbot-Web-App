@@ -389,7 +389,8 @@ CREATE TABLE public.devices (
     rpi character varying(3),
     max_log_age_in_days integer DEFAULT 0,
     max_sequence_count integer DEFAULT 0,
-    max_sequence_length integer DEFAULT 0
+    max_sequence_length integer DEFAULT 0,
+    account_seeded_at timestamp without time zone
 );
 
 
@@ -3988,6 +3989,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250514203443'),
 ('20250722234106'),
 ('20250802174543'),
-('20250925195004');
+('20250925195004'),
+('20250930204600');
 
 

@@ -11,6 +11,7 @@ module Devices
       string :timezone
       string :fb_order_number, nils: true
       string :setup_completed_at, nils: true
+      string :account_seeded_at, nils: true
       integer :mounted_tool_id, nils: true
       integer :ota_hour, nils: true
       float :lat, nils: true
