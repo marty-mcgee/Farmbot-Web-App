@@ -361,11 +361,7 @@ export const Model = (props: BoxTopBaseProps) => {
       .filter((_, i) => btnIndexList(props.firmwareHardware).leds.includes(i))
       .map(ledIndicator => {
         const { color, ref } = ledIndicator;
-        let ledPosition = ledIndicator.position;
-        const indexListLength = btnIndexList(props.firmwareHardware).leds.length;
-        if (indexListLength < 4) {
-          ledPosition += 30;
-        }
+        const ledPosition = ledIndicator.position;
         return <Group key={ledPosition}>
           <Mesh name={"led-housing"}
             geometry={led.nodes.LED.geometry}

@@ -74,7 +74,7 @@ export const btnIndexList = (
   if (MANY_BUTTONS.includes(firmwareHardware)) {
     return { btns: [0, 1, 2, 3, 4], leds: [0, 1, 2, 3] };
   }
-  return { btns: [0, 1, 2], leds: [0, 1] };
+  return { btns: [0, 1, 2], leds: [] };
 };
 
 export const hasButtons = (firmwareHardware: FirmwareHardware | undefined) =>
