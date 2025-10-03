@@ -96,12 +96,16 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.stats = true;
     expectedConfig.heading = 1;
     expectedConfig.north = true;
-    expectedConfig.desk = false;
+    expectedConfig.desk = true;
     expectedConfig.laser = true;
     expectedConfig.threeAxes = true;
     expectedConfig.sunAzimuth = 1;
     expectedConfig.sunInclination = 1;
     expectedConfig.scene = "Lab";
+    expectedConfig.axes = true;
+    expectedConfig.people = true;
+    expectedConfig.xyDimensions = true;
+    expectedConfig.zDimension = true;
 
     expect(ThreeDGarden).toHaveBeenCalledWith({
       config: expectedConfig,

@@ -104,12 +104,17 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.heading = getValue("heading");
   config.bounds = !!getValue("bounds");
   config.grid = !!getValue("grid");
+  config.tracks = !!getValue("tracks");
+  config.cableCarriers = !!getValue("cableCarriers");
+  config.axes = !!getValue("axes");
+  config.xyDimensions = !!getValue("xyDimensions");
+  config.zDimension = !!getValue("zDimension");
 
   config.scene = SCENES[getValue("scene")];
-  config.people = false;
+  config.people = !!getValue("people");
 
   config.north = true;
-  config.desk = false;
+  config.desk = !!getValue("desk");
 
   const { latitude, longitude, valid } = latLng(props.device);
   if (valid) {

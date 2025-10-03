@@ -44,6 +44,13 @@ const DEFAULTS: Record<string, number> = {
   bounds: 0,
   grid: 1,
   scene: 0,
+  tracks: 1,
+  cableCarriers: 1,
+  axes: 0,
+  xyDimensions: 0,
+  zDimension: 0,
+  people: 0,
+  desk: 0,
 };
 
 export const SCENES: Record<number, string> = {
