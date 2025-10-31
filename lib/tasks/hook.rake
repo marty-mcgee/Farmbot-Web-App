@@ -41,7 +41,8 @@ def commits_since_last_deploy
     commits.push([commit["commit"]["message"].gsub("\n", " "), commit["sha"]])
   end
   if !deploy_commit_found
-    commits.push(["[LAST DEPLOY COMMIT NOT FOUND]", "0000000"])
+    commits = [commits.first]
+    commits.push(["[Last deploy commit not found. Most recent commit below.]", "0000000"])
   end
   commits
 end
