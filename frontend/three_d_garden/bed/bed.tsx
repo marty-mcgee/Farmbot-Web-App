@@ -250,6 +250,7 @@ export const Bed = (props: BedProps) => {
     </Detailed>
     <Plane name={"bed-underside"}
       args={[bedLengthOuter, bedWidthOuter]}
+      castShadow={true}
       position={[
         threeSpace(bedLengthOuter / 2, bedLengthOuter),
         threeSpace(bedWidthOuter / 2, bedWidthOuter),
