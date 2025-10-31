@@ -392,6 +392,7 @@ export const PrivateOverlay = (props: OverlayProps) => {
       <Toggle {...common} configKey={"cableDebug"} />
       <Toggle {...common} configKey={"zoomBeaconDebug"} />
       <Toggle {...common} configKey={"lightsDebug"} />
+      <Toggle {...common} configKey={"surfaceDebug"} />
       <Toggle {...common} configKey={"animate"} />
       <Toggle {...common} configKey={"animateSeasons"} />
       <Toggle {...common} configKey={"config"} />

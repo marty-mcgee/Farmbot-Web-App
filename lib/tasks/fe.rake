@@ -18,6 +18,11 @@ EXCLUDE = [
     version: "9",
   },
   {
+    packages: ["eslint-plugin-react-hooks"],
+    reason: "breaking changes in",
+    version: "6",
+  },
+  {
     packages: ["@typescript-eslint/eslint-plugin"],
     reason: "breaking changes in",
     version: "8",

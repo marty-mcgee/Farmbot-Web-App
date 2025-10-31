@@ -373,74 +373,54 @@ const FW_HARDWARE_TO_RPI: Record<FirmwareHardware, string | undefined> = {
   "none": "3",
 };
 
-interface FirmwareHardwareSelectionState {
-  selection: string;
-  autoSeed: boolean;
-  seeded: boolean;
-}
+export const FirmwareHardwareSelection = (props: WizardStepComponentProps) => {
+  const device = getDeviceAccountSettings(props.resources);
+  const notSeeded = !device.body.account_seeded_at;
+  const [selection, setSelection] = React.useState("");
+  const [autoSeed, setAutoSeed] = React.useState(notSeeded);
+  const [seeded, setSeeded] = React.useState(!notSeeded);
+  const seedAlerts = selectAllAlerts(props.resources)
+    .filter(alert => alert.body.problem_tag == "api.seed_data.missing");
 
-export class FirmwareHardwareSelection
-  extends React.Component<WizardStepComponentProps,
-    FirmwareHardwareSelectionState> {
-  state: FirmwareHardwareSelectionState = {
-    selection: "",
-    autoSeed: this.seedAlerts.length > 0,
-    seeded: false,
-  };
-
-  get seedAlerts() {
-    return selectAllAlerts(this.props.resources)
-      .filter(alert => alert.body.problem_tag == "api.seed_data.missing");
-  }
-
-  onChange = (ddi: DropDownItem) => {
-    const { dispatch, resources } = this.props;
-
-    this.setState({ selection: "" + ddi.value });
+  const onChange = (ddi: DropDownItem) => {
+    const { dispatch, resources } = props;
+    setSelection("" + ddi.value);
     const firmwareHardware = SEED_DATA_OPTION_TO_FW_HARDWARE["" + ddi.value];
     changeFirmwareHardware(dispatch)({ label: "", value: firmwareHardware });
     const rpi = FW_HARDWARE_TO_RPI[firmwareHardware];
     if (rpi) {
-      const device = getDeviceAccountSettings(this.props.resources);
       dispatch(edit(device, { rpi }));
       dispatch(save(device.uuid));
     }
-
-    const seedAlertId = this.seedAlerts[0]?.body.id;
+    const seedAlertId = seedAlerts[0]?.body.id;
     const dismiss = () => seedAlertId && dispatch(destroy(
       findUuid(resources, "Alert", seedAlertId)));
-    if (this.state.autoSeed && !this.state.seeded) {
-      this.setState({ seeded: true });
+    if (autoSeed && !seeded) {
+      setSeeded(true);
       seedAccount(dismiss)({ label: "", value: ddi.value });
     }
   };
 
-  toggleAutoSeed = () => this.setState({ autoSeed: !this.state.autoSeed });
-
-  render() {
-    const { selection, autoSeed } = this.state;
-    const notSeeded = this.seedAlerts.length > 0;
-    return <div className={"farmbot-model-selection"}>
-      <FBSelect
-        key={selection}
-        list={SEED_DATA_OPTIONS()}
-        selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
-        onChange={this.onChange} />
-      {notSeeded &&
-        <div className={"seed-checkbox"}>
-          <Checkbox
-            onChange={this.toggleAutoSeed}
-            checked={autoSeed}
-            title={t("Add pre-made resources upon selection")} />
-          <p>{t("Add pre-made resources upon selection")}</p>
-        </div>}
-      {autoSeed && notSeeded &&
-        <p>{t(SetupWizardContent.SEED_DATA)}</p>}
-      {autoSeed && !notSeeded &&
-        <p>{t("Resources added!")}</p>}
-    </div>;
-  }
-}
+  return <div className={"farmbot-model-selection"}>
+    <FBSelect
+      key={selection + autoSeed + seeded}
+      list={SEED_DATA_OPTIONS()}
+      selectedItem={SEED_DATA_OPTIONS_DDI()[selection]}
+      onChange={onChange} />
+    {!seeded &&
+      <div className={"seed-checkbox"}>
+        <Checkbox
+          onChange={() => setAutoSeed(!autoSeed)}
+          checked={autoSeed}
+          title={t("Add pre-made resources upon selection")} />
+        <p>{t("Add pre-made resources upon selection")}</p>
+      </div>}
+    {autoSeed &&
+      (!seeded
+        ? <p>{t(SetupWizardContent.SEED_DATA)}</p>
+        : <p>{t("Resources added!")}</p>)}
+  </div>;
+};
 
 export const RpiSelection = (props: WizardStepComponentProps) => {
   const device = getDeviceAccountSettings(props.resources);
@@ -631,15 +611,17 @@ export const PinBinding = (props: PinBindingProps) => {
       onClick={() => emergencyUnlock()}>
       {t("UNLOCK")}
     </button>
-    : <BoxTop
-      threeDimensions={!!props.getConfigValue(
-        BooleanSetting.enable_3d_electronics_box_top)}
-      firmwareHardware={firmwareHardware}
-      resources={props.resources}
-      dispatch={props.dispatch}
-      botOnline={isBotOnlineFromState(props.bot)}
-      bot={props.bot}
-      isEditing={props.pinBindingOptions.editing} />;
+    : <div style={{ width: "99%" }}>
+      <BoxTop
+        threeDimensions={!!props.getConfigValue(
+          BooleanSetting.enable_3d_electronics_box_top)}
+        firmwareHardware={firmwareHardware}
+        resources={props.resources}
+        dispatch={props.dispatch}
+        botOnline={isBotOnlineFromState(props.bot)}
+        bot={props.bot}
+        isEditing={props.pinBindingOptions.editing} />
+    </div>;
 };
 
 export const FindHome = (axis: Xyz) => (props: WizardStepComponentProps) => {
@@ -667,12 +649,13 @@ export const SetHome = (axis: Xyz) => (props: WizardStepComponentProps) => {
 };
 
 export const AxisActions = (props: WizardStepComponentProps) => {
-  const locationData = validBotLocationData(props.bot.hardware.location_data);
+  const firmwareHardware = getFwHardwareValue(getFbosConfig(props.resources));
+  const locationData = validBotLocationData(props.bot.hardware.location_data,
+    isExpress(firmwareHardware));
   const firmwareSettings = getFirmwareConfig(props.resources)?.body;
   const sourceFwConfig = sourceFwConfigValue(validFwConfig(getFirmwareConfig(
     props.resources)), props.bot.hardware.mcu_params);
   if (!firmwareSettings) { return <div />; }
-  const firmwareHardware = getFwHardwareValue(getFbosConfig(props.resources));
   const botOnline = isBotOnlineFromState(props.bot);
   const { busy, locked } = props.bot.hardware.informational_settings;
   return <BotPositionRows
@@ -852,7 +835,8 @@ export const SlotDropdownRows = (props: SlotDropdownRowsProps) => {
     {props.indexValues.map(index => {
       const slot = slots[index];
       if (!slot) { return; }
-      return <div className={"row double-gap align-baseline info-box grid-exp-2"} key={index}>
+      return <div key={index}
+        className={"row double-gap align-baseline info-box grid-exp-2"}>
         <label>{`${t("Slot")} ${index + 1}`}</label>
         <ToolSlotInventoryItem key={slot.uuid}
           hovered={false}

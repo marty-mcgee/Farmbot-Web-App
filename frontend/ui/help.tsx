@@ -13,6 +13,7 @@ export interface HelpProps {
   customClass?: string;
   links?: React.ReactElement[];
   title?: string;
+  ariaLabel?: string;
   enableMarkdown?: boolean;
   isOpen?: boolean;
   setOpen?(): void;
@@ -20,6 +21,9 @@ export interface HelpProps {
 }
 
 export function Help(props: HelpProps) {
+  const ariaLabel = props.ariaLabel
+    || props.title
+    || (!props.enableMarkdown ? t(props.text) : t("Help"));
   return <Popover
     position={props.position || Position.TOP_RIGHT}
     interactionKind={props.onHover
@@ -31,6 +35,7 @@ export function Help(props: HelpProps) {
     target={
       <i title={props.title}
         role={"tooltip"}
+        aria-label={ariaLabel}
         className={[
           "fa",
           props.customIcon || "fa-question-circle",

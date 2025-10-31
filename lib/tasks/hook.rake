@@ -7,6 +7,7 @@ COMMIT_SHA = ENV["HEROKU_BUILD_COMMIT"]
 DESCRIPTION = ENV["HEROKU_BUILD_DESCRIPTION"]
 WEBHOOK_URL = ENV["RELEASE_WEBHOOK_URL"]
 ENVIRONMENT = ENV["HEROKU_APP_NAME"]
+LAST_DEPLOY_COMMIT_OVERRIDE = ENV["LAST_DEPLOY_COMMIT_OVERRIDE"]
 
 def open_json(url)
   begin
@@ -18,6 +19,9 @@ def open_json(url)
 end
 
 def last_deploy_commit
+  if LAST_DEPLOY_COMMIT_OVERRIDE
+    return LAST_DEPLOY_COMMIT_OVERRIDE
+  end
   data = open_json(DEPLOYS_URL_API)
   environment = ENVIRONMENT.include?("production") ? "production" : ENVIRONMENT
   data = data.select { |deploy| deploy["environment"] == environment }
@@ -37,30 +41,45 @@ def commits_since_last_deploy
     commits.push([commit["commit"]["message"].gsub("\n", " "), commit["sha"]])
   end
   if !deploy_commit_found
-    commits.push(["[LAST DEPLOY COMMIT NOT FOUND]", "0000000"])
+    commits = [commits.first]
+    commits.push(["[Last deploy commit not found. Most recent commit below.]", "0000000"])
   end
   commits
 end
 
-def details(environment)
-  output = "\n\n"
+def intro_block(start_text, environment)
+  output = start_text
+  output += "\n\n"
   if !DESCRIPTION.nil?
     output += "#{DESCRIPTION}\n\n"
   end
   web_compare_url = "#{COMPARE_URL_WEB}#{last_deploy_commit}...#{COMMIT_SHA}"
-  output += "<#{web_compare_url}|compare>\n"
-  messages = commits_since_last_deploy.reverse.map do |commit|
-    output += "\n + #{commit[0]} | ##{commit[1][0..5]}"
+  output += "<#{web_compare_url}|compare>"
+  output
+end
+
+def commit_blocks(environment)
+  outputs = []
+  commits_since_last_deploy.reverse.each_slice(50) do |commits|
+    output = ""
+    commits.map do |commit|
+      output += "\n + #{commit[0]} | ##{commit[1][0..5]}"
+    end
+    outputs.push(output)
   end
-  output += "\n"
+  outputs
+end
+
+def links_block(environment)
+  output = ""
   pre = environment == "production" ? "my" : environment
   base = "#{pre}.farm.bot"
   [
+    "",
     "promo",
     "promo?config=true&otherPreset=Minimal",
-    "demo",
-    "try_farmbot",
     "os",
+    "try_farmbot",
   ].map do |path|
     url = "#{base}/#{path}"
     output += "\n<https://#{url}|#{url}>"
@@ -74,7 +93,6 @@ namespace :hook do
     if WEBHOOK_URL
       environment = ENVIRONMENT.include?("staging") ? "staging" : "production"
       notification_text = "A new release has been deployed to #{environment}."
-      info = notification_text + details(environment)
       payload = {
         "mrkdwn": true,
         "text": notification_text,
@@ -83,15 +101,32 @@ namespace :hook do
             "type": "section",
             "text": {
               "type": "mrkdwn",
-              "text": info,
+              "text": intro_block(notification_text, environment),
             }
-          }
+          },
+          *commit_blocks(environment).map do |commit_block_text|
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": commit_block_text,
+              }
+            }
+          end,
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": links_block(environment),
+            }
+          },
         ],
         "channel": "#software",
       }.to_json
-      Faraday.post(WEBHOOK_URL,
+      response = Faraday.post(WEBHOOK_URL,
                    payload,
                    "Content-Type" => "application/json")
+      puts "Status: #{response.status} #{response.body}"
     end
   end
 end

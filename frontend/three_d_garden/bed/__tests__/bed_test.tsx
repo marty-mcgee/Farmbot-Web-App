@@ -81,6 +81,7 @@ import { fakeDrawnPoint } from "../../../__test_support__/fake_designer_state";
 import { mockDispatch } from "../../../__test_support__/fake_dispatch";
 import { fakePoint } from "../../../__test_support__/fake_state/resources";
 import { SpecialStatus } from "farmbot";
+import { BufferGeometry } from "three";
 
 describe("<Bed />", () => {
   beforeEach(() => {
@@ -98,8 +99,7 @@ describe("<Bed />", () => {
     config: clone(INITIAL),
     activeFocus: "",
     mapPoints: [],
-    vertices: [],
-    uvs: [],
+    geometry: new BufferGeometry(),
     getZ: () => 0,
   });
 

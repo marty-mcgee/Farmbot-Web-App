@@ -16,8 +16,6 @@ module Devices
     def execute
       merge_default_values
       device = Device.create!({ name: "FarmBot" }.merge(inputs.except(:user)))
-      Alerts::Create.run!(Alert::SEED_DATA.merge(device: device))
-      Alerts::Create.run!(Alert::TOUR.merge(device: device))
       Alerts::Create.run!(Alert::USER.merge(device: device))
       Alerts::Create.run!(Alert::DOCUMENTATION.merge(device: device))
 

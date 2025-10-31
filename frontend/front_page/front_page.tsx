@@ -16,8 +16,16 @@ import { get } from "lodash";
 import { t } from "../i18next_wrapper";
 import { ToastContainer } from "../toast/fb_toast";
 import { Path } from "../internal_urls";
+import { DemoLoginOption } from "./demo_login_option";
 
 export const DEFAULT_APP_PAGE = Path.app();
+
+const OrDivider = () =>
+  <div className="or-divider">
+    <hr />
+    <span>{t("OR")}</span>
+    <hr />
+  </div>;
 
 export interface PartialFormEvent {
   currentTarget: {
@@ -218,11 +226,7 @@ export class FrontPage extends React.Component<{}, Partial<FrontPageState>> {
           <h2>{t("Setup, customize, and control your garden from anywhere")}</h2>
         </div>
         <this.activePanel />
-        <div className="or-divider">
-          <hr />
-          <span>{t("OR")}</span>
-          <hr />
-        </div>
+        <OrDivider />
         <CreateAccount
           submitRegistration={this.submitRegistration}
           callback={this.update}
@@ -231,6 +235,8 @@ export class FrontPage extends React.Component<{}, Partial<FrontPageState>> {
           set={(key, val) => this.setState({ [key]: val })}>
           {this.maybeRenderTos()}
         </CreateAccount>
+        <OrDivider />
+        <DemoLoginOption />
       </div>
       <ToastContainer />
     </div>;

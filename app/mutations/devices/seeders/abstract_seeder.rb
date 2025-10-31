@@ -33,7 +33,6 @@ module Devices
         :settings_default_map_size_y,
         :settings_device_name,
         :settings_change_firmware_config_defaults,
-        :settings_soil_height,
         :settings_firmware,
         :settings_gantry_height,
         :settings_hide_sensors,
@@ -86,9 +85,7 @@ module Devices
         @device = device
       end
 
-      def settings_hide_sensors
-        device.web_app_config.update!(hide_sensors: false)
-      end
+      def settings_hide_sensors; end
 
       def peripherals_lighting
         add_peripheral(7, ToolNames::LIGHTING)
@@ -209,11 +206,6 @@ module Devices
       def settings_default_map_size_y; end
       def settings_device_name; end
       def settings_change_firmware_config_defaults; end
-      def settings_soil_height; end
-
-      def settings_soil_height
-        device.fbos_config.update!(soil_height: -500)
-      end
 
       def settings_three_d; end
 

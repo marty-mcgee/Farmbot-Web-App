@@ -171,7 +171,6 @@ const LayerToggles = (props: LayerTogglesProps) => {
       submenuTitle={t("extras")}
       popover={<FarmbotSubMenu {...subMenuProps} />} />
     <LayerToggle
-      className={only2DClass}
       settingName={BooleanSetting.show_images}
       value={props.showImages}
       label={DeviceSetting.showPhotos}

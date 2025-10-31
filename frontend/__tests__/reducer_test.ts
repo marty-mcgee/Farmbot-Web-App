@@ -3,7 +3,6 @@ import { appReducer } from "../reducer";
 import {
   ControlsState,
   CurvesPanelState,
-  JobsAndLogsState,
   MetricPanelState,
   MovementState,
   PlantsPanelState,
@@ -126,17 +125,6 @@ describe("resource reducer", () => {
     expect(newState.controls.move).toBeFalsy();
     expect(newState.controls.peripherals).toBeFalsy();
     expect(newState.controls.webcams).toBeTruthy();
-  });
-
-  it("sets jobs panel options", () => {
-    const payload: keyof JobsAndLogsState = "logs";
-    const state = app;
-    const newState = appReducer(state, {
-      type: Actions.SET_JOBS_PANEL_OPTION,
-      payload,
-    });
-    expect(newState.jobs.jobs).toBeFalsy();
-    expect(newState.jobs.logs).toBeTruthy();
   });
 
   it("toggles popup", () => {

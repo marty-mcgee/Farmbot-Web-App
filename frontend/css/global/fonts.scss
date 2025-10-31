@@ -1,10 +1,39 @@
 @use "../variables" as *;
 @use "sass:color";
 
-$cabin: 'Cabin',
-Arial,
-Helvetica,
-sans-serif;
+@import url("https://fonts.googleapis.com/css?family=Cabin:400,400italic,700,700italic,100,100italic&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Inknut+Antiqua:400,400italic,700,700italic,100,100italic&display=swap");
+
+// Fallback font metrics tuned to match web fonts and reduce layout shift.
+@font-face {
+  font-family: "Cabin Fallback";
+  src: local("Arial");
+  ascent-override: 96.5%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Inknut Antiqua Fallback";
+  src: local("Times New Roman");
+  ascent-override: 170.3%;
+  descent-override: 87.6%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "FontAwesome";
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0") format("woff2"),
+  url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff?v=4.7.0") format("woff"),
+  url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.ttf?v=4.7.0") format("truetype");
+}
+
+$cabin: 'Cabin', 'Cabin Fallback', Arial, Helvetica, sans-serif;
+
+$inknut: 'Inknut Antiqua', 'Inknut Antiqua Fallback', serif;
 
 body,
 html {

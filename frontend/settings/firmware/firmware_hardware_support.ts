@@ -48,6 +48,8 @@ const NO_TOOLS = [...EXPRESS_BOARDS];
 const NO_ETHERNET = ["express_k10"];
 const NO_ZERO_2 = ["express_k10"];
 const NO_EXTRA_BUTTONS = [...EXPRESS_BOARDS];
+const MANY_BUTTONS =
+  ["farmduino_k14", "farmduino_k15", "farmduino_k16", "farmduino_k17"];
 const NO_TMC = ["arduino", "farmduino", "farmduino_k14"];
 const HAS_WEEDER = [
   "arduino", "farmduino", "farmduino_k14", "farmduino_k15", "farmduino_k16",
@@ -61,11 +63,25 @@ export const isTMCBoard = (firmwareHardware: FirmwareHardware | undefined) =>
 export const isExpress = (firmwareHardware: FirmwareHardware | undefined) =>
   !!(firmwareHardware && EXPRESS_BOARDS.includes(firmwareHardware));
 
+export const btnIndexList = (
+  firmwareHardware: FirmwareHardware | undefined,
+): { btns: number[], leds: number[] } => {
+  if (!firmwareHardware) { return { btns: [], leds: [] }; }
+  if (NO_BUTTONS.includes(firmwareHardware)) { return { btns: [], leds: [] }; }
+  if (NO_EXTRA_BUTTONS.includes(firmwareHardware)) {
+    return { btns: [0], leds: [] };
+  }
+  if (MANY_BUTTONS.includes(firmwareHardware)) {
+    return { btns: [0, 1, 2, 3, 4], leds: [0, 1, 2, 3] };
+  }
+  return { btns: [0, 1, 2], leds: [] };
+};
+
 export const hasButtons = (firmwareHardware: FirmwareHardware | undefined) =>
-  !firmwareHardware || !NO_BUTTONS.includes(firmwareHardware);
+  btnIndexList(firmwareHardware).btns.length > 0;
 
 export const hasExtraButtons = (firmwareHardware: FirmwareHardware | undefined) =>
-  !firmwareHardware || !NO_EXTRA_BUTTONS.includes(firmwareHardware);
+  btnIndexList(firmwareHardware).btns.length > 1;
 
 export const hasEncoders = (firmwareHardware: FirmwareHardware | undefined) =>
   !firmwareHardware || !NO_ENCODERS.includes(firmwareHardware);

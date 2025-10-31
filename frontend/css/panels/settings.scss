@@ -1,6 +1,14 @@
 @use "../variables" as *;
 @use "sass:color";
 
+.settings-panel {
+  .panel-top {
+    .dark-mode-toggle {
+      margin-right: 1rem;
+    }
+  }
+}
+
 .settings-panel-content {
   overflow-y: auto;
   overflow-x: hidden;
@@ -92,6 +100,16 @@
       button {
         background: $medium_light_gray !important;
       }
+    }
+  }
+  .app-version {
+    border-top: 1.5px solid var(--border-color);
+    padding: 1rem 2.3rem;
+    margin: -1rem -1rem -1.3rem;
+    font-size: 1.3rem;
+    a {
+      font-weight: bold;
+      justify-self: end;
     }
   }
 }

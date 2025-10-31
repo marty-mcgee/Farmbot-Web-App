@@ -1,8 +1,9 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .farm-designer-panels {
-  position: fixed;
+  position: absolute;
   top: 7.5rem;
   width: 45rem;
   margin: 1rem;
@@ -305,7 +306,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     width: calc(100% - 75px);
-    font-family: "Cabin", sans-serif;
+    font-family: $cabin;
   }
   .saving-indicator {
     position: absolute;
@@ -601,7 +602,7 @@
           display: inline-block;
           font-size: 1.2rem;
           font-weight: bold;
-          color: $black;
+          color: var(--text-color);
         }
       }
       .number-eq-criteria,

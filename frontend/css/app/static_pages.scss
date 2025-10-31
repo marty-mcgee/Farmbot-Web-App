@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .static-page {
   min-height: 100vh;
@@ -9,13 +10,13 @@
   padding: 8rem 2rem;
   h1,
   h2 {
-    font-family: "Cabin", Arial, Helvetica, sans-serif !important;
+    font-family: $cabin !important;
     font-weight: 100 !important;
     color: $white;
     text-shadow: 0 0 25px rgba(0, 0, 0, 0.1), 0 0 25px rgba(0, 0, 0, 0.1);
   }
   h1 {
-    font-family: "Inknut Antiqua" !important;
+    font-family: $inknut !important;
     font-weight: bold !important;
     font-size: 3.4rem;
     line-height: 3.6rem;
@@ -242,7 +243,7 @@
           background: $cyan;
           border-radius: 5px 5px 0 0;
           .btn-title {
-            font-family: "Inknut Antiqua";
+            font-family: $inknut;
             font-weight: bold;
             margin-bottom: 0.5rem !important;
             padding-top: 0.75rem;
@@ -329,7 +330,7 @@
     }
     h1 {
       margin: 0;
-      font-family: "Inknut Antiqua" !important;
+      font-family: $inknut !important;
       font-weight: 600 !important;
     }
   }

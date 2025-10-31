@@ -8,7 +8,9 @@ module Devices
         "Genesis XL" => "Genesis_XL_Demo_Webcam.jpg",
         "Genesis" => "Genesis_Demo_Webcam.jpg",
       }
-      UNUSED_ALERTS = ["api.seed_data.missing", "api.user.not_welcomed"]
+      UNUSED_ALERTS = [
+        Alert::USER[:problem_tag],
+      ]
 
       def feed(product_line)
         feed_name = ""
@@ -151,6 +153,7 @@ module Devices
       DEMO_ALERTS = [
         Alert::DEMO,
         Alert::BULLETIN.merge(slug: "buy-a-farmbot", priority: 9999),
+        Alert::TOUR,
       ]
 
       DEMO_LOGS = [

@@ -359,7 +359,7 @@ const UserNotWelcomed = (props: CommonAlertCardProps) =>
   <AlertCardTemplate
     alert={props.alert}
     className={"user-not-welcomed-alert"}
-    title={t("Welcome to the FarmBot Web App")}
+    title={t("Welcome")}
     message={t(Content.WELCOME)}
     timeSettings={props.timeSettings}
     dispatch={props.dispatch}
@@ -378,7 +378,7 @@ const DocumentationUnread = (props: CommonAlertCardProps) =>
   <AlertCardTemplate
     alert={props.alert}
     className={"documentation-unread-alert"}
-    title={t("Learn more about the app")}
+    title={t("Learn more")}
     message={t(Content.READ_THE_DOCS)}
     timeSettings={props.timeSettings}
     dispatch={props.dispatch}

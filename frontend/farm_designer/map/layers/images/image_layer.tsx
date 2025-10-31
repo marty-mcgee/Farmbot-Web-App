@@ -2,7 +2,7 @@ import React from "react";
 import { MapTransformProps } from "../../interfaces";
 import { CameraCalibrationData, DesignerState } from "../../../interfaces";
 import { TaggedImage } from "farmbot";
-import { MapImage } from "./map_image";
+import { cameraZCheck, MapImage } from "./map_image";
 import { reverse, cloneDeep, some } from "lodash";
 import { equals } from "../../../../util";
 import { BooleanSetting, StringSetting } from "../../../../session_keys";
@@ -11,6 +11,48 @@ import {
   parseFilterSetting, IMAGE_LAYER_CONFIG_KEYS, imageInRange, imageIsHidden,
   filterImagesByType,
 } from "../../../../photos/photo_filter_settings/util";
+
+export interface FilterImagesProps {
+  visible: boolean;
+  images: TaggedImage[] | undefined;
+  designer: DesignerState | undefined;
+  getConfigValue: GetWebAppConfigValue | undefined;
+  calibrationZ: string | undefined;
+}
+
+export interface TaggedImagePlus extends TaggedImage {
+  highlighted: boolean;
+}
+
+export const filterImages = (props: FilterImagesProps): TaggedImagePlus[] => {
+  const { visible, images, designer, getConfigValue, calibrationZ } = props;
+  if (!images || !visible || !designer || !getConfigValue) { return []; }
+  const { hiddenImages, shownImages, hideUnShownImages, alwaysHighlightImage,
+    hoveredMapImage,
+  } = designer;
+  const getFilterValue = parseFilterSetting(getConfigValue);
+  const imageFilterBegin = getFilterValue(StringSetting.photo_filter_begin);
+  const imageFilterEnd = getFilterValue(StringSetting.photo_filter_end);
+  const rangeOverride = alwaysHighlightImage || hideUnShownImages;
+  const hoveredImage: TaggedImage | undefined =
+    images.filter(img => hoveredMapImage && img.body.id == hoveredMapImage
+      || (alwaysHighlightImage && shownImages.includes(img.body.id || 0)))[0];
+  const filteredImages = reverse(cloneDeep(images))
+    .filter(img =>
+      (rangeOverride && shownImages.includes(img.body.id || 0))
+      || imageInRange(img, imageFilterBegin, imageFilterEnd))
+    .filter(img => !imageIsHidden(
+      hiddenImages, shownImages, hideUnShownImages, img.body.id))
+    .filter(filterImagesByType(designer))
+    .filter(img => !img.body.attachment_url.includes("placeholder"))
+    .filter(img => !hoveredImage || (img.body.id != hoveredImage.body.id))
+    .filter(img => cameraZCheck(img.body.meta.z, calibrationZ))
+    .map(img => ({ ...img, highlighted: false }));
+  if (hoveredImage) {
+    filteredImages.push({ ...hoveredImage, highlighted: true });
+  }
+  return filteredImages;
+};
 
 export interface ImageLayerProps {
   visible: boolean;
@@ -32,46 +74,28 @@ export class ImageLayer extends React.Component<ImageLayerProps> {
   render() {
     const {
       visible, images, mapTransformProps, cameraCalibrationData,
-      getConfigValue,
+      getConfigValue, designer,
     } = this.props;
-    const { hiddenImages, shownImages,
-      hideUnShownImages, alwaysHighlightImage, hoveredMapImage,
-    } = this.props.designer;
     const cropImages = !!getConfigValue(BooleanSetting.crop_images);
     const clipImageLayer = !!getConfigValue(BooleanSetting.clip_image_layer);
-    const getFilterValue = parseFilterSetting(getConfigValue);
-    const imageFilterBegin = getFilterValue(StringSetting.photo_filter_begin);
-    const imageFilterEnd = getFilterValue(StringSetting.photo_filter_end);
-    const hoveredImage: TaggedImage | undefined =
-      images.filter(img => img.body.id == hoveredMapImage
-        || (alwaysHighlightImage && shownImages.includes(img.body.id || 0)))[0];
-    const rangeOverride = alwaysHighlightImage || hideUnShownImages;
     return <g id="image-layer"
       clipPath={clipImageLayer ? "url(#map-grid-clip-path)" : undefined}>
-      {visible &&
-        reverse(cloneDeep(images))
-          .filter(img =>
-            (rangeOverride && shownImages.includes(img.body.id || 0))
-            || imageInRange(img, imageFilterBegin, imageFilterEnd))
-          .filter(img => !imageIsHidden(
-            hiddenImages, shownImages, hideUnShownImages, img.body.id))
-          .filter(filterImagesByType(this.props.designer))
-          .map(img =>
-            <MapImage
-              image={img}
-              key={"image_" + img.body.id}
-              hoveredMapImage={hoveredMapImage}
-              cropImage={cropImages}
-              cameraCalibrationData={cameraCalibrationData}
-              mapTransformProps={mapTransformProps} />)}
-      {visible && hoveredImage &&
-        <MapImage
-          image={hoveredImage}
-          hoveredMapImage={hoveredMapImage}
-          highlighted={true}
-          cropImage={cropImages}
-          cameraCalibrationData={cameraCalibrationData}
-          mapTransformProps={mapTransformProps} />}
+      {filterImages({
+        visible,
+        designer,
+        images,
+        getConfigValue,
+        calibrationZ: cameraCalibrationData.calibrationZ,
+      })
+        .map(img =>
+          <MapImage
+            image={img}
+            key={"image_" + img.body.id}
+            hoveredMapImage={designer.hoveredMapImage}
+            highlighted={img.highlighted}
+            cropImage={cropImages}
+            cameraCalibrationData={cameraCalibrationData}
+            mapTransformProps={mapTransformProps} />)}
     </g>;
   }
 }

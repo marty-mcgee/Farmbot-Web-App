@@ -102,6 +102,9 @@ export function mapStateToProps(props: Everything): FarmDesignerProps {
     flipped: isToolFlipped(mountedToolSlotInfo?.meta),
   };
 
+  const groups = selectAllPointGroups(props.resources.index);
+  const allPoints = selectAllPoints(props.resources.index);
+
   const peripheralValues = uniq(selectAllPeripherals(props.resources.index))
     .map(x => {
       const label = x.body.label;
@@ -134,7 +137,7 @@ export function mapStateToProps(props: Everything): FarmDesignerProps {
     designer: props.resources.consumers.farm_designer,
     genericPoints,
     weeds,
-    allPoints: selectAllPoints(props.resources.index),
+    allPoints,
     tools: selectAllTools(props.resources.index),
     toolSlots: joinToolsAndSlot(props.resources.index),
     hoveredPlant,
@@ -151,7 +154,7 @@ export function mapStateToProps(props: Everything): FarmDesignerProps {
     getConfigValue,
     sensorReadings,
     sensors: selectAllSensors(props.resources.index),
-    groups: selectAllPointGroups(props.resources.index),
+    groups,
     mountedToolInfo,
     visualizedSequenceBody,
     logs: selectAllLogs(props.resources.index),

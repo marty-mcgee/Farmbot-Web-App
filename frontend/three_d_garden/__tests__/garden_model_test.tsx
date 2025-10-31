@@ -108,6 +108,7 @@ describe("<GardenModel />", () => {
     p.config.viewCube = true;
     p.config.lab = true;
     p.config.lightsDebug = true;
+    p.config.surfaceDebug = true;
     p.activeFocus = "plant";
     p.addPlantProps = undefined;
     const { container } = render(<GardenModel {...p} />);

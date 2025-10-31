@@ -103,7 +103,9 @@ describe("pinsAsDropdowns()", () => {
   });
 
   it("write_pin: displays box LEDs", () => {
-    const ri = buildResourceIndex([]);
+    const fbosConfig = fakeFbosConfig();
+    fbosConfig.body.firmware_hardware = "farmduino_k17";
+    const ri = buildResourceIndex([fbosConfig]);
     const result = PinSupport.pinsAsDropdowns("write_pin")(ri.index, true);
     expect(JSON.stringify(result)).toContain("Box LED");
   });

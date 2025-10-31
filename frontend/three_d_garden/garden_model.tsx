@@ -25,15 +25,19 @@ import {
   AmbientLight, AxesHelper, Group, MeshBasicMaterial,
 } from "./components";
 import { ICON_URLS } from "../crops/constants";
-import { TaggedGenericPointer, TaggedWeedPointer } from "farmbot";
+import {
+  TaggedGenericPointer, TaggedImage, TaggedPoint, TaggedPointGroup,
+  TaggedWeedPointer,
+} from "farmbot";
 import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
 import { cameraInit } from "./camera";
 import { isMobile } from "../screen_size";
-import { computeSurface } from "./triangles";
+import { computeSurface, getGeometry } from "./triangles";
 import { BigDistance } from "./constants";
 import { precomputeTriangles, getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
+import { GroupOrderVisual } from "./group_order_visual";
 
 const AnimatedGroup = animated(Group);
 
@@ -48,6 +52,9 @@ export interface GardenModelProps {
   toolSlots?: SlotWithTool[];
   mountedToolName?: string | undefined;
   startTimeRef?: React.RefObject<number>;
+  allPoints?: TaggedPoint[];
+  groups?: TaggedPointGroup[];
+  images?: TaggedImage[];
 }
 
 // eslint-disable-next-line complexity
@@ -95,6 +102,8 @@ export const GardenModel = (props: GardenModelProps) => {
 
   const { vertices, vertexList, uvs, faces } = React.useMemo(() =>
     computeSurface(props.mapPoints, config), [props.mapPoints, config]);
+  const geometry = React.useMemo(() =>
+    getGeometry(vertices, uvs), [vertices, uvs]);
   const triangles = React.useMemo(() =>
     precomputeTriangles(vertexList, faces), [vertexList, faces]);
   React.useEffect(() => {
@@ -151,9 +160,9 @@ export const GardenModel = (props: GardenModelProps) => {
     <NorthArrow config={config} />
     <Bed
       config={config}
-      vertices={vertices}
-      uvs={uvs}
+      geometry={geometry}
       getZ={getZ}
+      images={props.images}
       activeFocus={props.activeFocus}
       mapPoints={props.mapPoints || []}
       addPlantProps={addPlantProps} />
@@ -216,6 +225,12 @@ export const GardenModel = (props: GardenModelProps) => {
           getZ={getZ}
           dispatch={dispatch} />)}
     </Group>
+    <GroupOrderVisual
+      allPoints={props.allPoints || []}
+      groups={props.groups || []}
+      config={config}
+      tryGroupSortType={props.addPlantProps?.designer.tryGroupSortType}
+      getZ={getZ} />
     <Visualization
       visualizedSequenceUUID={props.addPlantProps?.designer.visualizedSequence}
       config={config} />

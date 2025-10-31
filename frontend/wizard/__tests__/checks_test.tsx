@@ -33,7 +33,7 @@ jest.mock("../../messages/actions", () => ({
 }));
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
 import { bot } from "../../__test_support__/fake_state/bot";
 import {
@@ -103,7 +103,7 @@ import { PLACEHOLDER_FARMBOT } from "../../photos/images/image_flipper";
 import {
   changeBlurableInput, changeBlurableInputRTL, clickButton,
 } from "../../__test_support__/helpers";
-import { Actions } from "../../constants";
+import { Actions, SetupWizardContent } from "../../constants";
 import { tourPath } from "../../help/tours";
 import { FBSelect } from "../../ui";
 
@@ -116,13 +116,23 @@ const fakeProps = (): WizardStepComponentProps => ({
 });
 
 describe("<Language />", () => {
-  it("changes setting", () => {
+  it("displays and changes setting", () => {
     const p = fakeProps();
-    p.resources = buildResourceIndex([fakeUser()]).index;
-    const wrapper = shallow(<Language {...p} />);
-    wrapper.find("BlurableInput").simulate("commit",
-      { currentTarget: { value: "English" } });
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), { language: "English" });
+    const user = fakeUser();
+    p.resources = buildResourceIndex([user]).index;
+    const { container, rerender } = render(<Language {...p} />);
+    const input =
+      container.querySelector<HTMLInputElement>("input[name=\"language\"]");
+    expect(input?.value).toEqual("English");
+    input && changeBlurableInputRTL(input, "New Language");
+    expect(edit).toHaveBeenCalledWith(expect.any(Object),
+      { language: "New Language" });
+    user.body.language = undefined as unknown as string;
+    p.resources = buildResourceIndex([user]).index;
+    rerender(<Language {...p} />);
+    const updatedInput = container
+      .querySelector<HTMLInputElement>("input[name=\"language\"]");
+    expect(updatedInput?.value).toEqual("");
   });
 });
 
@@ -385,12 +395,14 @@ describe("<FirmwareHardwareSelection />", () => {
 
   it("selects model", () => {
     const p = fakeProps();
-    p.resources = buildResourceIndex([fakeFbosConfig(), fakeDevice()]).index;
+    const device = fakeDevice();
+    p.resources = buildResourceIndex([fakeFbosConfig(), device]).index;
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    const wrapper = shallow(<FirmwareHardwareSelection {...p} />);
-    wrapper.find("FBSelect").simulate("change", {
-      label: "", value: "genesis_1.2"
-    });
+    render(<FirmwareHardwareSelection {...p} />);
+    const dropdown = screen.getByRole("button");
+    fireEvent.click(dropdown);
+    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
+    fireEvent.click(item);
     expect(edit).toHaveBeenCalledWith(expect.any(Object), {
       firmware_hardware: "arduino"
     });
@@ -401,48 +413,51 @@ describe("<FirmwareHardwareSelection />", () => {
     const alert = fakeAlert();
     alert.body.id = 1;
     alert.body.problem_tag = "api.seed_data.missing";
-    p.resources = buildResourceIndex([alert, fakeDevice()]).index;
+    const device = fakeDevice();
+    p.resources = buildResourceIndex([alert, device]).index;
     mockState.resources = buildResourceIndex([alert]);
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    const wrapper = mount<FirmwareHardwareSelection>(
-      <FirmwareHardwareSelection {...p} />);
-    wrapper.instance().onChange({ label: "", value: "genesis_1.2" });
-    expect(destroy).toHaveBeenCalled();
-  });
-
-  it("doesn't seed account twice", () => {
-    const p = fakeProps();
-    const alert = fakeAlert();
-    alert.body.id = 1;
-    alert.body.problem_tag = "api.seed_data.missing";
-    p.resources = buildResourceIndex([alert, fakeDevice()]).index;
-    mockState.resources = buildResourceIndex([alert]);
-    p.dispatch = mockDispatch(jest.fn(), () => state);
-    const wrapper = mount<FirmwareHardwareSelection>(
-      <FirmwareHardwareSelection {...p} />);
-    wrapper.setState({ seeded: true });
-    wrapper.instance().onChange({ label: "", value: "genesis_1.2" });
-    expect(destroy).not.toHaveBeenCalled();
+    render(<FirmwareHardwareSelection {...p} />);
+    expect(screen.getByText(SetupWizardContent.SEED_DATA)).toBeInTheDocument();
+    // once
+    const dropdown = screen.getByRole("button");
+    fireEvent.click(dropdown);
+    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
+    fireEvent.click(item);
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
+      firmware_hardware: "arduino"
+    });
+    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Resources added!")).toBeInTheDocument();
+    // not twice
+    const newDropdown = screen.getByRole("button");
+    fireEvent.click(newDropdown);
+    const newItem = screen.getByRole("menuitem", { name: "Genesis v1.3" });
+    fireEvent.click(newItem);
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
+      firmware_hardware: "farmduino"
+    });
+    expect(destroy).toHaveBeenCalledTimes(1);
   });
 
   it("doesn't seed account", () => {
     const p = fakeProps();
-    p.resources = buildResourceIndex([fakeDevice()]).index;
+    const device = fakeDevice();
+    device.body.account_seeded_at = "2023-01-01T11:22:33.000Z";
+    p.resources = buildResourceIndex([device]).index;
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    const wrapper = mount<FirmwareHardwareSelection>(
-      <FirmwareHardwareSelection {...p} />);
-    wrapper.instance().onChange({ label: "", value: "genesis_1.2" });
+    render(<FirmwareHardwareSelection {...p} />);
+    expect(screen.queryByText(SetupWizardContent.SEED_DATA))
+      .not.toBeInTheDocument();
+    const dropdown = screen.getByRole("button");
+    fireEvent.click(dropdown);
+    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
+    fireEvent.click(item);
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
+      firmware_hardware: "arduino"
+    });
     expect(destroy).not.toHaveBeenCalled();
-    expect(wrapper.text().toLowerCase()).not.toContain("resources");
-  });
-
-  it("renders after account seeding", () => {
-    const p = fakeProps();
-    p.resources = buildResourceIndex([fakeDevice()]).index;
-    const wrapper = mount<FirmwareHardwareSelection>(
-      <FirmwareHardwareSelection {...p} />);
-    wrapper.setState({ autoSeed: true });
-    expect(wrapper.text().toLowerCase()).toContain("resources added");
+    expect(screen.queryByText("Resources added!")).not.toBeInTheDocument();
   });
 
   it("toggles auto-seed", () => {
@@ -450,12 +465,14 @@ describe("<FirmwareHardwareSelection />", () => {
     const alert = fakeAlert();
     alert.body.id = 1;
     alert.body.problem_tag = "api.seed_data.missing";
-    p.resources = buildResourceIndex([alert, fakeDevice()]).index;
-    const wrapper = shallow<FirmwareHardwareSelection>(
-      <FirmwareHardwareSelection {...p} />);
-    expect(wrapper.state().autoSeed).toEqual(true);
-    wrapper.instance().toggleAutoSeed();
-    expect(wrapper.state().autoSeed).toEqual(false);
+    const device = fakeDevice();
+    p.resources = buildResourceIndex([alert, device]).index;
+    render(<FirmwareHardwareSelection {...p} />);
+    expect(screen.getByText(SetupWizardContent.SEED_DATA)).toBeInTheDocument();
+    const checkbox = screen.getByRole("checkbox");
+    fireEvent.click(checkbox);
+    expect(screen.queryByText(SetupWizardContent.SEED_DATA))
+      .not.toBeInTheDocument();
   });
 });
 
@@ -620,8 +637,10 @@ describe("<PeripheralsCheck />", () => {
 describe("<PinBinding />", () => {
   it("renders pin binding inputs", () => {
     const p = fakeProps();
+    const fbosConfig = fakeFbosConfig();
+    fbosConfig.body.firmware_hardware = "farmduino_k17";
     const pinBinding = fakePinBinding();
-    p.resources = buildResourceIndex([pinBinding]).index;
+    p.resources = buildResourceIndex([pinBinding, fbosConfig]).index;
     p.getConfigValue = () => false;
     const wrapper = mount(<PinBinding {...p}
       pinBindingOptions={{ editing: false }} />);

@@ -238,7 +238,7 @@ const WizardSectionHeader = (props: WizardSectionHeaderProps) =>
       props.results[step.slug]?.answer)) &&
       !some(props.section.steps.map(step =>
         props.results[step.slug]?.answer == false)) &&
-      <Saucer color={"gray"} />}
+      <Saucer color={"hollow"} />}
     {t(props.section.title)}
     <i className={
       `fa fa-caret-${props.sectionOpen ? "up" : "down"}`} />

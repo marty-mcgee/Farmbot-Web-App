@@ -563,7 +563,12 @@ jest.mock("@react-three/drei", () => {
       <div className={"cylinder"}>{name}</div>,
     Plane: (props: React.ComponentProps<typeof Plane>) =>
       // @ts-expect-error geometry props not assignable to div
-      <div className={"plane"} {...props}>{props.name} {props.url}</div>,
+      <div className={"plane"} {...props}>{props.name} {props.url}
+        {props.children}
+      </div>,
+    Decal: (props: React.ComponentProps<typeof Plane>) =>
+      // @ts-expect-error geometry props not assignable to div
+      <div className={"decal"} {...props}>{props.name}</div>,
     Cylinder: ({ name }: { name: string }) =>
       <div className={"cylinder"}>{name}</div>,
     Torus: ({ name }: { name: string }) =>
@@ -592,11 +597,19 @@ jest.mock("@react-three/drei", () => {
     PerspectiveCamera: ({ name }: { name: string }) =>
       <div className={"perspective-camera"}>{name}</div>,
     useCursor: jest.fn(),
-    useTexture: jest.fn(() => ({
+    useTexture: jest.fn(url => ({
       wrapS: "",
       wrapT: "",
       repeat: { set: jest.fn() },
+      image: url == "mock_load_error"
+        ? undefined
+        : { height: 2, width: 2 },
+      source: url == "mock_load_error"
+        ? undefined
+        : { data: { height: 2, width: 2 } },
     })),
+    RenderTexture: ({ children }: { children: ReactNode }) =>
+      <div className={"render-texture"}>{children}</div>,
     GizmoHelper: ({ name }: { name: string }) =>
       <div className={"gizmo-helper"}>{name}</div>,
     GizmoViewcube: ({ name }: { name: string }) =>

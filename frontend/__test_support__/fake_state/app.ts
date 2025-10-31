@@ -3,7 +3,6 @@ import { fakeMovementState } from "../fake_bot_data";
 import {
   controlsState,
   curvesPanelState,
-  jobsState,
   metricPanelState,
   plantsPanelState,
   pointsPanelState,
@@ -25,6 +24,5 @@ export const app: AppState = {
   toasts: {},
   movement: fakeMovementState(),
   controls: controlsState(),
-  jobs: jobsState(),
   popups: popUpsState(),
 };

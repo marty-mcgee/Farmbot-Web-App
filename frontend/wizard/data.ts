@@ -47,6 +47,7 @@ import {
 } from "./checks";
 import { TaggedWizardStepResult } from "farmbot";
 import {
+  btnIndexList,
   hasEthernet, hasExtraButtons, hasRotaryTool, hasUTM, hasWeeder, isExpress,
 } from "../settings/firmware/firmware_hardware_support";
 import { BooleanSetting } from "../session_keys";
@@ -236,7 +237,7 @@ export const WIZARD_STEPS = (props: WizardStepDataProps): WizardSteps => {
       section: WizardSectionSlug.intro,
       slug: WizardStepSlug.orderInfo,
       title: t("Order info"),
-      content: t("Please enter your FarmBot order number."),
+      content: SetupWizardContent.FB_ORDER_NUMBER,
       component: ProductRegistration,
       question: t("Continue?"),
       outcomes: [
@@ -1253,7 +1254,9 @@ export const WIZARD_STEPS = (props: WizardStepDataProps): WizardSteps => {
           slug: WizardStepSlug.customButtons,
           title: t("Custom buttons"),
           prerequisites: [botOnlineReq],
-          content: SetupWizardContent.CUSTOM_BUTTONS,
+          content: btnIndexList(firmwareHardware).btns.length < 5
+            ? SetupWizardContent.CUSTOM_BUTTONS_v18
+            : SetupWizardContent.CUSTOM_BUTTONS,
           pinBindingOptions: { editing: true },
           componentOptions: { fullWidth: true },
           question: t("Are you finished customizing the buttons?"),

@@ -29,7 +29,7 @@ const DEFAULT_FBOS_CONFIG_VALUES: Record<Key, Value> = {
   update_channel: "stable",
   boot_sequence_id: undefined,
   safe_height: 0,
-  soil_height: 0,
+  soil_height: -500,
   gantry_height: 120,
   default_axis_order: "xy,z;high",
 };

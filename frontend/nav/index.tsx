@@ -6,7 +6,6 @@ import { updatePageInfo } from "../util";
 import { validBotLocationData } from "../util/location";
 import { NavLinks } from "./nav_links";
 import { demoAccountLog, TickerList } from "./ticker_list";
-import { AdditionalMenu } from "./additional_menu";
 import { MobileMenu } from "./mobile_menu";
 import { Position } from "@blueprintjs/core";
 import { ErrorBoundary } from "../error_boundary";
@@ -41,7 +40,6 @@ import {
 export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   state: NavBarState = {
     mobileMenuOpen: false,
-    accountMenuOpen: false,
     documentTitle: "",
   };
 
@@ -66,11 +64,11 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
     return this.props.logs.concat(forceOnline() ? [demoAccountLog()] : []);
   }
 
-  toggle = (key: keyof NavBarState) => () =>
-    this.setState({ [key]: !this.state[key] });
+  toggleMobileMenu = () =>
+    this.setState({ mobileMenuOpen: !this.state.mobileMenuOpen });
 
-  close = (key: keyof NavBarState) => () =>
-    this.setState({ [key]: false });
+  closeMobileMenu = () =>
+    this.setState({ mobileMenuOpen: false });
 
   ReadOnlyStatus = () =>
     <ReadOnlyIcon locked={!!this.props.getConfigValue(
@@ -113,11 +111,14 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         popoverClassName={"controls-popover"}
         isOpen={isOpen}
         enforceFocus={false}
-        target={<div className={`nav-coordinates ${isOpen ? "hover" : ""}`}
+        target={<button type="button"
+          className={`nav-coordinates ${isOpen ? "hover" : ""}`}
           onClick={this.togglePopup("controls")}
-          title={t("FarmBot position (X, Y, Z)")}>
+          title={t("FarmBot position (X, Y, Z)")}
+          aria-expanded={isOpen}>
           <img
-            src={TAB_ICON[Panel.Controls]} />
+            src={TAB_ICON[Panel.Controls]}
+            alt={t("controls icon")} />
           <p>
             {botPositionLabel(validBotLocationData(hardware.location_data)
               .position, { rounded: true })}
@@ -126,7 +127,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             ? <div className={"movement-progress"}
               style={{ width: `${remaining}%` }} />
             : <></>}
-        </div>}
+        </button>}
         content={<ControlsPanel
           dispatch={this.props.dispatch}
           appState={this.props.appState}
@@ -154,32 +155,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           BooleanSetting.disable_emergency_unlock_confirmation)} />
     </div>;
 
-  AccountMenu = () => {
-    const hasName = this.props.user?.body.name;
-    const firstName = hasName
-      ? `${hasName.split(" ")[0].slice(0, 9)} ▾`
-      : `${t("Menu")} ▾`;
-    return <div className="menu-popover">
-      <Popover
-        popoverClassName={"menu-popover"}
-        position={Position.BOTTOM_RIGHT}
-        isOpen={this.state.accountMenuOpen}
-        onClose={this.close("accountMenuOpen")}
-        target={isMobile()
-          ? <i className={"fa fa-user"} onClick={this.toggle("accountMenuOpen")} />
-          : <div className={`nav-name ${this.state.accountMenuOpen ? "hover" : ""}`}
-            data-title={firstName}
-            onClick={this.toggle("accountMenuOpen")}>
-            {firstName}
-          </div>}
-        content={<AdditionalMenu
-          close={this.close("accountMenuOpen")}
-          dispatch={this.props.dispatch}
-          darkMode={!!this.props.getConfigValue(BooleanSetting.dark_mode)}
-          isStaff={this.isStaff} />} />
-    </div>;
-  };
-
   ConnectionStatus = () => {
     const data = connectivityData({
       bot: this.props.bot,
@@ -196,13 +171,15 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
           popoverClassName={"connectivity-popover"}
           isOpen={isOpen}
           enforceFocus={false}
-          target={<div className={`connectivity-button ${isOpen ? "hover" : ""}`}
-            onClick={click}>
+          target={<button type="button"
+            className={`connectivity-button ${isOpen ? "hover" : ""}`}
+            onClick={click}
+            aria-expanded={isOpen}>
             <DiagnosisSaucer {...data.flags}
               className={"nav"}
               syncStatus={sync_status} />
-            {!isMobile() && <p>{t("Connectivity")}</p>}
-          </div>}
+            {!isMobile() && <p>{this.props.device.body.name || t("FarmBot")}</p>}
+          </button>}
           content={<ErrorBoundary>
             <Connectivity
               bot={this.props.bot}
@@ -244,7 +221,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
     const isPercent = job?.unit == "percent";
     const percent = isPercent ? round(job.percent, 1) : "";
     const activeText = !isMobile() ? jobNameLookup(job) : "";
-    const inactiveText = !isMobile() ? t("idle") : t("jobs");
+    const inactiveText = !isMobile() ? t("Idle") : t("jobs");
     const jobProgress = isPercent ? `${percent}%` : "";
     const isOpen = this.props.appState.popups.jobs;
     return <div className={"nav-popup-button-wrapper"}>
@@ -253,8 +230,10 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         popoverClassName={"jobs-panel"}
         isOpen={isOpen}
         enforceFocus={false}
-        target={<a className={`jobs-button ${isOpen ? "hover" : ""}`}
-          onClick={this.togglePopup("jobs")}>
+        target={<button type="button"
+          className={`jobs-button ${isOpen ? "hover" : ""}`}
+          onClick={this.togglePopup("jobs")}
+          aria-expanded={isOpen}>
           <i className={"fa fa-history"} />
           {!isMobile() &&
             <div className={"nav-job-info"}>
@@ -264,13 +243,12 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
             </div>}
           {jobActive && <div className={"jobs-button-progress-bar"}
             style={{ width: jobProgress }} />}
-        </a>}
+        </button>}
         content={<JobsAndLogs
           dispatch={this.props.dispatch}
           bot={this.props.bot}
           getConfigValue={this.props.getConfigValue}
           logs={this.logs}
-          jobsPanelState={this.props.appState.jobs}
           sourceFbosConfig={this.props.sourceFbosConfig}
           fbosVersion={this.props.device.body.fbos_version}
           jobs={this.props.bot.hardware.jobs}
@@ -282,12 +260,12 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
   AppNavLinks = () =>
     <div className={"app-nav-links"}>
       <i className={"fa fa-bars mobile-menu-icon"}
-        onClick={this.toggle("mobileMenuOpen")} />
+        onClick={this.toggleMobileMenu} />
       <span className="mobile-menu-container">
         <MobileMenu
           designer={this.props.designer}
           dispatch={this.props.dispatch}
-          close={this.close("mobileMenuOpen")}
+          close={this.closeMobileMenu}
           alertCount={this.props.alertCount}
           mobileMenuOpen={this.state.mobileMenuOpen}
           helpState={this.props.helpState} />
@@ -296,7 +274,7 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         <NavLinks
           designer={this.props.designer}
           dispatch={this.props.dispatch}
-          close={this.close("mobileMenuOpen")}
+          close={this.closeMobileMenu}
           alertCount={this.props.alertCount}
           helpState={this.props.helpState} />
       </span>
@@ -320,8 +298,11 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
         "nav-wrapper",
         this.isStaff ? "red" : "",
       ].join(" ")}>
+        <a href="#main-content" className="skip-nav-link">
+          {t("Skip to main content")}
+        </a>
         <nav role="navigation">
-          <div className="nav-bar">
+          <div className="nav-bar grid no-gap">
             <this.TickerList />
             <div className="nav-group">
               <div className="nav-left">
@@ -330,7 +311,6 @@ export class NavBar extends React.Component<NavBarProps, Partial<NavBarState>> {
               <div className="nav-right">
                 <ErrorBoundary>
                   <this.ReadOnlyStatus />
-                  <this.AccountMenu />
                   <this.EstopButton />
                   <this.ConnectionStatus />
                   <this.SetupButton />

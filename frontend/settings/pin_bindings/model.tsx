@@ -12,7 +12,9 @@ import { setPinBinding, findBinding, triggerBinding } from "./actions";
 import { BufferGeometry } from "three";
 import { debounce, some } from "lodash";
 import { t } from "../../i18next_wrapper";
-import { isExpress } from "../../settings/firmware/firmware_hardware_support";
+import {
+  btnIndexList, hasExtraButtons,
+} from "../../settings/firmware/firmware_hardware_support";
 import { ButtonPin } from "./list_and_label_support";
 import {
   AmbientLight, DirectionalLight, Group, Mesh, PointLight,
@@ -132,7 +134,6 @@ export const Model = (props: BoxTopBaseProps) => {
   } = props.bot.hardware.informational_settings;
   const findPinBinding = findBinding(props.resources);
   const clickBinding = triggerBinding(props.resources, props.botOnline);
-  const express = isExpress(props.firmwareHardware);
 
   const BUTTONS: ButtonOrLedItem[] = [
     {
@@ -284,10 +285,14 @@ export const Model = (props: BoxTopBaseProps) => {
       material={box.materials[ElectronicsBoxMaterial.lid]}
       scale={SCALE} />
     {BUTTONS
-      .filter((_, index) => express ? index == 0 : true)
+      .filter((_, i) => btnIndexList(props.firmwareHardware).btns.includes(i))
       .map(button => {
         const { position, color, ref, label, pinNumber } = button;
-        const btnPosition = express ? 0 : position;
+        let btnPosition = hasExtraButtons(props.firmwareHardware) ? position : 0;
+        const indexListLength = btnIndexList(props.firmwareHardware).btns.length;
+        if (indexListLength < 5 && indexListLength > 1) {
+          btnPosition += 30;
+        }
         const binding = findPinBinding(pinNumber);
         const isHovered = hovered == pinNumber;
         const click = debounce(clickBinding(pinNumber));
@@ -353,24 +358,25 @@ export const Model = (props: BoxTopBaseProps) => {
         </Group>;
       })}
     {LEDS
-      .filter(() => !express)
+      .filter((_, i) => btnIndexList(props.firmwareHardware).leds.includes(i))
       .map(ledIndicator => {
-        const { position, color, ref } = ledIndicator;
-        return <Group key={position}>
+        const { color, ref } = ledIndicator;
+        const ledPosition = ledIndicator.position;
+        return <Group key={ledPosition}>
           <Mesh name={"led-housing"}
             geometry={led.nodes.LED.geometry}
             material={led.materials[ElectronicsBoxMaterial.led]}
-            position={[-50, position, Z]}
+            position={[-50, ledPosition, Z]}
             material-color={0xcccccc}
             scale={SCALE} />
           <Cylinder ref={ref} name={"led-color"}
             material-color={color}
             args={[6.75, 6.75, 3]}
-            position={[-50, position, Z]}
+            position={[-50, ledPosition, Z]}
             rotation={[Math.PI / 2, 0, 0]} />
           <Html name={"label"}
             center={true}
-            position={[-66, position, Z]}>
+            position={[-66, ledPosition, Z]}>
             <p className={"led-label"}>{ledIndicator.label}</p>
           </Html>
         </Group>;

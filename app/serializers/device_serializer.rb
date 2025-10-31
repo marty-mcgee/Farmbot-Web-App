@@ -12,6 +12,7 @@ class DeviceSerializer < ApplicationSerializer
              :rpi,
              :serial_number,
              :setup_completed_at,
+             :account_seeded_at,
              :throttled_at,
              :throttled_until,
              :timezone,

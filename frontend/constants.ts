@@ -174,7 +174,7 @@ export namespace ToolTips {
     soil height measurements, run a sequence with the MEASURE SOIL HEIGHT
     command in a grid over your garden. Alternatively, use a ruler to
     manually measure the height at various locations in the garden and add
-    corresponding soil height points from the points panel. (default: 0)`);
+    corresponding soil height points from the points panel. (default: -500)`);
 
   export const DEFAULT_AXIS_ORDER =
     trim(`Default axis order for movement. (default: X and Y together)`);
@@ -1491,10 +1491,6 @@ export namespace TourContent {
     same button to UNLOCK the device before resuming execution of any
     commands.`);
 
-  export const ACCOUNT_MENU =
-    trim(`This is the account menu, providing you with links to other pages
-    in the app, and for logging out.`);
-
   export const GETTING_STARTED_END =
     trim(`Thanks for taking the Getting Started Tour! You're now ready to
     dive into the details of each panel and begin planting your first
@@ -1673,6 +1669,12 @@ export namespace SetupWizardContent {
     can be answered yes or no. Answering yes will continue to the next step,
     while answering no will display a list of results that can be selected for
     specific troubleshooting tips.`);
+
+  export const FB_ORDER_NUMBER =
+    trim(`Please enter your FarmBot order number. This is not necessary to
+    use the app but is helpful if you ever need additional support.
+    If you do not have your original order number you may leave this field
+    blank.`);
 
   export const RPI =
     trim(`Inspect the ports on the top edge of the Raspberry Pi and select
@@ -1987,6 +1989,12 @@ export namespace SetupWizardContent {
     trim(`Customize which Action or Sequence you want FarmBot to execute
     when you press Button 3, 4, or 5 on the electronics box. To start, we
     recommend setting Button 5 to the 'Find Home' sequence. You can change
+    this later from the controls pop-up.`);
+
+  export const CUSTOM_BUTTONS_v18 =
+    trim(`Customize which Action or Sequence you want FarmBot to execute
+    when you press Button 3 on the electronics box. To start, we
+    recommend setting Button 3 to the 'Find Home' sequence. You can change
     this later from the controls pop-up.`);
 
   export const PROBLEM_GETTING_IMAGE =
@@ -2469,7 +2477,6 @@ export enum Actions {
   SET_METRIC_PANEL_OPTION = "SET_METRIC_PANEL_OPTION",
   BULK_TOGGLE_SETTINGS_PANEL = "BULK_TOGGLE_SETTINGS_PANEL",
   SET_CONTROLS_PANEL_OPTION = "SET_CONTROLS_PANEL_OPTION",
-  SET_JOBS_PANEL_OPTION = "SET_JOBS_PANEL_OPTION",
   TOGGLE_POPUP = "TOGGLE_POPUP",
   OPEN_POPUP = "OPEN_POPUP",
   CLOSE_POPUP = "CLOSE_POPUP",

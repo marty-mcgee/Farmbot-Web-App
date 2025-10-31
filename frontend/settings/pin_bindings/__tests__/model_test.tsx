@@ -47,6 +47,7 @@ import { bot } from "../../../__test_support__/fake_state/bot";
 import { execSequence } from "../../../devices/actions";
 import { ButtonPin } from "../list_and_label_support";
 import { BoxTopBaseProps } from "../interfaces";
+import { FirmwareHardware } from "farmbot";
 
 describe("setZForAllInGroup()", () => {
   it("sets z", () => {
@@ -78,7 +79,7 @@ describe("<ElectronicsBoxModel />", () => {
       resources: buildResourceIndex([binding, sequence]).index,
       botOnline: true,
       bot,
-      firmwareHardware: "arduino",
+      firmwareHardware: "farmduino_k17",
     };
   };
 
@@ -187,5 +188,16 @@ describe("<ElectronicsBoxModel />", () => {
     p.firmwareHardware = "express_k10";
     mount(<Model {...p} />);
     expect(mockSetColor).not.toHaveBeenCalledWith(IColor.unlock.on);
+  });
+
+  it.each<[FirmwareHardware, number]>([
+    ["express_k11", 1],
+    ["farmduino_k17", 5],
+    ["farmduino_k18", 3],
+  ])("renders: %s", (firmwareHardware, count) => {
+    const p = fakeProps();
+    p.firmwareHardware = firmwareHardware;
+    const wrapper = mount(<Model {...p} />);
+    expect(wrapper.find({ name: "button-center" }).length).toEqual(count);
   });
 });

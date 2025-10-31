@@ -125,17 +125,10 @@ describe("<NavBar />", () => {
     expect(maybeSetTimezone).toHaveBeenCalledWith(p.dispatch, p.device);
   });
 
-  it("handles missing user", () => {
-    const p = fakeProps();
-    p.user = undefined;
-    const wrapper = mount(<NavBar {...p} />);
-    expect(wrapper.text().toLowerCase()).toContain("menu");
-  });
-
   it("toggles state value", () => {
     const wrapper = shallow<NavBar>(<NavBar {...fakeProps()} />);
     expect(wrapper.state().mobileMenuOpen).toEqual(false);
-    wrapper.instance().toggle("mobileMenuOpen")();
+    wrapper.instance().toggleMobileMenu();
     expect(wrapper.state().mobileMenuOpen).toEqual(true);
   });
 
@@ -158,16 +151,27 @@ describe("<NavBar />", () => {
 
   it("displays connectivity saucer", () => {
     mockIsMobile = true;
-    const wrapper = mount(<NavBar {...fakeProps()} />);
+    const p = fakeProps();
+    p.device.body.name = "broccolibot";
+    const wrapper = mount(<NavBar {...p} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
-    expect(wrapper.text().toLowerCase()).not.toContain("connectivity");
+    expect(wrapper.text().toLowerCase()).not.toContain("broccolibot");
   });
 
   it("displays connectivity saucer and button", () => {
     mockIsMobile = false;
-    const wrapper = mount(<NavBar {...fakeProps()} />);
+    const p = fakeProps();
+    p.device.body.name = "broccolibot";
+    const wrapper = mount(<NavBar {...p} />);
     expect(wrapper.find(".saucer").length).toEqual(2);
-    expect(wrapper.text().toLowerCase()).toContain("connectivity");
+    expect(wrapper.text().toLowerCase()).toContain("broccolibot");
+  });
+
+  it("displays default device name when none is provided", () => {
+    const props = fakeProps();
+    props.device.body.name = "";
+    render(<NavBar {...props} />);
+    expect(screen.getByText("FarmBot")).toBeInTheDocument();
   });
 
   it("displays setup button", () => {
@@ -233,11 +237,4 @@ describe("<NavBar />", () => {
     expect(props.firmwareSettings).toEqual(p.bot.hardware.mcu_params);
   });
 
-  it("opens account menu", () => {
-    mockIsMobile = false;
-    const wrapper = mount<NavBar>(<NavBar {...fakeProps()} />);
-    wrapper.instance().toggle("accountMenuOpen")();
-    wrapper.update();
-    expect(wrapper.find(".nav-name").first().hasClass("hover")).toBeTruthy();
-  });
 });

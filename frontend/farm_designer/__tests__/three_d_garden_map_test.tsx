@@ -24,6 +24,15 @@ import { INITIAL } from "../../three_d_garden/config";
 import { FirmwareHardware } from "farmbot";
 import { CROPS } from "../../crops/constants";
 import { fakeDevice } from "../../__test_support__/resource_index_builder";
+import { fakeCameraCalibrationData } from "../../__test_support__/fake_camera_data";
+
+const EMPTY_PROPS = {
+  mapPoints: [],
+  weeds: [],
+  allPoints: [],
+  groups: [],
+  images: [],
+};
 
 describe("<ThreeDGardenMap />", () => {
   const fakeProps = (): ThreeDGardenMapProps => ({
@@ -44,6 +53,10 @@ describe("<ThreeDGardenMap />", () => {
     negativeZ: false,
     mountedToolName: undefined,
     peripheralValues: [],
+    allPoints: [],
+    groups: [],
+    images: [],
+    cameraCalibrationData: fakeCameraCalibrationData(),
   });
 
   it("converts props", () => {
@@ -78,21 +91,30 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.waterFlow = false;
     expectedConfig.animate = true;
     expectedConfig.ambient = 1;
+    expectedConfig.sun = 1;
     expectedConfig.bedBrightness = 1;
+    expectedConfig.soilBrightness = 1;
     expectedConfig.cableDebug = true;
     expectedConfig.eventDebug = true;
     expectedConfig.lightsDebug = true;
+    expectedConfig.surfaceDebug = true;
     expectedConfig.lowDetail = true;
     expectedConfig.solar = true;
     expectedConfig.stats = true;
     expectedConfig.heading = 1;
     expectedConfig.north = true;
-    expectedConfig.desk = false;
+    expectedConfig.desk = true;
     expectedConfig.laser = true;
     expectedConfig.threeAxes = true;
     expectedConfig.sunAzimuth = 1;
     expectedConfig.sunInclination = 1;
     expectedConfig.scene = "Lab";
+    expectedConfig.plants = "";
+    expectedConfig.axes = true;
+    expectedConfig.people = true;
+    expectedConfig.xyDimensions = true;
+    expectedConfig.zDimension = true;
+    expectedConfig.imgScale = 0.6;
 
     expect(ThreeDGarden).toHaveBeenCalledWith({
       config: expectedConfig,
@@ -108,8 +130,7 @@ describe("<ThreeDGardenMap />", () => {
         y: 201,
       }],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -122,8 +143,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ x: 0, y: 0, z: 0 }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -137,8 +157,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ negativeZ: true, x: 0, y: 0, z: -100 }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -153,12 +172,11 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({
         sunInclination: expect.any(Number),
         sunAzimuth: expect.any(Number),
-        sun: 75,
+        sun: 1,
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
     const callArgs = (ThreeDGarden as jest.Mock).mock.calls[0][0];
     expect(callArgs.config.sunInclination).toBeCloseTo(28.64788975654116, 4);
@@ -175,12 +193,11 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({
         sunInclination: -1,
         sunAzimuth: -1,
-        sun: 75,
+        sun: -1,
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -197,8 +214,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ kitVersion }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -211,8 +227,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ waterFlow: true }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 
@@ -233,8 +248,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({ rotary: exp }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
-      mapPoints: [],
-      weeds: [],
+      ...EMPTY_PROPS,
     }, {});
   });
 });

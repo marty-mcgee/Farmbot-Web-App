@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .problem-alerts {
   padding: 1rem;
@@ -32,7 +33,7 @@
       font-size: 1.5rem;
       font-weight: bold;
       margin: 0;
-      font-family: 'Inknut Antiqua';
+      font-family: $inknut;
     }
     p {
       display: inline;

@@ -31,6 +31,16 @@ describe("data check", () => {
     expect(slugs.length).toEqual(stepSlugs.length);
   });
 
+  it("has fewer steps for genesis v1.8", () => {
+    const genesisV16 = WIZARD_STEPS({
+      firmwareHardware: "farmduino_k16",
+    });
+    const genesisV18 = WIZARD_STEPS({
+      firmwareHardware: "farmduino_k18",
+    });
+    expect(genesisV18.length).toBeLessThan(genesisV16.length);
+  });
+
   it("has fewer steps for express v1.0", () => {
     const steps = WIZARD_STEPS({
       firmwareHardware: undefined,

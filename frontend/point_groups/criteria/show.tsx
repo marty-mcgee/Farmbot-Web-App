@@ -35,18 +35,20 @@ export class EqCriteriaSelection<T extends string | number>
           <div key={keyIndex} className="row advanced-group-criteria">
             <code>{key}</code>
             <p>=</p>
-            {values.map((value, valueIndex) =>
-              <Row key={"" + keyIndex + valueIndex} className="grid-exp-1">
-                <input name="value"
-                  disabled={true}
-                  value={value} />
-                <button className="fb-button red"
-                  title={t("remove filter")}
-                  onClick={() => dispatch(removeEqCriteriaValue(
-                    group, eqCriteria, criteriaKey, key, value))}>
-                  <i className="fa fa-minus" />
-                </button>
-              </Row>)}
+            <div className={"grid"}>
+              {values.map((value, valueIndex) =>
+                <Row key={"" + keyIndex + valueIndex} className="grid-exp-1">
+                  <input name="value"
+                    disabled={true}
+                    value={value} />
+                  <button className="fb-button red"
+                    title={t("remove filter")}
+                    onClick={() => dispatch(removeEqCriteriaValue(
+                      group, eqCriteria, criteriaKey, key, value))}>
+                    <i className="fa fa-minus" />
+                  </button>
+                </Row>)}
+            </div>
           </div>)}
     </div>;
   }

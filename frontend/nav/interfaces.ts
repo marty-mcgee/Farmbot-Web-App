@@ -50,7 +50,6 @@ export interface NavBarProps {
 
 export interface NavBarState {
   mobileMenuOpen: boolean;
-  accountMenuOpen: boolean;
   documentTitle: string;
 }
 
@@ -78,13 +77,6 @@ export interface NavLinksProps {
   helpState: HelpState;
   dispatch: Function;
   designer: DesignerState;
-}
-
-export interface AccountMenuProps {
-  isStaff: boolean;
-  close(): void;
-  dispatch: Function;
-  darkMode: boolean;
 }
 
 export interface EStopButtonProps {

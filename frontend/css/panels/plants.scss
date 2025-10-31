@@ -1,5 +1,6 @@
 @use "../variables" as *;
 @use "sass:color";
+@use "../global/fonts" as *;
 
 .crop-search-result-wrapper {
   .crop-search-results-wrapper {
@@ -61,7 +62,7 @@
     .panel-title {
       overflow: visible;
       .title {
-        font-family: "Inknut Antiqua";
+        font-family: $inknut;
         font-weight: bold;
       }
       .bp6-popover-wrapper {

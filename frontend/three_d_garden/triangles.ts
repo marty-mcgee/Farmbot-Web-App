@@ -3,22 +3,24 @@ import { TaggedGenericPointer } from "farmbot";
 import { Config } from "./config";
 import { soilHeightPoint } from "../points/soil_height";
 import { zZero } from "./helpers";
+import { BufferGeometry, Float32BufferAttribute } from "three";
+
+export const soilSurfaceExtents = (config: Config) => ({
+  x: {
+    min: config.bedWallThickness - config.bedXOffset,
+    max: config.bedLengthOuter - config.bedWallThickness - config.bedXOffset,
+  },
+  y: {
+    min: config.bedWallThickness - config.bedYOffset,
+    max: config.bedWidthOuter - config.bedWallThickness - config.bedYOffset,
+  },
+});
 
 export const computeSurface = (
   mapPoints: TaggedGenericPointer[] | undefined,
   config: Config,
 ) => {
-  const outerBoundaryParams = {
-    x: {
-      min: config.bedWallThickness - config.bedXOffset,
-      max: config.bedLengthOuter - config.bedWallThickness - config.bedXOffset,
-    },
-    y: {
-      min: config.bedWallThickness - config.bedYOffset,
-      max: config.bedWidthOuter - config.bedWallThickness - config.bedYOffset,
-    },
-  };
-
+  const outerBoundaryParams = soilSurfaceExtents(config);
   const boundaryParams = {
     outer: outerBoundaryParams,
     inner: {
@@ -109,4 +111,20 @@ export const computeSurface = (
     }
   }
   return { vertices, vertexList, uvs, faces };
+};
+
+export const getGeometry = (vertices: number[], uvs: number[]) => {
+  const geom = new BufferGeometry();
+  geom.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+  geom.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+  geom.computeVertexNormals();
+  const { normal } = geom.attributes;
+  if (normal) {
+    for (let i = 0; i < normal.count; i++) {
+      normal.setX(i, -normal.getX(i));
+      normal.setY(i, -normal.getY(i));
+      normal.setZ(i, -normal.getZ(i));
+    }
+  }
+  return geom;
 };

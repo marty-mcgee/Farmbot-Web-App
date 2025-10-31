@@ -137,7 +137,7 @@ describe("<TourStepContainer />", () => {
     p.helpState.currentTourStep = undefined;
     mount(<TourStepContainer {...p} />);
     expect(p.dispatch).toHaveBeenCalledWith({
-      type: Actions.SET_JOBS_PANEL_OPTION, payload: "logs",
+      type: Actions.OPEN_POPUP, payload: "jobs",
     });
   });
 
