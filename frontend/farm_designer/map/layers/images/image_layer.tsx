@@ -35,7 +35,7 @@ export const filterImages = (props: FilterImagesProps): TaggedImagePlus[] => {
   const imageFilterEnd = getFilterValue(StringSetting.photo_filter_end);
   const rangeOverride = alwaysHighlightImage || hideUnShownImages;
   const hoveredImage: TaggedImage | undefined =
-    images.filter(img => img.body.id == hoveredMapImage
+    images.filter(img => hoveredMapImage && img.body.id == hoveredMapImage
       || (alwaysHighlightImage && shownImages.includes(img.body.id || 0)))[0];
   const filteredImages = reverse(cloneDeep(images))
     .filter(img =>
