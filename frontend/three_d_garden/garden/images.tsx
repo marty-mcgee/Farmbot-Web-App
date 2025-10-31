@@ -90,14 +90,16 @@ const Images = (props: ImagesProps) => {
     {props.images.map(image => {
       const { x, y } = image.body.meta;
       if (isNumber(x) && isNumber(y)) {
-        return <ImageWrapper
-          image={image}
-          x={x}
-          y={y}
-          z={props.z}
-          xOffset={props.xOffset}
-          yOffset={props.yOffset}
-          config={props.config} />;
+        return <React.Suspense>
+          <ImageWrapper
+            image={image}
+            x={x}
+            y={y}
+            z={props.z}
+            xOffset={props.xOffset}
+            yOffset={props.yOffset}
+            config={props.config} />
+        </React.Suspense>;
       }
     })}
   </>;
