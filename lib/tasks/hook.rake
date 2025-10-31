@@ -58,12 +58,16 @@ def intro_block(start_text, environment)
   output
 end
 
-def commits_block(environment)
-  output = ""
-  messages = commits_since_last_deploy.reverse.map do |commit|
-    output += "\n + #{commit[0]} | ##{commit[1][0..5]}"
+def commit_blocks(environment)
+  outputs = []
+  commits_since_last_deploy.reverse.each_slice(50) do |commits|
+    output = ""
+    commits.map do |commit|
+      output += "\n + #{commit[0]} | ##{commit[1][0..5]}"
+    end
+    outputs.push(output)
   end
-  output
+  outputs
 end
 
 def links_block(environment)
@@ -100,13 +104,15 @@ namespace :hook do
               "text": intro_block(notification_text, environment),
             }
           },
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": commits_block(environment),
+          *commit_blocks(environment).map do |commit_block_text|
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": commit_block_text,
+              }
             }
-          },
+          end,
           {
             "type": "section",
             "text": {
