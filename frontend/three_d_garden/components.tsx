@@ -29,6 +29,10 @@ export const MeshPhongMaterial = (props: ThreeElements["meshPhongMaterial"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
   <meshPhongMaterial {...props} />;
 
+export const MeshNormalMaterial = (props: ThreeElements["meshNormalMaterial"]) =>
+  // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+  <meshNormalMaterial {...props} />;
+
 export const InstancedMesh = (props: ThreeElements["instancedMesh"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
   <instancedMesh {...props} />;

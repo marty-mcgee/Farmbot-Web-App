@@ -59,7 +59,7 @@ describe("<ImageLayer/>", () => {
     p.designer.shownImages = [1];
     const wrapper = shallow(<ImageLayer {...p} />);
     const layer = wrapper.find("#image-layer");
-    expect(layer.find("MapImage").length).toEqual(2);
+    expect(layer.find("MapImage").length).toEqual(1);
   });
 
   it("toggles visibility off", () => {

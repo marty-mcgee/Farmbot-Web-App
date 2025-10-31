@@ -42,6 +42,7 @@ export const imageSizeCheck =
       x: parse(calibCenter.x),
       y: parse(calibCenter.y),
     };
+    if (!calibrationCenter.x) { return true; }
     return isNumber(calibrationCenter.x) && isNumber(calibrationCenter.y)
       && isNumber(size.width) && isNumber(size.height)
       && ((Math.abs(size.width / 2 - calibrationCenter.x) < 5
@@ -165,16 +166,19 @@ const generateTransform = (props: TransformProps): string => {
 };
 
 interface ParsedCalibrationData {
-  imageScale: number | undefined;
-  imageOffsetX: number | undefined;
-  imageOffsetY: number | undefined;
-  imageOrigin: string | undefined;
-  imageRotation: number | undefined;
+  imageScale: number;
+  imageOffsetX: number;
+  imageOffsetY: number;
+  imageOrigin: string;
+  imageRotation: number;
+  calibrationZ: number;
+  centerX: number;
+  centerY: number;
 }
 
 /** If calibration data exists, parse it, usually to a number.
  * Otherwise, return values for pre-calibration preview. */
-const parseCalibrationData =
+export const parseCalibrationData =
   (props: CameraCalibrationData): ParsedCalibrationData => {
     const { scale, offset, origin, rotation } = props;
     const imageScale = parse(scale) || 0.6;
@@ -183,9 +187,12 @@ const parseCalibrationData =
     const cleanOrigin = origin ? origin.split("\"").join("") : undefined;
     const imageOrigin = cleanOrigin ?? "TOP_LEFT";
     const imageRotation = parse(rotation) ?? 0;
+    const calibrationZ = parse(props.calibrationZ) ?? 0;
+    const centerX = parse(props.center.x) ?? 0;
+    const centerY = parse(props.center.y) ?? 0;
     return {
       imageScale, imageOffsetX, imageOffsetY, imageOrigin,
-      imageRotation,
+      imageRotation, calibrationZ, centerX, centerY,
     };
   };
 

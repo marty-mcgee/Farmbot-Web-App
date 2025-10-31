@@ -9,3 +9,4 @@ export * from "./sun";
 export * from "./weed";
 export * from "./zoom_beacons";
 export * from "./north_arrow";
+export * from "./images";

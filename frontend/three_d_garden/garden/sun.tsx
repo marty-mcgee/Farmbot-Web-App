@@ -129,7 +129,7 @@ export const calcSunI = (inclination: number) => {
 export const Sun = (props: SunProps) => {
   const { config } = props;
 
-  const sunParams = getSeasonProperties(config, "Spring");
+  const sunParams = getSeasonProperties(config, "Summer");
   const { sunIntensity, sunColor } = sunParams;
 
   const sunPos = sunPosition(

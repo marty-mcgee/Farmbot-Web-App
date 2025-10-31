@@ -5,7 +5,8 @@ import { GardenModel } from "./garden_model";
 import { noop } from "lodash";
 import { AddPlantProps } from "./bed";
 import {
-  TaggedGenericPointer, TaggedPoint, TaggedPointGroup, TaggedWeedPointer,
+  TaggedGenericPointer, TaggedImage, TaggedPoint, TaggedPointGroup,
+  TaggedWeedPointer,
 } from "farmbot";
 import { SlotWithTool } from "../resources/interfaces";
 import { NavigateFunction } from "react-router";
@@ -32,6 +33,7 @@ export interface ThreeDGardenProps {
   mountedToolName?: string;
   allPoints?: TaggedPoint[];
   groups?: TaggedPointGroup[];
+  images?: TaggedImage[];
 }
 
 export const ThreeDGarden = (props: ThreeDGardenProps) => {
@@ -59,6 +61,7 @@ export const ThreeDGarden = (props: ThreeDGardenProps) => {
             mountedToolName={props.mountedToolName}
             allPoints={props.allPoints}
             groups={props.groups}
+            images={props.images}
             addPlantProps={props.addPlantProps} />
         </Canvas>
       </React.Suspense>

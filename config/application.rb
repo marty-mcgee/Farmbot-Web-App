@@ -54,6 +54,14 @@ module FarmBot
                  credentials: false, # No cookies.
                  max_age: 0
       end
+      unless ENV["GCS_BUCKET"]
+        allow do
+          origins ["#{ENV.fetch("API_HOST")}:#{API_PORT}", "localhost:#{API_PORT}"]
+          resource "*",
+                   headers: :any,
+                   methods: [:get, :options]
+        end
+      end
     end
     API_PORT = ENV["API_PORT"]
     Rails.application.routes.default_url_options[:host] = LOCAL_API_HOST

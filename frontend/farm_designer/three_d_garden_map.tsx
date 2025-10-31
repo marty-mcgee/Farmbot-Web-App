@@ -7,10 +7,10 @@ import {
 import { clone } from "lodash";
 import { BotPosition, SourceFbosConfig } from "../devices/interfaces";
 import {
-  ConfigurationName, TaggedCurve, TaggedGenericPointer, TaggedPoint,
+  ConfigurationName, TaggedCurve, TaggedGenericPointer, TaggedImage, TaggedPoint,
   TaggedPointGroup, TaggedWeedPointer,
 } from "farmbot";
-import { DesignerState } from "./interfaces";
+import { CameraCalibrationData, DesignerState } from "./interfaces";
 import { GetWebAppConfigValue } from "../config_storage/actions";
 import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
@@ -21,6 +21,7 @@ import { isPeripheralActiveFunc } from "./map/layers/farmbot/bot_peripherals";
 import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
 import { SCENES } from "../settings/three_d_settings";
 import { get3DTime, latLng } from "../three_d_garden/time_travel";
+import { parseCalibrationData } from "./map/layers/images/map_image";
 
 export interface ThreeDGardenMapProps {
   botSize: BotSize;
@@ -43,6 +44,8 @@ export interface ThreeDGardenMapProps {
   device: DeviceAccountSettings;
   allPoints: TaggedPoint[];
   groups: TaggedPointGroup[];
+  images: TaggedImage[];
+  cameraCalibrationData: CameraCalibrationData;
 }
 
 export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
@@ -91,6 +94,7 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.extraLegsX = getValue("extraLegsX");
   config.extraLegsY = getValue("extraLegsY");
   config.bedBrightness = getValue("bedBrightness");
+  config.soilBrightness = getValue("soilBrightness");
   config.clouds = !!getValue("clouds");
   config.laser = !!getValue("laser");
   config.stats = !!getValue("stats");
@@ -100,6 +104,8 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.eventDebug = !!getValue("eventDebug");
   config.cableDebug = !!getValue("cableDebug");
   config.lightsDebug = !!getValue("lightsDebug");
+  config.surfaceDebug = !!getValue("surfaceDebug");
+  config.sun = getValue("sun");
   config.ambient = getValue("ambient");
   config.heading = getValue("heading");
   config.bounds = !!getValue("bounds");
@@ -115,6 +121,7 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
 
   config.north = true;
   config.desk = !!getValue("desk");
+  config.plants = "";
 
   const { latitude, longitude, valid } = latLng(props.device);
   if (valid) {
@@ -142,6 +149,16 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   };
   config.rotary = rotarySpeed();
 
+  const camCalData = parseCalibrationData(props.cameraCalibrationData);
+  config.imgScale = camCalData.imageScale;
+  config.imgRotation = camCalData.imageRotation;
+  config.imgOffsetX = camCalData.imageOffsetX;
+  config.imgOffsetY = camCalData.imageOffsetY;
+  config.imgOrigin = camCalData.imageOrigin;
+  config.imgCalZ = camCalData.calibrationZ;
+  config.imgCenterX = camCalData.centerX;
+  config.imgCenterY = camCalData.centerY;
+
   config.zoom = true;
   config.pan = true;
   config.rotate = !props.designer.threeDTopDownView;
@@ -158,6 +175,7 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
     mountedToolName={props.mountedToolName}
     allPoints={props.allPoints}
     groups={props.groups}
+    images={props.images}
     addPlantProps={{
       gridSize: props.mapTransformProps.gridSize,
       dispatch: props.dispatch,

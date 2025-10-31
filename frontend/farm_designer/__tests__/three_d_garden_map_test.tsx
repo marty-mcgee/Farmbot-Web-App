@@ -24,12 +24,14 @@ import { INITIAL } from "../../three_d_garden/config";
 import { FirmwareHardware } from "farmbot";
 import { CROPS } from "../../crops/constants";
 import { fakeDevice } from "../../__test_support__/resource_index_builder";
+import { fakeCameraCalibrationData } from "../../__test_support__/fake_camera_data";
 
 const EMPTY_PROPS = {
   mapPoints: [],
   weeds: [],
   allPoints: [],
   groups: [],
+  images: [],
 };
 
 describe("<ThreeDGardenMap />", () => {
@@ -53,6 +55,8 @@ describe("<ThreeDGardenMap />", () => {
     peripheralValues: [],
     allPoints: [],
     groups: [],
+    images: [],
+    cameraCalibrationData: fakeCameraCalibrationData(),
   });
 
   it("converts props", () => {
@@ -87,10 +91,13 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.waterFlow = false;
     expectedConfig.animate = true;
     expectedConfig.ambient = 1;
+    expectedConfig.sun = 1;
     expectedConfig.bedBrightness = 1;
+    expectedConfig.soilBrightness = 1;
     expectedConfig.cableDebug = true;
     expectedConfig.eventDebug = true;
     expectedConfig.lightsDebug = true;
+    expectedConfig.surfaceDebug = true;
     expectedConfig.lowDetail = true;
     expectedConfig.solar = true;
     expectedConfig.stats = true;
@@ -102,10 +109,12 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.sunAzimuth = 1;
     expectedConfig.sunInclination = 1;
     expectedConfig.scene = "Lab";
+    expectedConfig.plants = "";
     expectedConfig.axes = true;
     expectedConfig.people = true;
     expectedConfig.xyDimensions = true;
     expectedConfig.zDimension = true;
+    expectedConfig.imgScale = 0.6;
 
     expect(ThreeDGarden).toHaveBeenCalledWith({
       config: expectedConfig,
@@ -163,7 +172,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({
         sunInclination: expect.any(Number),
         sunAzimuth: expect.any(Number),
-        sun: 75,
+        sun: 1,
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),
@@ -184,7 +193,7 @@ describe("<ThreeDGardenMap />", () => {
       config: expect.objectContaining({
         sunInclination: -1,
         sunAzimuth: -1,
-        sun: 75,
+        sun: -1,
       }),
       threeDPlants: [],
       addPlantProps: expect.any(Object),

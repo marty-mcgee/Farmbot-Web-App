@@ -1,12 +1,15 @@
 import React from "react";
-import { Box, Detailed, Extrude, Plane, useTexture } from "@react-three/drei";
+import {
+  Box, Detailed, Extrude, Plane, useHelper, useTexture,
+} from "@react-three/drei";
 import {
   DoubleSide,
   Path as LinePath,
   Shape,
   RepeatWrapping,
   BufferGeometry,
-  Float32BufferAttribute,
+  Mesh as MeshType,
+  BackSide,
 } from "three";
 import { range } from "lodash";
 import { threeSpace, getColorFromBrightness, zZero } from "../helpers";
@@ -14,9 +17,9 @@ import { Config, detailLevels } from "../config";
 import { ASSETS } from "../constants";
 import { DistanceIndicator } from "../elements";
 import { FarmbotAxes, Caster, UtilitiesPost, Packaging } from "./objects";
-import { Group, Mesh, MeshPhongMaterial } from "../components";
+import { Group, Mesh, MeshNormalMaterial, MeshPhongMaterial } from "../components";
 import { AxisNumberProperty } from "../../farm_designer/map/interfaces";
-import { TaggedCurve, TaggedGenericPointer } from "farmbot";
+import { TaggedCurve, TaggedGenericPointer, TaggedImage } from "farmbot";
 import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { DesignerState } from "../../farm_designer/interfaces";
 import { useNavigate } from "react-router";
@@ -29,6 +32,8 @@ import {
   YCrosshairRef,
 } from "./objects/pointer_objects";
 import { ThreeElements } from "@react-three/fiber";
+import { ImageTexture } from "../garden";
+import { VertexNormalsHelper } from "three/examples/jsm/Addons";
 
 const soil = (
   Type: typeof LinePath | typeof Shape,
@@ -67,21 +72,14 @@ const bedStructure2D = (
 type MeshProps = ThreeElements["mesh"];
 
 interface SurfaceProps extends MeshProps {
-  vertices: number[];
-  uvs: number[];
+  config: Config;
 }
 
 const Surface = (props: SurfaceProps) => {
-  const { vertices, uvs } = props;
-  const geometry = React.useMemo(() => {
-    const geom = new BufferGeometry();
-    geom.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    geom.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
-    geom.computeVertexNormals();
-    return geom;
-  }, [vertices, uvs]);
-
-  return <Mesh geometry={geometry} {...props}>
+  // eslint-disable-next-line no-null/no-null
+  const ref = React.useRef<MeshType>(null) as React.RefObject<MeshType>;
+  useHelper(ref, VertexNormalsHelper, 1000);
+  return <Mesh ref={props.config.surfaceDebug ? ref : undefined} {...props}>
     {props.children}
   </Mesh>;
 };
@@ -99,22 +97,21 @@ export interface BedProps {
   activeFocus: string;
   mapPoints: TaggedGenericPointer[];
   addPlantProps?: AddPlantProps;
-  vertices: number[];
-  uvs: number[];
   getZ(x: number, y: number): number;
+  images?: TaggedImage[];
+  geometry: BufferGeometry;
 }
 
 export const Bed = (props: BedProps) => {
   const {
     bedWidthOuter, bedLengthOuter, botSizeZ, bedHeight, bedZOffset,
-    legSize, legsFlush, extraLegsX, extraLegsY, bedBrightness, soilBrightness,
+    legSize, legsFlush, extraLegsX, extraLegsY, bedBrightness,
     ccSupportSize, axes, xyDimensions, bedXOffset, bedYOffset,
   } = props.config;
   const thickness = props.config.bedWallThickness;
   const botSize = { x: bedLengthOuter, y: bedWidthOuter, z: botSizeZ, thickness };
   const bedStartZ = bedHeight;
   const bedColor = getColorFromBrightness(bedBrightness);
-  const soilColor = getColorFromBrightness(soilBrightness);
   const groundZ = -bedHeight - bedZOffset;
   const legXPositions = [
     0 + legSize / 2 + thickness,
@@ -141,7 +138,6 @@ export const Bed = (props: BedProps) => {
   legWoodTexture.wrapS = RepeatWrapping;
   legWoodTexture.wrapT = RepeatWrapping;
   legWoodTexture.repeat.set(0.02, 0.05);
-  const soilTexture = useTexture(ASSETS.textures.soil + "?=soil");
 
   const Bed = ({ children }: { children: React.ReactElement }) =>
     <Extrude name={"bed"}
@@ -212,8 +208,8 @@ export const Bed = (props: BedProps) => {
         })}
       castShadow={true}
       receiveShadow={true}
-      vertices={props.vertices}
-      uvs={props.uvs}
+      config={props.config}
+      geometry={props.geometry}
       position={[
         threeSpace(0, bedLengthOuter) + bedXOffset,
         threeSpace(0, bedWidthOuter) + bedYOffset,
@@ -227,6 +223,20 @@ export const Bed = (props: BedProps) => {
     side: DoubleSide,
     shininess: 0,
   };
+
+  const soilTexture = React.useMemo(
+    () => <ImageTexture
+      images={props.images}
+      config={props.config}
+      addPlantProps={props.addPlantProps}
+      xOffset={props.config.bedXOffset - props.config.bedLengthOuter / 2}
+      yOffset={props.config.bedYOffset - props.config.bedWidthOuter / 2}
+      z={0} />,
+    [props.images, props.config, props.addPlantProps]);
+
+  const SoilMaterial = props.config.surfaceDebug
+    ? MeshNormalMaterial
+    : MeshPhongMaterial;
 
   return <Group name={"bed-group"}>
     <Detailed distances={detailLevels(props.config)}>
@@ -324,7 +334,13 @@ export const Bed = (props: BedProps) => {
         mapPoints={props.mapPoints} />}
     <Detailed distances={detailLevels(props.config)}>
       <Soil addPlantProps={props.addPlantProps}>
-        <MeshPhongMaterial {...commonSoil} map={soilTexture} color={soilColor} />
+        <SoilMaterial
+          flatShading={true}
+          side={BackSide}
+          shininess={0}
+          color={getColorFromBrightness(props.config.soilBrightness)}>
+          {soilTexture}
+        </SoilMaterial>
       </Soil>
       <Soil addPlantProps={props.addPlantProps}>
         <MeshPhongMaterial {...commonSoil} color={"#29231e"} />

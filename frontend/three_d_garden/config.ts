@@ -74,6 +74,7 @@ export interface Config {
   cableDebug: boolean;
   zoomBeaconDebug: boolean;
   lightsDebug: boolean;
+  surfaceDebug: boolean;
   sun: number;
   ambient: number;
   animate: boolean;
@@ -88,6 +89,14 @@ export interface Config {
   rotary: number;
   north: boolean;
   desk: boolean;
+  imgScale: number;
+  imgRotation: number;
+  imgOffsetX: number;
+  imgOffsetY: number;
+  imgOrigin: string;
+  imgCalZ: number;
+  imgCenterX: number;
+  imgCenterY: number;
 }
 
 export const INITIAL: Config = {
@@ -166,6 +175,7 @@ export const INITIAL: Config = {
   cableDebug: false,
   zoomBeaconDebug: false,
   lightsDebug: false,
+  surfaceDebug: false,
   sun: 75,
   ambient: 75,
   animate: true,
@@ -180,11 +190,19 @@ export const INITIAL: Config = {
   rotary: 0,
   north: false,
   desk: true,
+  imgScale: 1,
+  imgRotation: 0,
+  imgOffsetX: 0,
+  imgOffsetY: 0,
+  imgOrigin: "TOP_LEFT",
+  imgCalZ: 0,
+  imgCenterX: 0,
+  imgCenterY: 0,
 };
 
 export const STRING_KEYS = [
   "sizePreset", "bedType", "otherPreset", "label", "plants", "tool", "scene",
-  "distanceIndicator", "kitVersion", "soilSurface",
+  "distanceIndicator", "kitVersion", "soilSurface", "imgOrigin",
 ];
 
 export const NUMBER_KEYS = [
@@ -194,6 +212,8 @@ export const NUMBER_KEYS = [
   "bedLengthOuter", "legSize", "extraLegsX", "extraLegsY", "bedBrightness",
   "soilBrightness", "soilHeight", "sunInclination", "sunAzimuth", "heading",
   "soilSurfacePointCount", "soilSurfaceVariance", "sun", "ambient", "rotary",
+  "imgScale", "imgRotation", "imgOffsetX", "imgOffsetY", "imgCalZ",
+  "imgCenterX", "imgCenterY",
 ];
 
 export const BOOLEAN_KEYS = [
@@ -202,7 +222,7 @@ export const BOOLEAN_KEYS = [
   "viewCube", "stats", "config", "zoom", "pan", "rotate", "bounds", "threeAxes",
   "xyDimensions", "zDimension", "promoInfo", "settingsBar", "zoomBeacons",
   "solar", "utilitiesPost", "packaging", "lab", "people", "lowDetail",
-  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug",
+  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "surfaceDebug",
   "animate", "animateSeasons", "negativeZ",
   "waterFlow", "exaggeratedZ", "showSoilPoints", "urlParamAutoAdd",
   "light", "vacuum", "north", "desk",
@@ -390,6 +410,7 @@ export const PRESETS: Record<string, Config> = {
     cableDebug: true,
     zoomBeaconDebug: true,
     lightsDebug: true,
+    surfaceDebug: true,
     animate: true,
     animateSeasons: false,
     distanceIndicator: "",
@@ -421,11 +442,13 @@ const OTHER_CONFIG_KEYS: (keyof Config)[] = [
   "settingsBar", "zoomBeacons", "pan", "rotate",
   "solar", "utilitiesPost", "packaging", "lab",
   "people", "scene", "lowDetail", "sun", "ambient",
-  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug",
+  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "surfaceDebug",
   "animate", "distanceIndicator", "kitVersion", "negativeZ", "waterFlow",
   "light", "vacuum", "rotary", "animateSeasons",
   "exaggeratedZ", "soilSurface", "soilSurfaceVariance",
   "showSoilPoints", "urlParamAutoAdd", "north", "desk",
+  "imgScale", "imgRotation", "imgOffsetX", "imgOffsetY", "imgOrigin", "imgCalZ",
+  "imgCenterX", "imgCenterY",
 ];
 
 export const modifyConfig = (config: Config, update: Partial<Config>) => {
