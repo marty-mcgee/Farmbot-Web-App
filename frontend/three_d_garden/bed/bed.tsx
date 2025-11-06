@@ -10,16 +10,21 @@ import {
   BufferGeometry,
   Mesh as MeshType,
   BackSide,
+  Color,
 } from "three";
 import { range } from "lodash";
 import { threeSpace, getColorFromBrightness, zZero } from "../helpers";
-import { Config, detailLevels } from "../config";
+import { Config, detailLevels, SurfaceDebugOption } from "../config";
 import { ASSETS } from "../constants";
 import { DistanceIndicator } from "../elements";
 import { FarmbotAxes, Caster, UtilitiesPost, Packaging } from "./objects";
-import { Group, Mesh, MeshNormalMaterial, MeshPhongMaterial } from "../components";
+import {
+  Group, Mesh, MeshNormalMaterial, MeshPhongMaterial,
+} from "../components";
 import { AxisNumberProperty } from "../../farm_designer/map/interfaces";
-import { TaggedCurve, TaggedGenericPointer, TaggedImage } from "farmbot";
+import {
+  TaggedCurve, TaggedGenericPointer, TaggedImage,
+} from "farmbot";
 import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { DesignerState } from "../../farm_designer/interfaces";
 import { useNavigate } from "react-router";
@@ -34,6 +39,9 @@ import {
 import { ThreeElements } from "@react-three/fiber";
 import { ImageTexture } from "../garden";
 import { VertexNormalsHelper } from "three/examples/jsm/Addons";
+import { BooleanSetting } from "../../session_keys";
+import { MoistureTexture } from "../garden/moisture_texture";
+import { HeightMaterial } from "../garden/height_material";
 
 const soil = (
   Type: typeof LinePath | typeof Shape,
@@ -99,7 +107,8 @@ export interface BedProps {
   addPlantProps?: AddPlantProps;
   getZ(x: number, y: number): number;
   images?: TaggedImage[];
-  geometry: BufferGeometry;
+  soilSurfaceGeometry: BufferGeometry;
+  moistureSurfaceGeometry: BufferGeometry;
 }
 
 export const Bed = (props: BedProps) => {
@@ -209,7 +218,7 @@ export const Bed = (props: BedProps) => {
       castShadow={true}
       receiveShadow={true}
       config={props.config}
-      geometry={props.geometry}
+      geometry={props.soilSurfaceGeometry}
       position={[
         threeSpace(0, bedLengthOuter) + bedXOffset,
         threeSpace(0, bedWidthOuter) + bedYOffset,
@@ -234,9 +243,39 @@ export const Bed = (props: BedProps) => {
       z={0} />,
     [props.images, props.config, props.addPlantProps]);
 
-  const SoilMaterial = props.config.surfaceDebug
-    ? MeshNormalMaterial
-    : MeshPhongMaterial;
+  const moistureVisible = !!props.addPlantProps?.getConfigValue(
+    BooleanSetting.show_moisture_interpolation_map);
+
+  const moistureTexture = React.useMemo(() =>
+    <MoistureTexture
+      config={props.config}
+      geometry={props.moistureSurfaceGeometry} />, [
+    props.config,
+    props.moistureSurfaceGeometry,
+  ]);
+
+  const SurfaceHeightMaterial = (props: { children: React.ReactNode }) =>
+    <HeightMaterial {...props}
+      min={0}
+      max={100}
+      lowColor={new Color(0.5, 0.5, 0.5)}
+      highColor={new Color(0.5, 0, 0)} />;
+
+  const getSurfaceMaterial = () => {
+    switch (props.config.surfaceDebug) {
+      case SurfaceDebugOption.normals:
+        return MeshNormalMaterial;
+      case SurfaceDebugOption.height:
+        return SurfaceHeightMaterial;
+      default:
+        return MeshPhongMaterial;
+    }
+  };
+
+  const SurfaceMaterial = getSurfaceMaterial();
+  const surfaceTexture = moistureVisible
+    ? moistureTexture
+    : soilTexture;
 
   return <Group name={"bed-group"}>
     <Detailed distances={detailLevels(props.config)}>
@@ -333,20 +372,22 @@ export const Bed = (props: BedProps) => {
         config={props.config}
         addPlantProps={props.addPlantProps}
         mapPoints={props.mapPoints} />}
-    <Detailed distances={detailLevels(props.config)}>
-      <Soil addPlantProps={props.addPlantProps}>
-        <SoilMaterial
-          flatShading={true}
-          side={BackSide}
-          shininess={0}
-          color={getColorFromBrightness(props.config.soilBrightness)}>
-          {soilTexture}
-        </SoilMaterial>
-      </Soil>
-      <Soil addPlantProps={props.addPlantProps}>
-        <MeshPhongMaterial {...commonSoil} color={"#29231e"} />
-      </Soil>
-    </Detailed>
+    <React.Suspense>
+      <Detailed distances={detailLevels(props.config)}>
+        <Soil addPlantProps={props.addPlantProps}>
+          <SurfaceMaterial
+            flatShading={true}
+            side={BackSide}
+            shininess={0}
+            color={getColorFromBrightness(props.config.soilBrightness)}>
+            {surfaceTexture}
+          </SurfaceMaterial>
+        </Soil>
+        <Soil addPlantProps={props.addPlantProps}>
+          <MeshPhongMaterial {...commonSoil} color={"#29231e"} />
+        </Soil>
+      </Detailed>
+    </React.Suspense>
     {legXPositions.map((x, index) =>
       <Group key={index}>
         {legYPositions(index).map(y =>

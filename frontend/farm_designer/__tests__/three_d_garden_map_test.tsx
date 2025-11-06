@@ -20,7 +20,7 @@ import { fakePlant } from "../../__test_support__/fake_state/resources";
 import { render } from "@testing-library/react";
 import { ThreeDGarden } from "../../three_d_garden";
 import { clone } from "lodash";
-import { INITIAL } from "../../three_d_garden/config";
+import { INITIAL, SurfaceDebugOption } from "../../three_d_garden/config";
 import { FirmwareHardware } from "farmbot";
 import { CROPS } from "../../crops/constants";
 import { fakeDevice } from "../../__test_support__/resource_index_builder";
@@ -32,6 +32,8 @@ const EMPTY_PROPS = {
   allPoints: [],
   groups: [],
   images: [],
+  sensors: [],
+  sensorReadings: [],
 };
 
 describe("<ThreeDGardenMap />", () => {
@@ -56,6 +58,8 @@ describe("<ThreeDGardenMap />", () => {
     allPoints: [],
     groups: [],
     images: [],
+    sensors: [],
+    sensorReadings: [],
     cameraCalibrationData: fakeCameraCalibrationData(),
   });
 
@@ -97,7 +101,7 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.cableDebug = true;
     expectedConfig.eventDebug = true;
     expectedConfig.lightsDebug = true;
-    expectedConfig.surfaceDebug = true;
+    expectedConfig.surfaceDebug = SurfaceDebugOption.normals;
     expectedConfig.lowDetail = true;
     expectedConfig.solar = true;
     expectedConfig.stats = true;

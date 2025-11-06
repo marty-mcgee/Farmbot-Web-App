@@ -10,6 +10,19 @@ import {
   fetchInterpolationOptions, generateData, InterpolationMap,
 } from "../points/interpolation_map";
 
+export const filterMoistureReadings = (
+  sensorReadings: TaggedSensorReading[],
+  sensors: TaggedSensor[],
+) => {
+  const sensorNameByPinLookup: { [x: number]: string } = {};
+  sensors.map(x => { sensorNameByPinLookup[x.body.pin || 0] = x.body.label; });
+  const readings = sensorReadings
+    .filter(r =>
+      (sensorNameByPinLookup[r.body.pin] || "").toLowerCase().includes("soil")
+      && r.body.mode == ANALOG);
+  return { readings, sensorNameByPinLookup };
+};
+
 export interface SensorReadingsLayerProps {
   visible: boolean;
   overlayVisible: boolean;
@@ -25,13 +38,9 @@ export function SensorReadingsLayer(props: SensorReadingsLayerProps) {
     visible, sensorReadings, mapTransformProps, timeSettings, sensors
   } = props;
   const mostRecentSensorReading = last(sensorReadings);
-  const sensorNameByPinLookup: { [x: number]: string } = {};
-  sensors.map(x => { sensorNameByPinLookup[x.body.pin || 0] = x.body.label; });
   const options = fetchInterpolationOptions(props.farmwareEnvs);
-  const moistureReadings = sensorReadings
-    .filter(r =>
-      (sensorNameByPinLookup[r.body.pin] || "").toLowerCase().includes("soil")
-      && r.body.mode == ANALOG);
+  const { readings: moistureReadings, sensorNameByPinLookup } =
+    filterMoistureReadings(sensorReadings, sensors);
   generateData({
     kind: "SensorReading",
     points: moistureReadings, mapTransformProps, getColor: getMoistureColor,

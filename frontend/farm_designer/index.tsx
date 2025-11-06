@@ -236,6 +236,8 @@ export class RawFarmDesigner
           allPoints={this.props.allPoints}
           groups={this.props.groups}
           images={this.props.latestImages}
+          sensorReadings={this.props.sensorReadings}
+          sensors={this.props.sensors}
           cameraCalibrationData={this.props.cameraCalibrationData}
           getWebAppConfigValue={this.props.getConfigValue} />
         : <div

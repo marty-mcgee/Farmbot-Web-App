@@ -64,6 +64,7 @@ jest.mock("@react-three/fiber", () => ({
     pointer: { x: 0, y: 0 },
     camera: new THREE.PerspectiveCamera(),
   })),
+  extend: jest.fn(),
 }));
 
 jest.mock("@react-spring/three", () => ({
@@ -559,6 +560,7 @@ jest.mock("@react-three/drei", () => {
   return {
     ...jest.requireActual("@react-three/drei"),
     useGLTF,
+    shaderMaterial: jest.fn(),
     RoundedBox: ({ name }: { name: string }) =>
       <div className={"cylinder"}>{name}</div>,
     Plane: (props: React.ComponentProps<typeof Plane>) =>

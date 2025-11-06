@@ -74,7 +74,7 @@ export interface Config {
   cableDebug: boolean;
   zoomBeaconDebug: boolean;
   lightsDebug: boolean;
-  surfaceDebug: boolean;
+  surfaceDebug: number;
   sun: number;
   ambient: number;
   animate: boolean;
@@ -97,6 +97,12 @@ export interface Config {
   imgCalZ: number;
   imgCenterX: number;
   imgCenterY: number;
+}
+
+export enum SurfaceDebugOption {
+  none,
+  normals,
+  height,
 }
 
 export const INITIAL: Config = {
@@ -175,7 +181,7 @@ export const INITIAL: Config = {
   cableDebug: false,
   zoomBeaconDebug: false,
   lightsDebug: false,
-  surfaceDebug: false,
+  surfaceDebug: SurfaceDebugOption.none,
   sun: 75,
   ambient: 75,
   animate: true,
@@ -213,7 +219,7 @@ export const NUMBER_KEYS = [
   "soilBrightness", "soilHeight", "sunInclination", "sunAzimuth", "heading",
   "soilSurfacePointCount", "soilSurfaceVariance", "sun", "ambient", "rotary",
   "imgScale", "imgRotation", "imgOffsetX", "imgOffsetY", "imgCalZ",
-  "imgCenterX", "imgCenterY",
+  "imgCenterX", "imgCenterY", "surfaceDebug",
 ];
 
 export const BOOLEAN_KEYS = [
@@ -222,7 +228,7 @@ export const BOOLEAN_KEYS = [
   "viewCube", "stats", "config", "zoom", "pan", "rotate", "bounds", "threeAxes",
   "xyDimensions", "zDimension", "promoInfo", "settingsBar", "zoomBeacons",
   "solar", "utilitiesPost", "packaging", "lab", "people", "lowDetail",
-  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "surfaceDebug",
+  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug",
   "animate", "animateSeasons", "negativeZ",
   "waterFlow", "exaggeratedZ", "showSoilPoints", "urlParamAutoAdd",
   "light", "vacuum", "north", "desk",
@@ -410,7 +416,7 @@ export const PRESETS: Record<string, Config> = {
     cableDebug: true,
     zoomBeaconDebug: true,
     lightsDebug: true,
-    surfaceDebug: true,
+    surfaceDebug: SurfaceDebugOption.normals,
     animate: true,
     animateSeasons: false,
     distanceIndicator: "",

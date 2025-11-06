@@ -212,7 +212,6 @@ const LayerToggles = (props: LayerTogglesProps) => {
         onClick={toggle(BooleanSetting.show_sensor_readings)} />}
     {props.hasSensorReadings &&
       <LayerToggle
-        className={only2DClass}
         settingName={BooleanSetting.show_moisture_interpolation_map}
         value={props.showMoistureInterpolationMap}
         label={DeviceSetting.showMoisture}

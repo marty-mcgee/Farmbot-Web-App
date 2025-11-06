@@ -6,6 +6,8 @@ import { noop } from "lodash";
 import { AddPlantProps } from "./bed";
 import {
   TaggedGenericPointer, TaggedImage, TaggedPoint, TaggedPointGroup,
+  TaggedSensor,
+  TaggedSensorReading,
   TaggedWeedPointer,
 } from "farmbot";
 import { SlotWithTool } from "../resources/interfaces";
@@ -34,6 +36,8 @@ export interface ThreeDGardenProps {
   allPoints?: TaggedPoint[];
   groups?: TaggedPointGroup[];
   images?: TaggedImage[];
+  sensorReadings?: TaggedSensorReading[];
+  sensors?: TaggedSensor[];
 }
 
 export const ThreeDGarden = (props: ThreeDGardenProps) => {
@@ -62,6 +66,8 @@ export const ThreeDGarden = (props: ThreeDGardenProps) => {
             allPoints={props.allPoints}
             groups={props.groups}
             images={props.images}
+            sensorReadings={props.sensorReadings}
+            sensors={props.sensors}
             addPlantProps={props.addPlantProps} />
         </Canvas>
       </React.Suspense>

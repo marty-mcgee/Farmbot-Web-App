@@ -12,8 +12,9 @@ import { TaggedFarmwareEnv } from "farmbot";
 import { isUndefined } from "lodash";
 import { edit, initSave, save } from "../api/crud";
 import { getModifiedClassNameSpecifyDefault } from "./default_values";
+import { Config, SurfaceDebugOption } from "../three_d_garden/config";
 
-const DEFAULTS: Record<string, number> = {
+const DEFAULTS: Partial<Record<keyof Config, number>> = {
   bedWallThickness: 40,
   bedHeight: 300,
   ccSupportSize: 50,
@@ -38,7 +39,7 @@ const DEFAULTS: Record<string, number> = {
   eventDebug: 0,
   cableDebug: 0,
   lightsDebug: 0,
-  surfaceDebug: 0,
+  surfaceDebug: SurfaceDebugOption.none,
   ambient: 75,
   sun: 75,
   heading: 0,
@@ -69,7 +70,7 @@ const find =
     envs.filter(env => env.body.key == namespace3D(key))[0];
 
 export const get3DConfigValueFunction = (envs: TaggedFarmwareEnv[]) =>
-  (key: string): number => {
+  (key: keyof Config): number => {
     const maybe = find(envs, key);
     const raw = isUndefined(maybe) ? DEFAULTS[key] : maybe.body.value;
     return parseFloat("" + raw);
@@ -77,7 +78,7 @@ export const get3DConfigValueFunction = (envs: TaggedFarmwareEnv[]) =>
 
 export const findOrCreate3DConfigFunction =
   (dispatch: Function, envs: TaggedFarmwareEnv[]) =>
-    (key: string, value: string) => {
+    (key: keyof Config, value: string) => {
       const maybe = find(envs, key);
       if (isUndefined(maybe)) {
         if (value != "" + DEFAULTS[key]) {
@@ -93,7 +94,7 @@ interface ThreeDConfigProps {
   dispatch: Function;
   distanceIndicator?: string;
   setting: DeviceSetting;
-  configKey: string;
+  configKey: keyof Config;
   tooltip: string;
   getValue(key: string): number;
   findOrCreate(key: string, value: string): void;
@@ -115,7 +116,7 @@ export const ThreeDConfig = (props: ThreeDConfigProps) => {
         </label>
         <Help
           text={t(props.tooltip, {
-            defaultConfigValue: DEFAULTS[configKey],
+            defaultConfigValue: "" + DEFAULTS[configKey],
           })}
           setOpen={() => dispatch({
             type: Actions.SET_DISTANCE_INDICATOR,

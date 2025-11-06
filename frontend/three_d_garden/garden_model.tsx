@@ -27,15 +27,17 @@ import {
 import { ICON_URLS } from "../crops/constants";
 import {
   TaggedGenericPointer, TaggedImage, TaggedPoint, TaggedPointGroup,
+  TaggedSensor,
+  TaggedSensorReading,
   TaggedWeedPointer,
 } from "farmbot";
 import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
 import { cameraInit } from "./camera";
 import { isMobile } from "../screen_size";
-import { computeSurface, getGeometry } from "./triangles";
+import { filterMoisturePoints, filterSoilPoints, getSurface } from "./triangles";
 import { BigDistance } from "./constants";
-import { precomputeTriangles, getZFunc } from "./triangle_functions";
+import { getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
 import { GroupOrderVisual } from "./group_order_visual";
 
@@ -55,6 +57,8 @@ export interface GardenModelProps {
   allPoints?: TaggedPoint[];
   groups?: TaggedPointGroup[];
   images?: TaggedImage[];
+  sensorReadings?: TaggedSensorReading[];
+  sensors?: TaggedSensor[];
 }
 
 // eslint-disable-next-line complexity
@@ -100,16 +104,23 @@ export const GardenModel = (props: GardenModelProps) => {
     || !!addPlantProps?.getConfigValue(BooleanSetting.show_points);
   const showWeeds = !!addPlantProps?.getConfigValue(BooleanSetting.show_weeds);
 
-  const { vertices, vertexList, uvs, faces } = React.useMemo(() =>
-    computeSurface(props.mapPoints, config), [props.mapPoints, config]);
-  const geometry = React.useMemo(() =>
-    getGeometry(vertices, uvs), [vertices, uvs]);
-  const triangles = React.useMemo(() =>
-    precomputeTriangles(vertexList, faces), [vertexList, faces]);
+  const soilPoints = filterSoilPoints({ points: props.mapPoints, config });
+  const soilSurface = React.useMemo(() =>
+    getSurface(soilPoints), [soilPoints]);
   React.useEffect(() => {
-    sessionStorage.setItem("triangles", JSON.stringify(triangles));
-  }, [triangles]);
-  const getZ = getZFunc(triangles, -config.soilHeight);
+    sessionStorage.setItem("soilSurfaceTriangles",
+      JSON.stringify(soilSurface.triangles));
+  }, [soilSurface.triangles]);
+  const getZ = getZFunc(soilSurface.triangles, -config.soilHeight);
+
+  const moisturePoints =
+    filterMoisturePoints({
+      config: props.config,
+      sensors: props.sensors || [],
+      readings: props.sensorReadings || [],
+    });
+  const moistureSurface = React.useMemo(() =>
+    getSurface(moisturePoints), [moisturePoints]);
 
   // eslint-disable-next-line no-null/no-null
   const skyRef = React.useRef<ThreeMeshBasicMaterial>(null);
@@ -160,11 +171,12 @@ export const GardenModel = (props: GardenModelProps) => {
     <NorthArrow config={config} />
     <Bed
       config={config}
-      geometry={geometry}
+      soilSurfaceGeometry={soilSurface.geometry}
       getZ={getZ}
       images={props.images}
       activeFocus={props.activeFocus}
       mapPoints={props.mapPoints || []}
+      moistureSurfaceGeometry={moistureSurface.geometry}
       addPlantProps={addPlantProps} />
     {showFarmbot &&
       <Bot

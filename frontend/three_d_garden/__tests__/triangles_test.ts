@@ -1,7 +1,15 @@
-import { computeSurface } from "../triangles";
+import {
+  computeSurface,
+  filterMoisturePoints,
+  FilterMoisturePointsProps,
+  filterSoilPoints,
+  FilterSoilPointsProps,
+} from "../triangles";
 import { INITIAL } from "../config";
 import { clone } from "lodash";
-import { fakePoint } from "../../__test_support__/fake_state/resources";
+import {
+  fakePoint, fakeSensor, fakeSensorReading,
+} from "../../__test_support__/fake_state/resources";
 import { tagAsSoilHeight } from "../../points/soil_height";
 
 const zs = (items: [number, number, number][]) => items.map(i => i[2]);
@@ -12,7 +20,8 @@ describe("computeSurface()", () => {
     config.soilHeight = 300;
     config.columnLength = 1000;
     config.bedHeight = 1;
-    const { vertexList } = computeSurface([], config);
+    const pts = filterSoilPoints({ points: [], config });
+    const { vertexList } = computeSurface(pts);
     expect(zs(vertexList)).toEqual([-900, -900, -900, -900, -300, -300]);
   });
 
@@ -21,14 +30,16 @@ describe("computeSurface()", () => {
     config.soilHeight = 500;
     config.columnLength = 100;
     config.bedHeight = 100;
-    const { vertexList } = computeSurface([], config);
+    const pts = filterSoilPoints({ points: [], config });
+    const { vertexList } = computeSurface(pts);
     expect(zs(vertexList)).toEqual([-100, -100, -100, -100, -500, -500]);
   });
 
   it("computes surface: no soil points", () => {
     const config = clone(INITIAL);
     config.soilHeight = 500;
-    const { vertexList } = computeSurface(undefined, config);
+    const pts = filterSoilPoints({ points: undefined, config });
+    const { vertexList } = computeSurface(pts);
     expect(zs(vertexList)).toEqual([-500, -500, -500, -500, -500, -500]);
   });
 
@@ -46,7 +57,8 @@ describe("computeSurface()", () => {
     const soilPoints = [point0, point1];
     const config = clone(INITIAL);
     config.soilHeight = 500;
-    const { vertexList } = computeSurface(soilPoints, config);
+    const pts = filterSoilPoints({ points: soilPoints, config });
+    const { vertexList } = computeSurface(pts);
     expect(zs(vertexList)).toEqual([-600, 0, -500, -500, -500, -500]);
   });
 
@@ -66,7 +78,60 @@ describe("computeSurface()", () => {
     config.soilHeight = 500;
     config.exaggeratedZ = true;
     config.perspective = true;
-    const { vertexList } = computeSurface(soilPoints, config);
+    const pts = filterSoilPoints({ points: soilPoints, config });
+    const { vertexList } = computeSurface(pts);
     expect(zs(vertexList)).toEqual([-1500, 4500, -500, -500, -500, -500]);
+  });
+});
+
+describe("filterSoilPoints()", () => {
+  const fakeProps = (): FilterSoilPointsProps => ({
+    config: clone(INITIAL),
+    points: [],
+  });
+
+  it("filters points", () => {
+    const p = fakeProps();
+    const point0 = fakePoint();
+    point0.body.x = -1000;
+    tagAsSoilHeight(point0);
+    const point1 = fakePoint();
+    point1.body.x = 1000;
+    tagAsSoilHeight(point1);
+    p.points = [point0, point1];
+    expect(filterSoilPoints(p).length).toEqual(5);
+  });
+});
+
+describe("filterMoisturePoints()", () => {
+  const fakeProps = (): FilterMoisturePointsProps => ({
+    config: clone(INITIAL),
+    sensors: [],
+    readings: [],
+  });
+
+  it("filters points", () => {
+    const p = fakeProps();
+    const sensor = fakeSensor();
+    sensor.body.label = "soil moisture";
+    sensor.body.id = 1;
+    p.sensors = [sensor];
+    const reading0 = fakeSensorReading();
+    reading0.body.pin = 1;
+    reading0.body.x = 0;
+    reading0.body.y = 0;
+    reading0.body.mode = 1;
+    const reading1 = fakeSensorReading();
+    reading1.body.pin = 1;
+    reading1.body.x = undefined;
+    reading1.body.y = 0;
+    reading1.body.mode = 1;
+    const reading2 = fakeSensorReading();
+    reading2.body.pin = 2;
+    reading2.body.x = 0;
+    reading2.body.y = 0;
+    reading2.body.mode = 1;
+    p.readings = [reading0, reading1, reading2];
+    expect(filterMoisturePoints(p).length).toEqual(9);
   });
 });

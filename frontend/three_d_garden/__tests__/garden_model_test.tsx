@@ -9,7 +9,7 @@ import React from "react";
 import { mount } from "enzyme";
 import { GardenModelProps, GardenModel } from "../garden_model";
 import { clone } from "lodash";
-import { INITIAL } from "../config";
+import { INITIAL, SurfaceDebugOption } from "../config";
 import { render, screen } from "@testing-library/react";
 import {
   fakePlant, fakePoint, fakeWeed,
@@ -108,12 +108,20 @@ describe("<GardenModel />", () => {
     p.config.viewCube = true;
     p.config.lab = true;
     p.config.lightsDebug = true;
-    p.config.surfaceDebug = true;
+    p.config.surfaceDebug = SurfaceDebugOption.normals;
     p.activeFocus = "plant";
     p.addPlantProps = undefined;
     const { container } = render(<GardenModel {...p} />);
     expect(container).toContainHTML("gray");
     expect(container).toContainHTML("stats");
+  });
+
+  it("renders debug options", () => {
+    mockIsDesktop = false;
+    const p = fakeProps();
+    p.config.surfaceDebug = SurfaceDebugOption.height;
+    const { container } = render(<GardenModel {...p} />);
+    expect(container).toContainHTML("gray");
   });
 
   it("sets hover", () => {

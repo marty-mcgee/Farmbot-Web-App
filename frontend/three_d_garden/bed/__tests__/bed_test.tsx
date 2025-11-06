@@ -99,7 +99,8 @@ describe("<Bed />", () => {
     config: clone(INITIAL),
     activeFocus: "",
     mapPoints: [],
-    geometry: new BufferGeometry(),
+    soilSurfaceGeometry: new BufferGeometry(),
+    moistureSurfaceGeometry: new BufferGeometry(),
     getZ: () => 0,
   });
 

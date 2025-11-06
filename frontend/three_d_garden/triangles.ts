@@ -1,9 +1,41 @@
 import Delaunator from "delaunator";
-import { TaggedGenericPointer } from "farmbot";
+import { TaggedGenericPointer, TaggedSensor, TaggedSensorReading } from "farmbot";
 import { Config } from "./config";
 import { soilHeightPoint } from "../points/soil_height";
 import { zZero } from "./helpers";
 import { BufferGeometry, Float32BufferAttribute } from "three";
+import { precomputeTriangles } from "./triangle_functions";
+import { filterMoistureReadings } from "../farm_designer/map/layers";
+import { selectMostRecentPoints } from "../farm_designer/location_info";
+import { isUndefined } from "lodash";
+
+export interface FilterMoisturePointsProps {
+  config: Config;
+  sensors: TaggedSensor[];
+  readings: TaggedSensorReading[];
+}
+
+export const filterMoisturePoints = (props: FilterMoisturePointsProps) => {
+  const { readings: moistureReadings } =
+    filterMoistureReadings(props.readings, props.sensors);
+  const recentReadings = selectMostRecentPoints(moistureReadings);
+  const moisturePoints = recentReadings
+    .filter(p =>
+      !isUndefined(p.body.x) &&
+      !isUndefined(p.body.y))
+    .map(p => [p.body.x, p.body.y, p.body.value]) as [number, number, number][];
+  const params = soilSurfaceExtents(props.config);
+  const outerPoints = [
+    { x: params.x.min, y: params.y.min },
+    { x: params.x.min, y: params.y.max },
+    { x: params.x.max, y: params.y.min },
+    { x: params.x.max, y: params.y.max },
+  ];
+  [...outerPoints, ...outerPoints].map(p => {
+    moisturePoints.push([p.x, p.y, 0]);
+  });
+  return moisturePoints;
+};
 
 export const soilSurfaceExtents = (config: Config) => ({
   x: {
@@ -16,10 +48,13 @@ export const soilSurfaceExtents = (config: Config) => ({
   },
 });
 
-export const computeSurface = (
-  mapPoints: TaggedGenericPointer[] | undefined,
-  config: Config,
-) => {
+export interface FilterSoilPointsProps {
+  config: Config;
+  points: TaggedGenericPointer[] | undefined;
+}
+
+export const filterSoilPoints = (props: FilterSoilPointsProps) => {
+  const { config } = props;
   const outerBoundaryParams = soilSurfaceExtents(config);
   const boundaryParams = {
     outer: outerBoundaryParams,
@@ -35,7 +70,7 @@ export const computeSurface = (
     },
   };
 
-  const soilHeightPoints = (mapPoints || [])
+  const soilHeightPoints: [number, number, number][] = (props.points || [])
     .filter(p => soilHeightPoint(p) &&
       p.body.x > boundaryParams.outer.x.min &&
       p.body.x < boundaryParams.outer.x.max &&
@@ -81,17 +116,21 @@ export const computeSurface = (
     });
   });
 
-  const soilPoints = soilHeightPoints;
+  return soilHeightPoints;
+};
 
-  const projected2D = soilPoints.map(([x, y, _z]) => [x, y]);
+export const computeSurface = (
+  points: [number, number, number][],
+) => {
+  const projected2D = points.map(([x, y, _z]) => [x, y]);
   const delaunay = Delaunator.from(projected2D);
   const triangles = delaunay.triangles;
   const vertices: number[] = [];
   const vertexList: [number, number, number][] = [];
   const faces: number[] = [];
   const uvs: number[] = [];
-  const xs = soilPoints.map(p => p[0]);
-  const ys = soilPoints.map(p => p[1]);
+  const xs = points.map(p => p[0]);
+  const ys = points.map(p => p[1]);
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
@@ -102,7 +141,7 @@ export const computeSurface = (
     for (let j = 0; j < 3; j++) {
       const index: number = triangles[i + j];
       faces.push(i + j);
-      const [x, y, z] = soilPoints[index];
+      const [x, y, z] = points[index];
       vertices.push(x, y, z);
       vertexList.push([x, y, z]);
       const u = (x - minX) / width;
@@ -127,4 +166,13 @@ export const getGeometry = (vertices: number[], uvs: number[]) => {
     }
   }
   return geom;
+};
+
+export const getSurface = (
+  points: [number, number, number][],
+) => {
+  const { vertices, vertexList, uvs, faces } = computeSurface(points);
+  const geometry = getGeometry(vertices, uvs);
+  const triangles = precomputeTriangles(vertexList, faces);
+  return { geometry, triangles };
 };
