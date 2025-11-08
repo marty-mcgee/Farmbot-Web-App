@@ -101,6 +101,7 @@ describe("<ThreeDGardenMap />", () => {
     expectedConfig.cableDebug = true;
     expectedConfig.eventDebug = true;
     expectedConfig.lightsDebug = true;
+    expectedConfig.moistureDebug = true;
     expectedConfig.surfaceDebug = SurfaceDebugOption.normals;
     expectedConfig.lowDetail = true;
     expectedConfig.solar = true;

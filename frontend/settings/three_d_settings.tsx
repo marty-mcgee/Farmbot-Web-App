@@ -39,6 +39,7 @@ const DEFAULTS: Partial<Record<keyof Config, number>> = {
   eventDebug: 0,
   cableDebug: 0,
   lightsDebug: 0,
+  moistureDebug: 0,
   surfaceDebug: SurfaceDebugOption.none,
   ambient: 75,
   sun: 75,

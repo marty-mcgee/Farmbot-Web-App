@@ -74,6 +74,7 @@ export interface Config {
   cableDebug: boolean;
   zoomBeaconDebug: boolean;
   lightsDebug: boolean;
+  moistureDebug: boolean;
   surfaceDebug: number;
   sun: number;
   ambient: number;
@@ -181,6 +182,7 @@ export const INITIAL: Config = {
   cableDebug: false,
   zoomBeaconDebug: false,
   lightsDebug: false,
+  moistureDebug: false,
   surfaceDebug: SurfaceDebugOption.none,
   sun: 75,
   ambient: 75,
@@ -228,7 +230,7 @@ export const BOOLEAN_KEYS = [
   "viewCube", "stats", "config", "zoom", "pan", "rotate", "bounds", "threeAxes",
   "xyDimensions", "zDimension", "promoInfo", "settingsBar", "zoomBeacons",
   "solar", "utilitiesPost", "packaging", "lab", "people", "lowDetail",
-  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug",
+  "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "moistureDebug",
   "animate", "animateSeasons", "negativeZ",
   "waterFlow", "exaggeratedZ", "showSoilPoints", "urlParamAutoAdd",
   "light", "vacuum", "north", "desk",
@@ -416,6 +418,7 @@ export const PRESETS: Record<string, Config> = {
     cableDebug: true,
     zoomBeaconDebug: true,
     lightsDebug: true,
+    moistureDebug: true,
     surfaceDebug: SurfaceDebugOption.normals,
     animate: true,
     animateSeasons: false,
@@ -447,7 +450,7 @@ const OTHER_CONFIG_KEYS: (keyof Config)[] = [
   "threeAxes", "xyDimensions", "zDimension", "labelsOnHover", "promoInfo",
   "settingsBar", "zoomBeacons", "pan", "rotate",
   "solar", "utilitiesPost", "packaging", "lab",
-  "people", "scene", "lowDetail", "sun", "ambient",
+  "people", "scene", "lowDetail", "sun", "ambient", "moistureDebug",
   "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "surfaceDebug",
   "animate", "distanceIndicator", "kitVersion", "negativeZ", "waterFlow",
   "light", "vacuum", "rotary", "animateSeasons",

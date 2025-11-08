@@ -102,6 +102,8 @@ describe("<Bed />", () => {
     soilSurfaceGeometry: new BufferGeometry(),
     moistureSurfaceGeometry: new BufferGeometry(),
     getZ: () => 0,
+    showMoistureMap: true,
+    sensorReadings: [],
   });
 
   it("renders bed", () => {

@@ -4,6 +4,21 @@ jest.mock("../../../config_storage/actions", () => ({
   getWebAppConfigValue: jest.fn(() => () => JSON.stringify(mockDevSettings)),
 }));
 
+jest.mock("../../../api/crud", () => ({
+  initSave: jest.fn(),
+  edit: jest.fn(),
+  save: jest.fn(),
+}));
+
+import { fakeState } from "../../../__test_support__/fake_state";
+const mockState = fakeState();
+jest.mock("../../../redux/store", () => ({
+  store: {
+    dispatch: jest.fn(),
+    getState: () => mockState,
+  }
+}));
+
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { mount, shallow } from "enzyme";
@@ -13,9 +28,15 @@ import {
   DevWidget3dCameraRow,
   DevWidgetAllOrderOptionsRow,
   DevWidgetChunkingDisabledRow,
+  Dev3dDebugSettings,
 } from "../dev_settings";
 import { DevSettings } from "../dev_support";
 import { setWebAppConfigValue } from "../../../config_storage/actions";
+import { edit, initSave, save } from "../../../api/crud";
+import {
+  buildResourceIndex,
+} from "../../../__test_support__/resource_index_builder";
+import { fakeFarmwareEnv } from "../../../__test_support__/fake_state/resources";
 
 describe("<DevWidgetFBOSRow />", () => {
   it("changes override value", () => {
@@ -158,5 +179,46 @@ describe("<DevWidgetChunkingDisabledRow />", () => {
     fireEvent.click(screen.getByRole("button"));
     expect(localStorage.getItem("DISABLE_CHUNKING")).toBeFalsy();
     localStorage.removeItem("DISABLE_CHUNKING");
+  });
+});
+
+describe("<Dev3dDebugSettings />", () => {
+  it("adds env", () => {
+    mockState.resources = buildResourceIndex([]);
+    render(<Dev3dDebugSettings />);
+    const toggle = screen.getAllByText("no")[0];
+    fireEvent.click(toggle);
+    expect(initSave).toHaveBeenCalledWith("FarmwareEnv", {
+      key: "3D_eventDebug",
+      value: 1,
+    });
+    expect(edit).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it("edits env", () => {
+    const env = fakeFarmwareEnv();
+    env.body.key = "3D_eventDebug";
+    env.body.value = 0;
+    mockState.resources = buildResourceIndex([env]);
+    render(<Dev3dDebugSettings />);
+    const toggle = screen.getAllByText("no")[0];
+    fireEvent.click(toggle);
+    expect(initSave).not.toHaveBeenCalled();
+    expect(edit).toHaveBeenCalledWith(env, { value: 1 });
+    expect(save).toHaveBeenCalled();
+  });
+
+  it("turns off setting", () => {
+    const env = fakeFarmwareEnv();
+    env.body.key = "3D_eventDebug";
+    env.body.value = 1;
+    mockState.resources = buildResourceIndex([env]);
+    render(<Dev3dDebugSettings />);
+    const toggle = screen.getAllByText("yes")[0];
+    fireEvent.click(toggle);
+    expect(initSave).not.toHaveBeenCalled();
+    expect(edit).toHaveBeenCalledWith(env, { value: 0 });
+    expect(save).toHaveBeenCalled();
   });
 });

@@ -9,6 +9,7 @@ describe("<MoistureTexture />", () => {
   const fakeProps = (): MoistureTextureProps => ({
     config: clone(INITIAL),
     geometry: new BufferGeometry(),
+    sensorReadings: [],
   });
 
   it("renders", () => {

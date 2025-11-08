@@ -24,14 +24,20 @@ export const filterMoisturePoints = (props: FilterMoisturePointsProps) => {
       !isUndefined(p.body.x) &&
       !isUndefined(p.body.y))
     .map(p => [p.body.x, p.body.y, p.body.value]) as [number, number, number][];
-  const params = soilSurfaceExtents(props.config);
+  const params = boundaryPoints(props.config);
   const outerPoints = [
-    { x: params.x.min, y: params.y.min },
-    { x: params.x.min, y: params.y.max },
-    { x: params.x.max, y: params.y.min },
-    { x: params.x.max, y: params.y.max },
+    { x: params.outer.x.min, y: params.outer.y.min },
+    { x: params.outer.x.min, y: params.outer.y.max },
+    { x: params.outer.x.max, y: params.outer.y.min },
+    { x: params.outer.x.max, y: params.outer.y.max },
   ];
-  [...outerPoints, ...outerPoints].map(p => {
+  const innerPoints = [
+    { x: params.inner.x.min, y: params.inner.y.min },
+    { x: params.inner.x.min, y: params.inner.y.max },
+    { x: params.inner.x.max, y: params.inner.y.min },
+    { x: params.inner.x.max, y: params.inner.y.max },
+  ];
+  [...outerPoints, ...innerPoints].map(p => {
     moisturePoints.push([p.x, p.y, 0]);
   });
   return moisturePoints;
@@ -48,15 +54,9 @@ export const soilSurfaceExtents = (config: Config) => ({
   },
 });
 
-export interface FilterSoilPointsProps {
-  config: Config;
-  points: TaggedGenericPointer[] | undefined;
-}
-
-export const filterSoilPoints = (props: FilterSoilPointsProps) => {
-  const { config } = props;
+export const boundaryPoints = (config: Config) => {
   const outerBoundaryParams = soilSurfaceExtents(config);
-  const boundaryParams = {
+  return {
     outer: outerBoundaryParams,
     inner: {
       x: {
@@ -69,6 +69,16 @@ export const filterSoilPoints = (props: FilterSoilPointsProps) => {
       },
     },
   };
+};
+
+export interface FilterSoilPointsProps {
+  config: Config;
+  points: TaggedGenericPointer[] | undefined;
+}
+
+export const filterSoilPoints = (props: FilterSoilPointsProps) => {
+  const { config } = props;
+  const boundaryParams = boundaryPoints(config);
 
   const soilHeightPoints: [number, number, number][] = (props.points || [])
     .filter(p => soilHeightPoint(p) &&

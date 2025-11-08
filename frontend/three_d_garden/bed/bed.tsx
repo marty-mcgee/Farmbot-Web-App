@@ -24,6 +24,7 @@ import {
 import { AxisNumberProperty } from "../../farm_designer/map/interfaces";
 import {
   TaggedCurve, TaggedGenericPointer, TaggedImage,
+  TaggedSensorReading,
 } from "farmbot";
 import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { DesignerState } from "../../farm_designer/interfaces";
@@ -39,8 +40,7 @@ import {
 import { ThreeElements } from "@react-three/fiber";
 import { ImageTexture } from "../garden";
 import { VertexNormalsHelper } from "three/examples/jsm/Addons";
-import { BooleanSetting } from "../../session_keys";
-import { MoistureTexture } from "../garden/moisture_texture";
+import { MoistureSurface, MoistureTexture } from "../garden/moisture_texture";
 import { HeightMaterial } from "../garden/height_material";
 
 const soil = (
@@ -109,6 +109,8 @@ export interface BedProps {
   images?: TaggedImage[];
   soilSurfaceGeometry: BufferGeometry;
   moistureSurfaceGeometry: BufferGeometry;
+  showMoistureMap: boolean;
+  sensorReadings: TaggedSensorReading[];
 }
 
 export const Bed = (props: BedProps) => {
@@ -243,14 +245,13 @@ export const Bed = (props: BedProps) => {
       z={0} />,
     [props.images, props.config, props.addPlantProps]);
 
-  const moistureVisible = !!props.addPlantProps?.getConfigValue(
-    BooleanSetting.show_moisture_interpolation_map);
-
   const moistureTexture = React.useMemo(() =>
     <MoistureTexture
       config={props.config}
+      sensorReadings={props.sensorReadings}
       geometry={props.moistureSurfaceGeometry} />, [
     props.config,
+    props.sensorReadings,
     props.moistureSurfaceGeometry,
   ]);
 
@@ -273,7 +274,7 @@ export const Bed = (props: BedProps) => {
   };
 
   const SurfaceMaterial = getSurfaceMaterial();
-  const surfaceTexture = moistureVisible
+  const surfaceTexture = props.showMoistureMap
     ? moistureTexture
     : soilTexture;
 
@@ -388,6 +389,20 @@ export const Bed = (props: BedProps) => {
         </Soil>
       </Detailed>
     </React.Suspense>
+    {props.config.moistureDebug &&
+      <MoistureSurface
+        geometry={props.moistureSurfaceGeometry}
+        sensorReadings={props.sensorReadings}
+        config={props.config}
+        color={"black"}
+        radius={50}
+        readingZOverride={600}
+        position={[
+          threeSpace(0, bedLengthOuter) + bedXOffset,
+          threeSpace(bedWidthOuter, bedWidthOuter) + bedYOffset,
+          zZero(props.config),
+        ]}
+      />}
     {legXPositions.map((x, index) =>
       <Group key={index}>
         {legYPositions(index).map(y =>

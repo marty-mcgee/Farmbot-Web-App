@@ -40,6 +40,7 @@ import { BigDistance } from "./constants";
 import { getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
 import { GroupOrderVisual } from "./group_order_visual";
+import { MoistureReadings } from "./garden/moisture_texture";
 
 const AnimatedGroup = animated(Group);
 
@@ -122,6 +123,9 @@ export const GardenModel = (props: GardenModelProps) => {
   const moistureSurface = React.useMemo(() =>
     getSurface(moisturePoints), [moisturePoints]);
 
+  const showMoistureMap = !!props.addPlantProps?.getConfigValue(
+    BooleanSetting.show_moisture_interpolation_map);
+
   // eslint-disable-next-line no-null/no-null
   const skyRef = React.useRef<ThreeMeshBasicMaterial>(null);
 
@@ -177,7 +181,16 @@ export const GardenModel = (props: GardenModelProps) => {
       activeFocus={props.activeFocus}
       mapPoints={props.mapPoints || []}
       moistureSurfaceGeometry={moistureSurface.geometry}
+      showMoistureMap={showMoistureMap}
+      sensorReadings={props.sensorReadings || []}
       addPlantProps={addPlantProps} />
+    {showMoistureMap && props.config.moistureDebug &&
+      <MoistureReadings
+        color={"green"}
+        radius={50}
+        applyOffset={true}
+        config={props.config}
+        readings={props.sensorReadings || []} />}
     {showFarmbot &&
       <Bot
         dispatch={dispatch}

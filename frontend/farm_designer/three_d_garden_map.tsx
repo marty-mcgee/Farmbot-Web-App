@@ -106,6 +106,7 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.eventDebug = !!getValue("eventDebug");
   config.cableDebug = !!getValue("cableDebug");
   config.lightsDebug = !!getValue("lightsDebug");
+  config.moistureDebug = !!getValue("moistureDebug");
   config.surfaceDebug = getValue("surfaceDebug");
   config.sun = getValue("sun");
   config.ambient = getValue("ambient");
