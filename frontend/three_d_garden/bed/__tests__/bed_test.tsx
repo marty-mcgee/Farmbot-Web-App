@@ -104,6 +104,7 @@ describe("<Bed />", () => {
     getZ: () => 0,
     showMoistureMap: true,
     sensorReadings: [],
+    showMoistureReadings: true,
   });
 
   it("renders bed", () => {

@@ -129,8 +129,8 @@ interface LayerTogglesProps extends GardenMapLegendProps { }
 const LayerToggles = (props: LayerTogglesProps) => {
   const { toggle, getConfigValue, dispatch, firmwareConfig } = props;
   const subMenuProps = { dispatch, getConfigValue, firmwareConfig };
-  const only2DClass =
-    getConfigValue(BooleanSetting.three_d_garden) ? "disabled" : "";
+  const is3D = getConfigValue(BooleanSetting.three_d_garden);
+  const only2DClass = is3D ? "disabled" : "";
   return <div className="toggle-buttons">
     <LayerToggle
       settingName={BooleanSetting.show_plants}
@@ -144,12 +144,12 @@ const LayerToggles = (props: LayerTogglesProps) => {
       value={props.showPoints}
       label={DeviceSetting.showPoints}
       onClick={toggle(BooleanSetting.show_points)} />
-    <LayerToggle
-      className={only2DClass}
-      settingName={BooleanSetting.show_soil_interpolation_map}
-      value={props.showSoilInterpolationMap}
-      label={DeviceSetting.showSoil}
-      onClick={toggle(BooleanSetting.show_soil_interpolation_map)} />
+    {!is3D &&
+      <LayerToggle
+        settingName={BooleanSetting.show_soil_interpolation_map}
+        value={props.showSoilInterpolationMap}
+        label={DeviceSetting.showSoil}
+        onClick={toggle(BooleanSetting.show_soil_interpolation_map)} />}
     <LayerToggle
       settingName={BooleanSetting.show_weeds}
       value={props.showWeeds}
@@ -205,7 +205,6 @@ const LayerToggles = (props: LayerTogglesProps) => {
       onClick={toggle(BooleanSetting.show_zones)} />
     {props.hasSensorReadings &&
       <LayerToggle
-        className={only2DClass}
         settingName={BooleanSetting.show_sensor_readings}
         value={props.showSensorReadings}
         label={DeviceSetting.showReadings}

@@ -235,6 +235,18 @@ export const expandActions = (
           setCurrent(homeTarget);
         });
         break;
+      case "read_pin":
+        const pin = action.args[0] as number;
+        expanded.push({
+          type: "sensor_reading",
+          args: [
+            pin,
+            current.x,
+            current.y,
+            current.z,
+          ],
+        });
+        break;
       default:
         expanded.push(action);
         break;
@@ -360,6 +372,18 @@ export const runActions = (
               type: Actions.DEMO_TOGGLE_PIN,
               payload: action.args[0] as number,
             });
+          };
+        case "sensor_reading":
+          return () => {
+            store.dispatch(initSave("SensorReading", {
+              pin: action.args[0] as number,
+              mode: 1,
+              x: action.args[1] as number,
+              y: action.args[2] as number,
+              z: action.args[3] as number,
+              value: random(0, 1024),
+              read_at: (new Date()).toISOString(),
+            }) as unknown as UnknownAction);
           };
         case "write_pin":
           const pin = action.args[0] as number;

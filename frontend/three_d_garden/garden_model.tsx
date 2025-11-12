@@ -125,6 +125,8 @@ export const GardenModel = (props: GardenModelProps) => {
 
   const showMoistureMap = !!props.addPlantProps?.getConfigValue(
     BooleanSetting.show_moisture_interpolation_map);
+  const showMoistureReadings = !!props.addPlantProps?.getConfigValue(
+    BooleanSetting.show_sensor_readings);
 
   // eslint-disable-next-line no-null/no-null
   const skyRef = React.useRef<ThreeMeshBasicMaterial>(null);
@@ -182,6 +184,7 @@ export const GardenModel = (props: GardenModelProps) => {
       mapPoints={props.mapPoints || []}
       moistureSurfaceGeometry={moistureSurface.geometry}
       showMoistureMap={showMoistureMap}
+      showMoistureReadings={showMoistureReadings}
       sensorReadings={props.sensorReadings || []}
       addPlantProps={addPlantProps} />
     {showMoistureMap && props.config.moistureDebug &&

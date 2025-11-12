@@ -110,6 +110,7 @@ export interface BedProps {
   soilSurfaceGeometry: BufferGeometry;
   moistureSurfaceGeometry: BufferGeometry;
   showMoistureMap: boolean;
+  showMoistureReadings: boolean;
   sensorReadings: TaggedSensorReading[];
 }
 
@@ -249,9 +250,11 @@ export const Bed = (props: BedProps) => {
     <MoistureTexture
       config={props.config}
       sensorReadings={props.sensorReadings}
+      showMoistureReadings={props.showMoistureReadings}
       geometry={props.moistureSurfaceGeometry} />, [
     props.config,
     props.sensorReadings,
+    props.showMoistureReadings,
     props.moistureSurfaceGeometry,
   ]);
 
@@ -393,6 +396,7 @@ export const Bed = (props: BedProps) => {
       <MoistureSurface
         geometry={props.moistureSurfaceGeometry}
         sensorReadings={props.sensorReadings}
+        showMoistureReadings={true}
         config={props.config}
         color={"black"}
         radius={50}

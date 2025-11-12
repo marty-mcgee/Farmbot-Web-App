@@ -610,12 +610,23 @@ describe("pinToggle()", () => {
 });
 
 describe("readPin()", () => {
+  afterEach(() => {
+    localStorage.removeItem("myBotIs");
+  });
+
   it("calls readPin", async () => {
     await actions.readPin(1, "label", 0);
     expect(mockDevice.current.readPin).toHaveBeenCalledWith({
       pin_number: 1, label: "label", pin_mode: 0,
     });
     expect(success).not.toHaveBeenCalled();
+  });
+
+  it("reads demo account pin", async () => {
+    localStorage.setItem("myBotIs", "online");
+    await actions.readPin(1, "label", 0);
+    expect(mockDevice.current.readPin).not.toHaveBeenCalled();
+    expect(runDemoLuaCode).toHaveBeenCalledWith("read_pin(1)");
   });
 });
 

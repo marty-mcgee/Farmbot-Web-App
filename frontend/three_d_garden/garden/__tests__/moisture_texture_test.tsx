@@ -10,10 +10,18 @@ describe("<MoistureTexture />", () => {
     config: clone(INITIAL),
     geometry: new BufferGeometry(),
     sensorReadings: [],
+    showMoistureReadings: true,
   });
 
   it("renders", () => {
     const { container } = render(<MoistureTexture {...fakeProps()} />);
+    expect(container).toContainHTML("render-texture");
+  });
+
+  it("renders without readings", () => {
+    const p = fakeProps();
+    p.showMoistureReadings = false;
+    const { container } = render(<MoistureTexture {...p} />);
     expect(container).toContainHTML("render-texture");
   });
 });

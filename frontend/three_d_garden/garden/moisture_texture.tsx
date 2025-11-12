@@ -12,6 +12,7 @@ export interface MoistureTextureProps {
   config: Config;
   geometry: BufferGeometry;
   sensorReadings: TaggedSensorReading[];
+  showMoistureReadings: boolean;
 }
 
 export const MoistureTexture = (props: MoistureTextureProps) => {
@@ -36,6 +37,7 @@ export const MoistureTexture = (props: MoistureTextureProps) => {
       color={"black"}
       radius={10}
       sensorReadings={props.sensorReadings}
+      showMoistureReadings={props.showMoistureReadings}
       position={[
         props.config.bedXOffset,
         props.config.bedYOffset,
@@ -53,16 +55,18 @@ export interface MoistureSurfaceProps {
   color: string;
   radius: number;
   readingZOverride?: number;
+  showMoistureReadings: boolean;
 }
 
 export const MoistureSurface = (props: MoistureSurfaceProps) =>
   <Group position={props.position}>
-    <MoistureReadings
-      config={props.config}
-      color={props.color}
-      radius={props.radius}
-      readingZOverride={props.readingZOverride}
-      readings={props.sensorReadings} />
+    {props.showMoistureReadings &&
+      <MoistureReadings
+        config={props.config}
+        color={props.color}
+        radius={props.radius}
+        readingZOverride={props.readingZOverride}
+        readings={props.sensorReadings} />}
     <Mesh geometry={props.geometry} position={[0, 0, -zZero(props.config)]}>
       <HeightMaterial
         min={0}
