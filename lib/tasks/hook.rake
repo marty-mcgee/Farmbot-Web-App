@@ -18,7 +18,7 @@ def open_json(url)
   end
 end
 
-def last_deploy_commit
+def last_deploy_sha
   if LAST_DEPLOY_COMMIT_OVERRIDE
     return LAST_DEPLOY_COMMIT_OVERRIDE
   end
@@ -29,22 +29,46 @@ def last_deploy_commit
   (data[deploy_index] || {}).fetch("sha", nil)
 end
 
-def commits_since_last_deploy
-  last_sha_deployed = last_deploy_commit()
-  deploy_commit_found = false
-  commits = []
-  open_json(COMMITS_URL_API + "?per_page=100").map do |commit|
-    if commit.fetch("sha") == last_sha_deployed
-      deploy_commit_found = true
-      break
-    end
-    commits.push([commit["commit"]["message"].gsub("\n", " "), commit["sha"]])
+def branch
+  ENVIRONMENT.include?("production") ? "main" : "staging"
+end
+
+def first_branch_sha
+  open_json(COMMITS_URL_API + "?per_page=1&sha=#{branch}")[0].fetch("sha")
+end
+
+def commits_since(sha)
+  compare_url = "#{COMPARE_URL_API}#{sha}...#{COMMIT_SHA}"
+  open_json(compare_url)["commits"]
+end
+
+def commit_list(commits)
+  commits.map { |commit|
+    [commit["commit"]["message"].gsub("\n", " "), commit["sha"]]
+  }
+end
+
+def compare_link(sha)
+  web_compare_url = "#{COMPARE_URL_WEB}#{sha}...#{COMMIT_SHA}"
+  "<#{web_compare_url}|compare>"
+end
+
+def commits_and_compare_link
+  commits = commits_since(last_deploy_sha)
+  compare = compare_link(last_deploy_sha)
+  if commits.nil?
+    commits = commits_since(first_branch_sha)
+    compare = compare_link(first_branch_sha)
   end
-  if !deploy_commit_found
-    commits = [commits.first]
-    commits.push(["[Last deploy commit not found. Most recent commit below.]", "0000000"])
+  if commits.nil?
+    commits = []
+    compare = ""
   end
-  commits
+  return {commits: commit_list(commits), compare: compare}
+end
+
+def block_data
+  @block_data ||= commits_and_compare_link
 end
 
 def intro_block(start_text, environment)
@@ -53,14 +77,13 @@ def intro_block(start_text, environment)
   if !DESCRIPTION.nil?
     output += "#{DESCRIPTION}\n\n"
   end
-  web_compare_url = "#{COMPARE_URL_WEB}#{last_deploy_commit}...#{COMMIT_SHA}"
-  output += "<#{web_compare_url}|compare>"
+  output += block_data[:compare]
   output
 end
 
 def commit_blocks(environment)
   outputs = []
-  commits_since_last_deploy.reverse.each_slice(50) do |commits|
+  block_data[:commits].reverse.each_slice(50) do |commits|
     output = ""
     commits.map do |commit|
       output += "\n + #{commit[0]} | ##{commit[1][0..5]}"
