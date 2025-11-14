@@ -35,7 +35,7 @@ import { BooleanSetting } from "../session_keys";
 import { SlotWithTool } from "../resources/interfaces";
 import { cameraInit } from "./camera";
 import { isMobile } from "../screen_size";
-import { filterMoisturePoints, filterSoilPoints, getSurface } from "./triangles";
+import { filterSoilPoints, getSurface } from "./triangles";
 import { BigDistance } from "./constants";
 import { getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
@@ -114,15 +114,6 @@ export const GardenModel = (props: GardenModelProps) => {
   }, [soilSurface.triangles]);
   const getZ = getZFunc(soilSurface.triangles, -config.soilHeight);
 
-  const moisturePoints =
-    filterMoisturePoints({
-      config: props.config,
-      sensors: props.sensors || [],
-      readings: props.sensorReadings || [],
-    });
-  const moistureSurface = React.useMemo(() =>
-    getSurface(moisturePoints), [moisturePoints]);
-
   const showMoistureMap = !!props.addPlantProps?.getConfigValue(
     BooleanSetting.show_moisture_interpolation_map);
   const showMoistureReadings = !!props.addPlantProps?.getConfigValue(
@@ -182,9 +173,9 @@ export const GardenModel = (props: GardenModelProps) => {
       images={props.images}
       activeFocus={props.activeFocus}
       mapPoints={props.mapPoints || []}
-      moistureSurfaceGeometry={moistureSurface.geometry}
       showMoistureMap={showMoistureMap}
       showMoistureReadings={showMoistureReadings}
+      sensors={props.sensors || []}
       sensorReadings={props.sensorReadings || []}
       addPlantProps={addPlantProps} />
     {showMoistureMap && props.config.moistureDebug &&

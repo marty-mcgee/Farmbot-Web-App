@@ -3,18 +3,30 @@ import { render } from "@testing-library/react";
 import { MoistureTexture, MoistureTextureProps } from "../moisture_texture";
 import { clone } from "lodash";
 import { INITIAL } from "../../config";
-import { BufferGeometry } from "three";
+import {
+  fakeSensor, fakeSensorReading,
+} from "../../../__test_support__/fake_state/resources";
 
 describe("<MoistureTexture />", () => {
   const fakeProps = (): MoistureTextureProps => ({
     config: clone(INITIAL),
-    geometry: new BufferGeometry(),
+    sensors: [],
     sensorReadings: [],
     showMoistureReadings: true,
   });
 
-  it("renders", () => {
-    const { container } = render(<MoistureTexture {...fakeProps()} />);
+  it("renders with readings", () => {
+    const p = fakeProps();
+    p.showMoistureReadings = true;
+    const reading = fakeSensorReading();
+    reading.body.pin = 1;
+    reading.body.mode = 1;
+    p.sensorReadings = [reading];
+    const sensor = fakeSensor();
+    sensor.body.pin = 1;
+    sensor.body.label = "soil moisture";
+    p.sensors = [sensor];
+    const { container } = render(<MoistureTexture {...p} />);
     expect(container).toContainHTML("render-texture");
   });
 

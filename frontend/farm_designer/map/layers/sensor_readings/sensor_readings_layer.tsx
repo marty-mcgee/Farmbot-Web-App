@@ -43,7 +43,9 @@ export function SensorReadingsLayer(props: SensorReadingsLayerProps) {
     filterMoistureReadings(sensorReadings, sensors);
   generateData({
     kind: "SensorReading",
-    points: moistureReadings, mapTransformProps, getColor: getMoistureColor,
+    points: moistureReadings,
+    gridSize: mapTransformProps.gridSize,
+    getColor: getMoistureColor,
     options,
   });
   return <g id="sensor-readings-layer">
@@ -66,7 +68,7 @@ export function SensorReadingsLayer(props: SensorReadingsLayerProps) {
   </g>;
 }
 
-const getMoistureColor = (value: number) => {
+export const getMoistureColor = (value: number) => {
   const normalizedValue = round(255 * value / 1024);
   if (value > 900) { return "rgb(255, 255, 255)"; }
   return `rgb(0, 0, ${normalizedValue})`;

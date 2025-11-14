@@ -238,6 +238,7 @@ export class RawFarmDesigner
           images={this.props.latestImages}
           sensorReadings={this.props.sensorReadings}
           sensors={this.props.sensors}
+          farmwareEnvs={this.props.farmwareEnvs}
           cameraCalibrationData={this.props.cameraCalibrationData}
           getWebAppConfigValue={this.props.getConfigValue} />
         : <div

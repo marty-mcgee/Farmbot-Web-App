@@ -10,7 +10,9 @@ import * as THREE from "three";
 import React, { ReactNode } from "react";
 import { TransitionFn, UseSpringProps } from "@react-spring/three";
 import { ThreeElements, ThreeEvent } from "@react-three/fiber";
-import { Cloud, Clouds, Image, Plane, Trail, Tube } from "@react-three/drei";
+import {
+  Cloud, Clouds, Image, Instance, Instances, Plane, Trail, Tube,
+} from "@react-three/drei";
 
 const GroupForTests = (props: ThreeElements["group"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
@@ -561,6 +563,10 @@ jest.mock("@react-three/drei", () => {
     ...jest.requireActual("@react-three/drei"),
     useGLTF,
     shaderMaterial: jest.fn(),
+    Instances: (props: React.ComponentProps<typeof Instances>) =>
+      <div className={"instances"}>{props.children}</div>,
+    Instance: (props: React.ComponentProps<typeof Instance>) =>
+      <div className={"instance"}>{props.name}</div>,
     RoundedBox: ({ name }: { name: string }) =>
       <div className={"cylinder"}>{name}</div>,
     Plane: (props: React.ComponentProps<typeof Plane>) =>

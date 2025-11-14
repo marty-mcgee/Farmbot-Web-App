@@ -36,7 +36,11 @@ export function PointLayer(props: PointLayerProps) {
     props.interactions ? {} : { pointerEvents: "none" };
   const options = fetchInterpolationOptions(props.farmwareEnvs);
   generateData({
-    kind: "Point", points: soilHeightPoints, mapTransformProps, getColor, options,
+    kind: "Point",
+    points: soilHeightPoints,
+    gridSize: mapTransformProps.gridSize,
+    getColor,
+    options,
   });
   return <g id={"point-layer"} style={style}>
     {props.overlayVisible &&

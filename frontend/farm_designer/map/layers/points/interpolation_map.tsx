@@ -3,7 +3,7 @@ import {
   TaggedFarmwareEnv,
   TaggedGenericPointer, TaggedPoint, TaggedSensorReading, Xyz,
 } from "farmbot";
-import { MapTransformProps } from "../../interfaces";
+import { AxisNumberProperty, MapTransformProps } from "../../interfaces";
 import { transformXY } from "../../util";
 import { isUndefined, range, round, sum } from "lodash";
 import { distance, findNearest } from "../../../../point_groups/other_sort_methods";
@@ -80,7 +80,7 @@ export const getZAtLocation =
 interface GenerateInterpolationMapDataProps {
   kind: "Point" | "SensorReading";
   points: (TaggedGenericPointer | TaggedSensorReading)[];
-  mapTransformProps: MapTransformProps;
+  gridSize: AxisNumberProperty;
   getColor(z: number): string;
   options: InterpolationOptions;
 }
@@ -104,10 +104,10 @@ const convertToPointObject =
 
 export const generateData = (props: GenerateInterpolationMapDataProps) => {
   const points = selectMostRecentPoints(props.points);
-  const { gridSize } = props.mapTransformProps;
+  const { gridSize } = props;
   const { stepSize } = props.options;
   const hash = [
-    JSON.stringify(points),
+    JSON.stringify(points.map(p => p.uuid)),
     JSON.stringify(gridSize),
     JSON.stringify(props.options),
   ].join("");

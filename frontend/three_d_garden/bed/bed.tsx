@@ -24,6 +24,7 @@ import {
 import { AxisNumberProperty } from "../../farm_designer/map/interfaces";
 import {
   TaggedCurve, TaggedGenericPointer, TaggedImage,
+  TaggedSensor,
   TaggedSensorReading,
 } from "farmbot";
 import { GetWebAppConfigValue } from "../../config_storage/actions";
@@ -108,9 +109,9 @@ export interface BedProps {
   getZ(x: number, y: number): number;
   images?: TaggedImage[];
   soilSurfaceGeometry: BufferGeometry;
-  moistureSurfaceGeometry: BufferGeometry;
   showMoistureMap: boolean;
   showMoistureReadings: boolean;
+  sensors: TaggedSensor[];
   sensorReadings: TaggedSensorReading[];
 }
 
@@ -249,13 +250,13 @@ export const Bed = (props: BedProps) => {
   const moistureTexture = React.useMemo(() =>
     <MoistureTexture
       config={props.config}
+      sensors={props.sensors}
       sensorReadings={props.sensorReadings}
-      showMoistureReadings={props.showMoistureReadings}
-      geometry={props.moistureSurfaceGeometry} />, [
+      showMoistureReadings={props.showMoistureReadings} />, [
     props.config,
+    props.sensors,
     props.sensorReadings,
     props.showMoistureReadings,
-    props.moistureSurfaceGeometry,
   ]);
 
   const SurfaceHeightMaterial = (props: { children: React.ReactNode }) =>
@@ -394,7 +395,7 @@ export const Bed = (props: BedProps) => {
     </React.Suspense>
     {props.config.moistureDebug &&
       <MoistureSurface
-        geometry={props.moistureSurfaceGeometry}
+        sensors={props.sensors}
         sensorReadings={props.sensorReadings}
         showMoistureReadings={true}
         config={props.config}

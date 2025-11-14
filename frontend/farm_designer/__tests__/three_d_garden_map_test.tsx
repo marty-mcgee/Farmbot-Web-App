@@ -61,6 +61,7 @@ describe("<ThreeDGardenMap />", () => {
     sensors: [],
     sensorReadings: [],
     cameraCalibrationData: fakeCameraCalibrationData(),
+    farmwareEnvs: [],
   });
 
   it("converts props", () => {

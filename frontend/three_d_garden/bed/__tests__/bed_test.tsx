@@ -100,9 +100,9 @@ describe("<Bed />", () => {
     activeFocus: "",
     mapPoints: [],
     soilSurfaceGeometry: new BufferGeometry(),
-    moistureSurfaceGeometry: new BufferGeometry(),
     getZ: () => 0,
     showMoistureMap: true,
+    sensors: [],
     sensorReadings: [],
     showMoistureReadings: true,
   });

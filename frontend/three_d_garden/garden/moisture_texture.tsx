@@ -1,16 +1,22 @@
 import React from "react";
 import { soilSurfaceExtents } from "../triangles";
 import { Config } from "../config";
-import { OrthographicCamera, RenderTexture, Sphere } from "@react-three/drei";
-import { Group, Mesh, MeshBasicMaterial } from "../components";
-import { BufferGeometry, Color } from "three";
-import { HeightMaterial } from "./height_material";
-import { TaggedSensorReading } from "farmbot";
+import {
+  Instance, Instances, OrthographicCamera, RenderTexture, Sphere,
+} from "@react-three/drei";
+import { BoxGeometry, Group, MeshBasicMaterial } from "../components";
+import { TaggedSensor, TaggedSensorReading } from "farmbot";
 import { threeSpace, zZero } from "../helpers";
+import {
+  generateData, getInterpolationData,
+} from "../../farm_designer/map/layers/points/interpolation_map";
+import {
+  filterMoistureReadings, getMoistureColor,
+} from "../../farm_designer/map/layers/sensor_readings/sensor_readings_layer";
 
 export interface MoistureTextureProps {
   config: Config;
-  geometry: BufferGeometry;
+  sensors: TaggedSensor[];
   sensorReadings: TaggedSensorReading[];
   showMoistureReadings: boolean;
 }
@@ -32,10 +38,10 @@ export const MoistureTexture = (props: MoistureTextureProps) => {
       scale={[1, 1, 1]}
       up={[0, 0, 1]} />
     <MoistureSurface
-      geometry={props.geometry}
       config={props.config}
       color={"black"}
       radius={10}
+      sensors={props.sensors}
       sensorReadings={props.sensorReadings}
       showMoistureReadings={props.showMoistureReadings}
       position={[
@@ -48,8 +54,8 @@ export const MoistureTexture = (props: MoistureTextureProps) => {
 };
 
 export interface MoistureSurfaceProps {
-  geometry: BufferGeometry;
   position: [number, number, number];
+  sensors: TaggedSensor[];
   sensorReadings: TaggedSensorReading[];
   config: Config;
   color: string;
@@ -58,8 +64,23 @@ export interface MoistureSurfaceProps {
   showMoistureReadings: boolean;
 }
 
-export const MoistureSurface = (props: MoistureSurfaceProps) =>
-  <Group position={props.position}>
+export const MoistureSurface = (props: MoistureSurfaceProps) => {
+  const { readings: moistureReadings } =
+    filterMoistureReadings(props.sensorReadings, props.sensors);
+  const options = {
+    stepSize: props.config.interpolationStepSize,
+    useNearest: props.config.interpolationUseNearest,
+    power: props.config.interpolationPower,
+  };
+  generateData({
+    kind: "SensorReading",
+    points: moistureReadings,
+    gridSize: { x: props.config.bedLengthOuter, y: props.config.bedWidthOuter },
+    getColor: getMoistureColor,
+    options,
+  });
+  const data = getInterpolationData("SensorReading");
+  return <Group position={props.position}>
     {props.showMoistureReadings &&
       <MoistureReadings
         config={props.config}
@@ -67,14 +88,19 @@ export const MoistureSurface = (props: MoistureSurfaceProps) =>
         radius={props.radius}
         readingZOverride={props.readingZOverride}
         readings={props.sensorReadings} />}
-    <Mesh geometry={props.geometry} position={[0, 0, -zZero(props.config)]}>
-      <HeightMaterial
-        min={0}
-        max={1000}
-        lowColor={new Color(0.5, 0.5, 0.5)}
-        highColor={new Color(0, 0, 1)} />
-    </Mesh>
+    <Instances limit={data.length}>
+      <BoxGeometry args={[options.stepSize, options.stepSize, options.stepSize]} />
+      <MeshBasicMaterial />
+      {data.map(p => {
+        const { x, y, z } = p;
+        return <Instance
+          key={`${x}-${y}`}
+          position={[x, y, z / 2]}
+          color={getMoistureColor(z)} />;
+      })}
+    </Instances>
   </Group>;
+};
 
 export interface MoistureReadingsProps {
   readings: TaggedSensorReading[];

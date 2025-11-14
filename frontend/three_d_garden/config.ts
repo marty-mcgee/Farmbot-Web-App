@@ -98,6 +98,9 @@ export interface Config {
   imgCalZ: number;
   imgCenterX: number;
   imgCenterY: number;
+  interpolationStepSize: number;
+  interpolationUseNearest: boolean;
+  interpolationPower: number;
 }
 
 export enum SurfaceDebugOption {
@@ -206,6 +209,9 @@ export const INITIAL: Config = {
   imgCalZ: 0,
   imgCenterX: 0,
   imgCenterY: 0,
+  interpolationStepSize: 50,
+  interpolationUseNearest: false,
+  interpolationPower: 4,
 };
 
 export const STRING_KEYS = [
@@ -221,7 +227,8 @@ export const NUMBER_KEYS = [
   "soilBrightness", "soilHeight", "sunInclination", "sunAzimuth", "heading",
   "soilSurfacePointCount", "soilSurfaceVariance", "sun", "ambient", "rotary",
   "imgScale", "imgRotation", "imgOffsetX", "imgOffsetY", "imgCalZ",
-  "imgCenterX", "imgCenterY", "surfaceDebug",
+  "imgCenterX", "imgCenterY", "surfaceDebug", "interpolationStepSize",
+  "interpolationPower",
 ];
 
 export const BOOLEAN_KEYS = [
@@ -233,7 +240,7 @@ export const BOOLEAN_KEYS = [
   "eventDebug", "cableDebug", "zoomBeaconDebug", "lightsDebug", "moistureDebug",
   "animate", "animateSeasons", "negativeZ",
   "waterFlow", "exaggeratedZ", "showSoilPoints", "urlParamAutoAdd",
-  "light", "vacuum", "north", "desk",
+  "light", "vacuum", "north", "desk", "interpolationUseNearest",
 ];
 
 export const PRESETS: Record<string, Config> = {
@@ -457,7 +464,8 @@ const OTHER_CONFIG_KEYS: (keyof Config)[] = [
   "exaggeratedZ", "soilSurface", "soilSurfaceVariance",
   "showSoilPoints", "urlParamAutoAdd", "north", "desk",
   "imgScale", "imgRotation", "imgOffsetX", "imgOffsetY", "imgOrigin", "imgCalZ",
-  "imgCenterX", "imgCenterY",
+  "imgCenterX", "imgCenterY", "interpolationStepSize", "interpolationUseNearest",
+  "interpolationPower",
 ];
 
 export const modifyConfig = (config: Config, update: Partial<Config>) => {
