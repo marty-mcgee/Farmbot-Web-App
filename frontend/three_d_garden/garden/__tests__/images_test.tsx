@@ -20,6 +20,10 @@ describe("<ImageTexture />", () => {
     z: 0,
     xOffset: 0,
     yOffset: 0,
+    sensors: [],
+    sensorReadings: [],
+    showMoistureReadings: true,
+    showMoistureMap: true,
   });
 
   it("renders", () => {

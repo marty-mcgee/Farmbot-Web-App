@@ -1,18 +1,22 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import { MoistureTexture, MoistureTextureProps } from "../moisture_texture";
+import { MoistureSurface, MoistureSurfaceProps } from "../moisture_texture";
 import { clone } from "lodash";
 import { INITIAL } from "../../config";
 import {
   fakeSensor, fakeSensorReading,
 } from "../../../__test_support__/fake_state/resources";
 
-describe("<MoistureTexture />", () => {
-  const fakeProps = (): MoistureTextureProps => ({
+describe("<MoistureSurface />", () => {
+  const fakeProps = (): MoistureSurfaceProps => ({
     config: clone(INITIAL),
     sensors: [],
     sensorReadings: [],
     showMoistureReadings: true,
+    showMoistureMap: true,
+    position: [0, 0, 0],
+    color: "black",
+    radius: 10,
   });
 
   it("renders with readings", () => {
@@ -26,14 +30,14 @@ describe("<MoistureTexture />", () => {
     sensor.body.pin = 1;
     sensor.body.label = "soil moisture";
     p.sensors = [sensor];
-    const { container } = render(<MoistureTexture {...p} />);
-    expect(container).toContainHTML("render-texture");
+    const { container } = render(<MoistureSurface {...p} />);
+    expect(container).toContainHTML("moisture-layer");
   });
 
   it("renders without readings", () => {
     const p = fakeProps();
     p.showMoistureReadings = false;
-    const { container } = render(<MoistureTexture {...p} />);
-    expect(container).toContainHTML("render-texture");
+    const { container } = render(<MoistureSurface {...p} />);
+    expect(container).toContainHTML("moisture-layer");
   });
 });

@@ -38,7 +38,7 @@ import { TableRow } from "../sensors/sensor_readings/table";
 import { unselectPlant } from "./map/actions";
 import { EmptyStateGraphic, EmptyStateWrapper, ExpandableHeader } from "../ui";
 import {
-  fetchInterpolationOptions, interpolatedZ,
+  fetchInterpolationOptions, GetColor, interpolatedZ,
 } from "./map/layers/points/interpolation_map";
 import { Collapse } from "@blueprintjs/core";
 import { ImageFlipper } from "../photos/images/image_flipper";
@@ -250,7 +250,7 @@ interface ItemListWrapperProps {
   items: Item[];
   dispatch: Function;
   title: string;
-  getColorOverride(z: number): string;
+  getColorOverride: GetColor;
   showZ?: boolean;
   timeSettings: TimeSettings;
   sensorNameByPinLookup: Record<number, string>,

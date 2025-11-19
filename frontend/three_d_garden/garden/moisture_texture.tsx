@@ -1,9 +1,6 @@
 import React from "react";
-import { soilSurfaceExtents } from "../triangles";
 import { Config } from "../config";
-import {
-  Instance, Instances, OrthographicCamera, RenderTexture, Sphere,
-} from "@react-three/drei";
+import { Instance, Instances, Sphere } from "@react-three/drei";
 import { BoxGeometry, Group, MeshBasicMaterial } from "../components";
 import { TaggedSensor, TaggedSensorReading } from "farmbot";
 import { threeSpace, zZero } from "../helpers";
@@ -13,45 +10,7 @@ import {
 import {
   filterMoistureReadings, getMoistureColor,
 } from "../../farm_designer/map/layers/sensor_readings/sensor_readings_layer";
-
-export interface MoistureTextureProps {
-  config: Config;
-  sensors: TaggedSensor[];
-  sensorReadings: TaggedSensorReading[];
-  showMoistureReadings: boolean;
-}
-
-export const MoistureTexture = (props: MoistureTextureProps) => {
-  const extents = soilSurfaceExtents(props.config);
-  const width = extents.x.max - extents.x.min;
-  const height = extents.y.max - extents.y.min;
-  const { bedXOffset, bedYOffset } = props.config;
-  return <RenderTexture attach={"map"} width={width} height={height}>
-    <OrthographicCamera makeDefault near={10} far={10000}
-      left={extents.x.min}
-      right={extents.x.max}
-      top={extents.y.min}
-      bottom={extents.y.max}
-      position={[bedXOffset, bedYOffset, 4000]}
-      rotation={[0, 0, 0]}
-      zoom={1}
-      scale={[1, 1, 1]}
-      up={[0, 0, 1]} />
-    <MoistureSurface
-      config={props.config}
-      color={"black"}
-      radius={10}
-      sensors={props.sensors}
-      sensorReadings={props.sensorReadings}
-      showMoistureReadings={props.showMoistureReadings}
-      position={[
-        props.config.bedXOffset,
-        props.config.bedYOffset,
-        zZero(props.config),
-      ]}
-      readingZOverride={2000} />
-  </RenderTexture>;
-};
+import { InstancedBufferAttribute, InstancedMesh } from "three";
 
 export interface MoistureSurfaceProps {
   position: [number, number, number];
@@ -62,6 +21,7 @@ export interface MoistureSurfaceProps {
   radius: number;
   readingZOverride?: number;
   showMoistureReadings: boolean;
+  showMoistureMap: boolean;
 }
 
 export const MoistureSurface = (props: MoistureSurfaceProps) => {
@@ -80,7 +40,17 @@ export const MoistureSurface = (props: MoistureSurfaceProps) => {
     options,
   });
   const data = getInterpolationData("SensorReading");
-  return <Group position={props.position}>
+  // eslint-disable-next-line no-null/no-null
+  const ref = React.useRef<InstancedMesh>(null);
+  React.useEffect(() => {
+    const opacities = new Float32Array(data.length);
+    data.map((d, i) => {
+      opacities[i] = getMoistureColor(d.z).a;
+    });
+    ref.current?.geometry?.setAttribute("instanceOpacity",
+      new InstancedBufferAttribute(opacities, 1));
+  }, [data]);
+  return <Group position={props.position} name={"moisture-layer"}>
     {props.showMoistureReadings &&
       <MoistureReadings
         config={props.config}
@@ -88,17 +58,37 @@ export const MoistureSurface = (props: MoistureSurfaceProps) => {
         radius={props.radius}
         readingZOverride={props.readingZOverride}
         readings={props.sensorReadings} />}
-    <Instances limit={data.length}>
-      <BoxGeometry args={[options.stepSize, options.stepSize, options.stepSize]} />
-      <MeshBasicMaterial />
-      {data.map(p => {
-        const { x, y, z } = p;
-        return <Instance
-          key={`${x}-${y}`}
-          position={[x, y, z / 2]}
-          color={getMoistureColor(z)} />;
-      })}
-    </Instances>
+    {props.showMoistureMap &&
+      <Instances limit={data.length} ref={ref}>
+        <BoxGeometry
+          args={[options.stepSize, options.stepSize, options.stepSize]} />
+        <MeshBasicMaterial transparent={true} opacity={0.75}
+          onBeforeCompile={shader => {
+            shader.vertexShader = `
+               attribute float instanceOpacity;
+               varying float vInstanceOpacity;
+               ` + shader.vertexShader;
+            shader.vertexShader = shader.vertexShader
+              .replace(
+                "#include <begin_vertex>",
+                `vInstanceOpacity = instanceOpacity;
+               #include <begin_vertex>`);
+            shader.fragmentShader = `
+            varying float vInstanceOpacity;
+            ` + shader.fragmentShader;
+            shader.fragmentShader = shader.fragmentShader
+              .replace(
+                "vec4 diffuseColor = vec4( diffuse, opacity );",
+                "vec4 diffuseColor = vec4( diffuse, opacity * vInstanceOpacity );");
+          }} />
+        {data.map(p => {
+          const { x, y, z } = p;
+          return <Instance
+            key={`${x}-${y}`}
+            position={[x, y, z / 2]}
+            color={getMoistureColor(z).rgb} />;
+        })}
+      </Instances>}
   </Group>;
 };
 

@@ -49,6 +49,13 @@ jest.mock("../three_d_garden/components", () => ({
     props.visible === false
       ? <></>
       : <GroupForTests {...props} />,
+  MeshBasicMaterial: (props: THREE.MeshBasicMaterial) => {
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+    props.onBeforeCompile?.({} as any, {} as any);
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    return <div {...props} />;
+  },
 }));
 
 jest.mock("three/examples/jsm/Addons.js", () => ({

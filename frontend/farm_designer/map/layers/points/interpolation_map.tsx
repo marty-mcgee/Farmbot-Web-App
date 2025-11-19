@@ -16,6 +16,8 @@ import {
 } from "../../../../settings/default_values";
 import { SaveFarmwareEnv } from "../../../../farmware/interfaces";
 
+export type GetColor = (z: number) => { rgb: string, a: number };
+
 export enum InterpolationKey {
   data = "interpolationData",
   hash = "interpolationHash",
@@ -81,7 +83,7 @@ interface GenerateInterpolationMapDataProps {
   kind: "Point" | "SensorReading";
   points: (TaggedGenericPointer | TaggedSensorReading)[];
   gridSize: AxisNumberProperty;
-  getColor(z: number): string;
+  getColor: GetColor;
   options: InterpolationOptions;
 }
 
@@ -160,7 +162,7 @@ interface InterpolationMapProps {
   kind: "Point" | "SensorReading";
   points: (TaggedGenericPointer | TaggedSensorReading)[];
   mapTransformProps: MapTransformProps;
-  getColor(z: number): string;
+  getColor: GetColor;
   options: InterpolationOptions;
 }
 
@@ -174,11 +176,12 @@ export const InterpolationMap = (props: InterpolationMapProps) => {
         const { quadrant } = props.mapTransformProps;
         const xOffset = [1, 4].includes(quadrant);
         const yOffset = [3, 4].includes(quadrant);
+        const colorInfo = props.getColor(z);
         return <rect key={`${x}-${y}`}
           x={qx - (xOffset ? step : 0)}
           y={qy - (yOffset ? step : 0)}
           width={step} height={step}
-          fill={props.getColor(z)} fillOpacity={0.75} />;
+          fill={colorInfo.rgb} fillOpacity={colorInfo.a} />;
       })}
     </g>
   </g>;

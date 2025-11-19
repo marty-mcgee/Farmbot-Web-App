@@ -41,7 +41,7 @@ import {
 import { ThreeElements } from "@react-three/fiber";
 import { ImageTexture } from "../garden";
 import { VertexNormalsHelper } from "three/examples/jsm/Addons";
-import { MoistureSurface, MoistureTexture } from "../garden/moisture_texture";
+import { MoistureSurface } from "../garden/moisture_texture";
 import { HeightMaterial } from "../garden/height_material";
 
 const soil = (
@@ -242,22 +242,22 @@ export const Bed = (props: BedProps) => {
       images={props.images}
       config={props.config}
       addPlantProps={props.addPlantProps}
+      sensors={props.sensors}
+      sensorReadings={props.sensorReadings}
+      showMoistureReadings={props.showMoistureReadings}
+      showMoistureMap={props.showMoistureMap}
       xOffset={props.config.bedXOffset - props.config.bedLengthOuter / 2}
       yOffset={props.config.bedYOffset - props.config.bedWidthOuter / 2}
       z={0} />,
-    [props.images, props.config, props.addPlantProps]);
-
-  const moistureTexture = React.useMemo(() =>
-    <MoistureTexture
-      config={props.config}
-      sensors={props.sensors}
-      sensorReadings={props.sensorReadings}
-      showMoistureReadings={props.showMoistureReadings} />, [
-    props.config,
-    props.sensors,
-    props.sensorReadings,
-    props.showMoistureReadings,
-  ]);
+    [
+      props.images,
+      props.config,
+      props.addPlantProps,
+      props.sensors,
+      props.sensorReadings,
+      props.showMoistureReadings,
+      props.showMoistureMap,
+    ]);
 
   const SurfaceHeightMaterial = (props: { children: React.ReactNode }) =>
     <HeightMaterial {...props}
@@ -278,9 +278,7 @@ export const Bed = (props: BedProps) => {
   };
 
   const SurfaceMaterial = getSurfaceMaterial();
-  const surfaceTexture = props.showMoistureMap
-    ? moistureTexture
-    : soilTexture;
+  const surfaceTexture = soilTexture;
 
   return <Group name={"bed-group"}>
     <Detailed distances={detailLevels(props.config)}>
@@ -398,6 +396,7 @@ export const Bed = (props: BedProps) => {
         sensors={props.sensors}
         sensorReadings={props.sensorReadings}
         showMoistureReadings={true}
+        showMoistureMap={true}
         config={props.config}
         color={"black"}
         radius={50}

@@ -17,6 +17,7 @@ import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { TimeSettings } from "../../interfaces";
 import { UUID } from "../../resources/interfaces";
 import { PeripheralValues } from "./layers/farmbot/bot_trail";
+import { GetColor } from "./layers/points/interpolation_map";
 
 export type TaggedPlant = TaggedPlantPointer | TaggedPlantTemplate;
 
@@ -103,7 +104,7 @@ export interface GardenPointProps {
   hovered: boolean;
   dispatch: Function;
   soilHeightLabels: boolean;
-  getSoilHeightColor(z: number): string;
+  getSoilHeightColor: GetColor;
   animate: boolean;
 }
 

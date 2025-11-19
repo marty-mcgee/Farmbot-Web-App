@@ -7,7 +7,7 @@ import { GardenSensorReading } from "./garden_sensor_reading";
 import { last, round } from "lodash";
 import { TimeSettings } from "../../../../interfaces";
 import {
-  fetchInterpolationOptions, generateData, InterpolationMap,
+  fetchInterpolationOptions, generateData, GetColor, InterpolationMap,
 } from "../points/interpolation_map";
 
 export const filterMoistureReadings = (
@@ -68,8 +68,16 @@ export function SensorReadingsLayer(props: SensorReadingsLayerProps) {
   </g>;
 }
 
-export const getMoistureColor = (value: number) => {
-  const normalizedValue = round(255 * value / 1024);
-  if (value > 900) { return "rgb(255, 255, 255)"; }
-  return `rgb(0, 0, ${normalizedValue})`;
+export const getMoistureColor: GetColor = (value: number) => {
+  const maxValue = 900;
+  if (value > maxValue) { return { rgb: "rgb(0, 0, 0)", a: 0 }; }
+  const normalizedValue = round(255 * value / maxValue);
+  const r = 255 - normalizedValue;
+  const g = 255 - normalizedValue;
+  const b = 255;
+  const a = round(0 + 0.5 * value / maxValue, 2);
+  return {
+    rgb: `rgb(${r}, ${g}, ${b})`,
+    a: a,
+  };
 };
