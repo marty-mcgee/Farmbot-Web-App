@@ -397,6 +397,7 @@ const ReadingsListItem = (props: ReadingsListItemProps) =>
             const sensorName = `${props.sensorNameByPinLookup[pin]} (pin ${pin})`;
             return <TableRow
               key={item.uuid}
+              dispatch={props.dispatch}
               sensorName={sensorName}
               sensorReading={item}
               timeSettings={props.timeSettings}

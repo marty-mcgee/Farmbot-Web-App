@@ -23,13 +23,30 @@
   th,
   td {
     width: 1%;
+    padding: 0.25rem;
+    &:first-of-type {
+      padding-left: 0.5rem;
+    }
+    &:last-of-type {
+      padding: 0;
+    }
   }
   tr {
+    height: 3rem;
     &.previous {
       color: $medium_gray;
     }
     &.selected {
       background: $translucent1_white;
+    }
+  }
+  label {
+    font-size: 1.1rem;
+  }
+  .fa-trash {
+    color: $transparent;
+    &:hover {
+      color: unset; // sass-lint:disable-line variable-for-property
     }
   }
   .sensor-history-table-contents {

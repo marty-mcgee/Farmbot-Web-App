@@ -9,11 +9,12 @@ import {
 } from "./time_period_selection";
 import { LocationSelection, LocationDisplay } from "./location_selection";
 import { SensorSelection } from "./sensor_selection";
-import { TaggedSensor } from "farmbot";
+import { TaggedSensor, TaggedSensorReading } from "farmbot";
 import { AxisInputBoxGroupState } from "../../controls/interfaces";
 import { SensorReadingsPlot } from "./graph";
 import { Position } from "@blueprintjs/core";
 import { AddSensorReadingMenu } from "./add_reading";
+import { destroy } from "../../api/crud";
 
 export class SensorReadings
   extends React.Component<SensorReadingsProps, SensorReadingsState> {
@@ -46,6 +47,12 @@ export class SensorReadings
     showPreviousPeriod: false,
     deviation: 0,
   });
+  deleteSelected = (readings: TaggedSensorReading[]) => () => {
+    if (!confirm(t("Delete {{count}} sensor readings?", {
+      count: readings.length,
+    }))) { return; }
+    readings.map(reading => this.props.dispatch(destroy(reading.uuid)));
+  };
 
   toggleAddReadingMenu = () => {
     this.setState({ addReadingMenuOpen: !this.state.addReadingMenuOpen });
@@ -61,6 +68,11 @@ export class SensorReadings
       <div className="panel-header">
         <h2 className="panel-title">{t("History")}</h2>
         <div className="row">
+          <button className={"fb-button red"}
+            title={t("delete selected")}
+            onClick={this.deleteSelected(readingsForPeriod("current"))}>
+            {t("delete selected")}
+          </button>
           <button className="fb-button gray"
             title={t("clear filters")}
             onClick={this.clearFilters}>
@@ -107,6 +119,7 @@ export class SensorReadings
           showPreviousPeriod={this.state.showPreviousPeriod}
           timePeriod={this.state.timePeriod} />
         <SensorReadingsTable
+          dispatch={this.props.dispatch}
           readingsForPeriod={readingsForPeriod}
           sensors={this.props.sensors}
           timeSettings={this.props.timeSettings}

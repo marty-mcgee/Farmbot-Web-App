@@ -10,7 +10,7 @@ describe("API", () => {
     [
       [API.current.pointSearchPath, BASE + "/api/points/search"],
       [API.current.allPointsPath, BASE + "/api/points/?filter=all"],
-      [API.current.sensorReadingPath, BASE + "/api/sensor_readings"],
+      [API.current.sensorReadingPath, BASE + "/api/sensor_readings/"],
       [API.current.farmwareEnvPath, BASE + "/api/farmware_envs/"],
       [API.current.plantTemplatePath, BASE + "/api/plant_templates/"],
       [API.current.farmwareInstallationPath, BASE + "/api/farmware_installations/"],

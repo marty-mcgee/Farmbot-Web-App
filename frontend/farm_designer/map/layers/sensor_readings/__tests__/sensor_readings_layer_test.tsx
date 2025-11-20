@@ -49,7 +49,7 @@ describe("<SensorReadingsLayer />", () => {
     p.sensorReadings[0].body.mode = ANALOG;
     const reading = fakeSensorReading();
     reading.body.mode = ANALOG;
-    reading.body.value = 1000;
+    reading.body.value = 800;
     reading.body.x = 100;
     reading.body.y = 200;
     p.sensorReadings.push(reading);
@@ -62,10 +62,10 @@ describe("<SensorReadingsLayer />", () => {
 
 describe("getMoistureColor()", () => {
   it.each<[number, string, number]>([
-    [0, "rgb(255, 255, 255)", 0],
-    [200, "rgb(198, 198, 255)", 0.11],
-    [700, "rgb(57, 57, 255)", 0.39],
-    [900, "rgb(0, 0, 255)", 0.5],
+    [0, "rgb(0, 0, 255)", 0],
+    [200, "rgb(0, 0, 255)", 0],
+    [700, "rgb(0, 0, 255)", 0.2],
+    [900, "rgb(0, 0, 255)", 0.42],
     [1024, "rgb(0, 0, 0)", 0],
   ])("returns color for %s: %s %s", (value, color, alpha) => {
     const c = getMoistureColor(value);

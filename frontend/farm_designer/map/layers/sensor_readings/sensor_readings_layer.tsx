@@ -19,7 +19,8 @@ export const filterMoistureReadings = (
   const readings = sensorReadings
     .filter(r =>
       (sensorNameByPinLookup[r.body.pin] || "").toLowerCase().includes("soil")
-      && r.body.mode == ANALOG);
+      && r.body.mode == ANALOG)
+    .filter(r => r.body.value <= 900);
   return { readings, sensorNameByPinLookup };
 };
 
@@ -71,11 +72,10 @@ export function SensorReadingsLayer(props: SensorReadingsLayerProps) {
 export const getMoistureColor: GetColor = (value: number) => {
   const maxValue = 900;
   if (value > maxValue) { return { rgb: "rgb(0, 0, 0)", a: 0 }; }
-  const normalizedValue = round(255 * value / maxValue);
-  const r = 255 - normalizedValue;
-  const g = 255 - normalizedValue;
+  const r = 0;
+  const g = 0;
   const b = 255;
-  const a = round(0 + 0.5 * value / maxValue, 2);
+  const a = round((0.75 * value / maxValue) ** 3, 2);
   return {
     rgb: `rgb(${r}, ${g}, ${b})`,
     a: a,

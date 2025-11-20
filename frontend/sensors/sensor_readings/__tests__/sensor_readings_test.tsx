@@ -1,3 +1,7 @@
+jest.mock("../../../api/crud", () => ({
+  destroy: jest.fn(),
+}));
+
 import React from "react";
 import { mount } from "enzyme";
 import moment from "moment";
@@ -7,6 +11,7 @@ import {
   fakeSensorReading, fakeSensor,
 } from "../../../__test_support__/fake_state/resources";
 import { fakeTimeSettings } from "../../../__test_support__/fake_time_settings";
+import { destroy } from "../../../api/crud";
 
 describe("<SensorReadings />", () => {
   const fakeProps = (): SensorReadingsProps => ({
@@ -97,5 +102,25 @@ describe("<SensorReadings />", () => {
     wrapper.instance().clearFilters();
     expect(wrapper.instance().state.xyzLocation).toEqual(undefined);
     expect(wrapper.instance().state.sensor).toEqual(undefined);
+  });
+
+  it("deletes selected readings", () => {
+    window.confirm = () => true;
+    const p = fakeProps();
+    const wrapper = mount<SensorReadings>(<SensorReadings {...p} />);
+    const reading = fakeSensorReading();
+    reading.uuid = "uuid0";
+    wrapper.instance().deleteSelected([reading])();
+    expect(destroy).toHaveBeenCalledWith("uuid0");
+  });
+
+  it("doesn't delete selected readings", () => {
+    window.confirm = () => false;
+    const p = fakeProps();
+    const wrapper = mount<SensorReadings>(<SensorReadings {...p} />);
+    const reading = fakeSensorReading();
+    reading.uuid = "uuid0";
+    wrapper.instance().deleteSelected([reading])();
+    expect(destroy).not.toHaveBeenCalled();
   });
 });

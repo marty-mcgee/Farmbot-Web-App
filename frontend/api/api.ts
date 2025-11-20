@@ -139,7 +139,7 @@ export class API {
   /** /api/firmware_config */
   get firmwareConfigPath() { return `${this.baseUrl}/api/firmware_config/`; }
   /** /api/sensor_readings */
-  get sensorReadingPath() { return `${this.baseUrl}/api/sensor_readings`; }
+  get sensorReadingPath() { return `${this.baseUrl}/api/sensor_readings/`; }
   /** /api/sensors/ */
   get sensorPath() { return `${this.baseUrl}/api/sensors/`; }
   /** /api/farmware_envs/:id */
