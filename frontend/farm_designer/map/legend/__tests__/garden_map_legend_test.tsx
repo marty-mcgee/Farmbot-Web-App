@@ -45,7 +45,6 @@ describe("<GardenMapLegend />", () => {
     showZones: false,
     showSensorReadings: false,
     showMoistureInterpolationMap: false,
-    hasSensorReadings: false,
     dispatch: jest.fn(),
     timeSettings: fakeTimeSettings(),
     getConfigValue: jest.fn(),
@@ -69,7 +68,6 @@ describe("<GardenMapLegend />", () => {
 
   it("renders with readings", () => {
     const p = fakeProps();
-    p.hasSensorReadings = true;
     const wrapper = mount(<GardenMapLegend {...p} />);
     expect(wrapper.text().toLowerCase()).toContain("readings");
   });

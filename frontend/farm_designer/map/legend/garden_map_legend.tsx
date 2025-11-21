@@ -203,18 +203,16 @@ const LayerToggles = (props: LayerTogglesProps) => {
       value={props.showZones}
       label={DeviceSetting.showAreas}
       onClick={toggle(BooleanSetting.show_zones)} />
-    {props.hasSensorReadings &&
-      <LayerToggle
-        settingName={BooleanSetting.show_sensor_readings}
-        value={props.showSensorReadings}
-        label={DeviceSetting.showReadings}
-        onClick={toggle(BooleanSetting.show_sensor_readings)} />}
-    {props.hasSensorReadings &&
-      <LayerToggle
-        settingName={BooleanSetting.show_moisture_interpolation_map}
-        value={props.showMoistureInterpolationMap}
-        label={DeviceSetting.showMoisture}
-        onClick={toggle(BooleanSetting.show_moisture_interpolation_map)} />}
+    <LayerToggle
+      settingName={BooleanSetting.show_sensor_readings}
+      value={props.showSensorReadings}
+      label={DeviceSetting.showReadings}
+      onClick={toggle(BooleanSetting.show_sensor_readings)} />
+    <LayerToggle
+      settingName={BooleanSetting.show_moisture_interpolation_map}
+      value={props.showMoistureInterpolationMap}
+      label={DeviceSetting.showMoisture}
+      onClick={toggle(BooleanSetting.show_moisture_interpolation_map)} />
   </div>;
 };
 

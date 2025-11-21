@@ -188,7 +188,6 @@ export class RawFarmDesigner
         showZones={show_zones}
         showSensorReadings={show_sensor_readings}
         showMoistureInterpolationMap={show_moisture_interpolation_map}
-        hasSensorReadings={this.props.sensorReadings.length > 0}
         dispatch={this.props.dispatch}
         timeSettings={this.props.timeSettings}
         getConfigValue={this.props.getConfigValue}

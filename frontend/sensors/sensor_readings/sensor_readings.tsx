@@ -15,6 +15,7 @@ import { SensorReadingsPlot } from "./graph";
 import { Position } from "@blueprintjs/core";
 import { AddSensorReadingMenu } from "./add_reading";
 import { destroy } from "../../api/crud";
+import { busy } from "../../toast/toast";
 
 export class SensorReadings
   extends React.Component<SensorReadingsProps, SensorReadingsState> {
@@ -51,7 +52,10 @@ export class SensorReadings
     if (!confirm(t("Delete {{count}} sensor readings?", {
       count: readings.length,
     }))) { return; }
-    readings.map(reading => this.props.dispatch(destroy(reading.uuid)));
+    busy(t("Deleting {{count}} sensor readings...", { count: readings.length }));
+    readings.map((reading, index) => {
+      setTimeout(() => this.props.dispatch(destroy(reading.uuid)), index * 250);
+    });
   };
 
   toggleAddReadingMenu = () => {
