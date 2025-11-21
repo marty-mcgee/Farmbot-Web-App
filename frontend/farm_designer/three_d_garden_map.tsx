@@ -7,8 +7,9 @@ import {
 import { clone } from "lodash";
 import { BotPosition, SourceFbosConfig } from "../devices/interfaces";
 import {
-  ConfigurationName, TaggedCurve, TaggedGenericPointer, TaggedImage, TaggedPoint,
-  TaggedPointGroup, TaggedWeedPointer,
+  ConfigurationName, TaggedCurve, TaggedFarmwareEnv, TaggedGenericPointer,
+  TaggedImage, TaggedPoint,
+  TaggedPointGroup, TaggedSensor, TaggedSensorReading, TaggedWeedPointer,
 } from "farmbot";
 import { CameraCalibrationData, DesignerState } from "./interfaces";
 import { GetWebAppConfigValue } from "../config_storage/actions";
@@ -22,6 +23,7 @@ import { DeviceAccountSettings } from "farmbot/dist/resources/api_resources";
 import { SCENES } from "../settings/three_d_settings";
 import { get3DTime, latLng } from "../three_d_garden/time_travel";
 import { parseCalibrationData } from "./map/layers/images/map_image";
+import { fetchInterpolationOptions } from "./map/layers/points/interpolation_map";
 
 export interface ThreeDGardenMapProps {
   botSize: BotSize;
@@ -45,7 +47,10 @@ export interface ThreeDGardenMapProps {
   allPoints: TaggedPoint[];
   groups: TaggedPointGroup[];
   images: TaggedImage[];
+  sensorReadings: TaggedSensorReading[];
+  sensors: TaggedSensor[];
   cameraCalibrationData: CameraCalibrationData;
+  farmwareEnvs: TaggedFarmwareEnv[];
 }
 
 export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
@@ -104,7 +109,8 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.eventDebug = !!getValue("eventDebug");
   config.cableDebug = !!getValue("cableDebug");
   config.lightsDebug = !!getValue("lightsDebug");
-  config.surfaceDebug = !!getValue("surfaceDebug");
+  config.moistureDebug = !!getValue("moistureDebug");
+  config.surfaceDebug = getValue("surfaceDebug");
   config.sun = getValue("sun");
   config.ambient = getValue("ambient");
   config.heading = getValue("heading");
@@ -159,6 +165,11 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
   config.imgCenterX = camCalData.centerX;
   config.imgCenterY = camCalData.centerY;
 
+  const options = fetchInterpolationOptions(props.farmwareEnvs);
+  config.interpolationStepSize = options.stepSize;
+  config.interpolationUseNearest = options.useNearest;
+  config.interpolationPower = options.power;
+
   config.zoom = true;
   config.pan = true;
   config.rotate = !props.designer.threeDTopDownView;
@@ -176,6 +187,8 @@ export const ThreeDGardenMap = (props: ThreeDGardenMapProps) => {
     allPoints={props.allPoints}
     groups={props.groups}
     images={props.images}
+    sensorReadings={props.sensorReadings}
+    sensors={props.sensors}
     addPlantProps={{
       gridSize: props.mapTransformProps.gridSize,
       dispatch: props.dispatch,

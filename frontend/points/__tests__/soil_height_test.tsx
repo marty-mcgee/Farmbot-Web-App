@@ -42,7 +42,7 @@ describe("getSoilHeightColor()", () => {
     tagAsSoilHeight(point1);
     point1.body.z = 100;
     const getColor = getSoilHeightColor([point0, point1]);
-    expect(getColor(50)).toEqual("rgb(128, 128, 128)");
+    expect(getColor(50).rgb).toEqual("rgb(128, 128, 128)");
   });
 });
 

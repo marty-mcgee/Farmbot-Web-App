@@ -40,6 +40,7 @@ import { pointGroupSubset } from "../plants/select_plants";
 import { Path } from "../internal_urls";
 import { deleteAllIds } from "../api/delete_points_handler";
 import { NavigationContext } from "../routes_helpers";
+import { GetColor } from "../farm_designer/map/layers/points/interpolation_map";
 
 interface PointsSectionProps {
   title: string;
@@ -52,7 +53,7 @@ interface PointsSectionProps {
   hoveredPoint: UUID | undefined;
   dispatch: Function;
   metaQuery: Record<string, string>;
-  getColorOverride?(z: number): string;
+  getColorOverride?: GetColor;
   averageZ?: number;
   sourceFbosConfig?: SourceFbosConfig;
 }
@@ -89,7 +90,7 @@ const PointsSection = (props: PointsSectionProps) => {
       {genericPoints.map(p => <PointInventoryItem
         key={p.uuid}
         tpp={p}
-        colorOverride={props.getColorOverride?.(p.body.z)}
+        colorOverride={props.getColorOverride?.(p.body.z).rgb}
         hovered={props.hoveredPoint === p.uuid}
         dispatch={dispatch} />)}
     </Collapse>

@@ -59,7 +59,7 @@ export const getSafeZ = (): number => {
 
 export const getSoilHeight = (x: number, y: number): number => {
   const triangles = JSON.parse(
-    sessionStorage.getItem("triangles") || "[]") as TriangleData[];
+    sessionStorage.getItem("soilSurfaceTriangles") || "[]") as TriangleData[];
   const getZ = getZFunc(triangles, -500);
   return getZ(x, y);
 };

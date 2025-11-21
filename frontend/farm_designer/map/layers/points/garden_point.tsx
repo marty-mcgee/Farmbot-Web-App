@@ -46,7 +46,7 @@ export const GardenPoint = (props: GardenPointProps) => {
     {props.soilHeightLabels && soilHeightPoint(point) &&
       <text x={qx} y={qy}
         fontSize={40} fontWeight={"bold"}
-        fill={props.getSoilHeightColor(z)} fillOpacity={1}
+        fill={props.getSoilHeightColor(z).rgb} fillOpacity={1}
         stroke={hovered ? Color.orange : Color.black}
         strokeOpacity={1}
         strokeWidth={hovered ? 10 : 4}

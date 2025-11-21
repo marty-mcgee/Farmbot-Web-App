@@ -3,7 +3,7 @@ import {
   TaggedFarmwareEnv,
   TaggedGenericPointer, TaggedPoint, TaggedSensorReading, Xyz,
 } from "farmbot";
-import { MapTransformProps } from "../../interfaces";
+import { AxisNumberProperty, MapTransformProps } from "../../interfaces";
 import { transformXY } from "../../util";
 import { isUndefined, range, round, sum } from "lodash";
 import { distance, findNearest } from "../../../../point_groups/other_sort_methods";
@@ -15,6 +15,8 @@ import {
   getModifiedClassNameSpecifyDefault,
 } from "../../../../settings/default_values";
 import { SaveFarmwareEnv } from "../../../../farmware/interfaces";
+
+export type GetColor = (z: number) => { rgb: string, a: number };
 
 export enum InterpolationKey {
   data = "interpolationData",
@@ -80,8 +82,8 @@ export const getZAtLocation =
 interface GenerateInterpolationMapDataProps {
   kind: "Point" | "SensorReading";
   points: (TaggedGenericPointer | TaggedSensorReading)[];
-  mapTransformProps: MapTransformProps;
-  getColor(z: number): string;
+  gridSize: AxisNumberProperty;
+  getColor: GetColor;
   options: InterpolationOptions;
 }
 
@@ -104,10 +106,10 @@ const convertToPointObject =
 
 export const generateData = (props: GenerateInterpolationMapDataProps) => {
   const points = selectMostRecentPoints(props.points);
-  const { gridSize } = props.mapTransformProps;
+  const { gridSize } = props;
   const { stepSize } = props.options;
   const hash = [
-    JSON.stringify(points),
+    JSON.stringify(points.map(p => p.uuid)),
     JSON.stringify(gridSize),
     JSON.stringify(props.options),
   ].join("");
@@ -160,7 +162,7 @@ interface InterpolationMapProps {
   kind: "Point" | "SensorReading";
   points: (TaggedGenericPointer | TaggedSensorReading)[];
   mapTransformProps: MapTransformProps;
-  getColor(z: number): string;
+  getColor: GetColor;
   options: InterpolationOptions;
 }
 
@@ -174,11 +176,12 @@ export const InterpolationMap = (props: InterpolationMapProps) => {
         const { quadrant } = props.mapTransformProps;
         const xOffset = [1, 4].includes(quadrant);
         const yOffset = [3, 4].includes(quadrant);
+        const colorInfo = props.getColor(z);
         return <rect key={`${x}-${y}`}
           x={qx - (xOffset ? step : 0)}
           y={qy - (yOffset ? step : 0)}
           width={step} height={step}
-          fill={props.getColor(z)} fillOpacity={0.75} />;
+          fill={colorInfo.rgb} fillOpacity={colorInfo.a} />;
       })}
     </g>
   </g>;

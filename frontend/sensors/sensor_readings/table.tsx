@@ -5,13 +5,15 @@ import { SensorReadingsTableProps, TableRowProps } from "./interfaces";
 import { xyzTableEntry } from "../../logs/components/logs_table";
 import { formatTime } from "../../util";
 import { isUndefined, round } from "lodash";
+import { destroy } from "../../api/crud";
 
 enum TableColWidth {
-  sensor = 125,
-  value = 50,
+  sensor = 120,
+  value = 40,
   mode = 50,
-  location = 110,
-  date = 100,
+  location = 100,
+  date = 95,
+  bin = 30,
 }
 
 /** Separated to allow frozen header row while scrolling table body. */
@@ -42,6 +44,11 @@ export const TableHeader = () =>
         <th style={{ width: `${TableColWidth.date}px` }}>
           <label>
             {t("Time")}
+          </label>
+        </th>
+        <th style={{ width: `${TableColWidth.bin}px` }}>
+          <label>
+            {""}
           </label>
         </th>
       </tr>
@@ -75,6 +82,11 @@ export const TableRow = (props: TableRowProps) => {
     <td style={{ width: `${TableColWidth.date}px` }}>
       {formatTime(moment(read_at), timeSettings, "MMM D")}
     </td>
+    <td style={{ width: `${TableColWidth.bin}px` }}>
+      <i className={"fa fa-trash fb-icon-button invert"}
+        title={t("Delete reading")}
+        onClick={() => props.dispatch(destroy(uuid))} />
+    </td>
   </tr>;
 };
 
@@ -97,6 +109,7 @@ export class SensorReadingsTable
                 const sensorName = `${sensorNameByPinLookup[pin]} (pin ${pin})`;
                 return <TableRow
                   key={sensorReading.uuid}
+                  dispatch={this.props.dispatch}
                   sensorName={sensorName}
                   sensorReading={sensorReading}
                   timeSettings={this.props.timeSettings}

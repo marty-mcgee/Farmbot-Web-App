@@ -447,7 +447,10 @@ export function readPin(
   pin_number: number, label: string, pin_mode: ALLOWED_PIN_MODES,
 ) {
   const noun = t("Read pin");
-  maybeNoop();
+  if (forceOnline()) {
+    runDemoLuaCode(`read_pin(${pin_number})`);
+    return;
+  }
   return getDevice()
     .readPin({ pin_number, label, pin_mode })
     .then(maybeNoop, commandErr(noun));

@@ -34,6 +34,7 @@ export interface SensorReadingsTableProps {
   /** TaggedSensorReading UUID */
   hovered: string | undefined;
   hover: (hovered: string | undefined) => void;
+  dispatch: Function;
 }
 
 export interface TableRowProps {
@@ -46,6 +47,7 @@ export interface TableRowProps {
   hover: (hovered: string | undefined) => void;
   hideLocation?: boolean;
   distance?: number;
+  dispatch: Function;
 }
 
 export interface SensorSelectionProps {

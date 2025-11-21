@@ -45,7 +45,10 @@ export const getSoilHeightColor =
     const max = Math.max(...soilHeights);
     return (z: number) => {
       const normalizedZ = round(255 * (max > min ? (z - min) / (max - min) : 1));
-      return `rgb(${normalizedZ}, ${normalizedZ}, ${normalizedZ})`;
+      return {
+        rgb: `rgb(${normalizedZ}, ${normalizedZ}, ${normalizedZ})`,
+        a: 1,
+      };
     };
   };
 

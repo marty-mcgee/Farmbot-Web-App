@@ -10,7 +10,9 @@ import * as THREE from "three";
 import React, { ReactNode } from "react";
 import { TransitionFn, UseSpringProps } from "@react-spring/three";
 import { ThreeElements, ThreeEvent } from "@react-three/fiber";
-import { Cloud, Clouds, Image, Plane, Trail, Tube } from "@react-three/drei";
+import {
+  Cloud, Clouds, Image, Instance, Instances, Plane, Trail, Tube,
+} from "@react-three/drei";
 
 const GroupForTests = (props: ThreeElements["group"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
@@ -47,6 +49,13 @@ jest.mock("../three_d_garden/components", () => ({
     props.visible === false
       ? <></>
       : <GroupForTests {...props} />,
+  MeshBasicMaterial: (props: THREE.MeshBasicMaterial) => {
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+    props.onBeforeCompile?.({} as any, {} as any);
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    return <div {...props} />;
+  },
 }));
 
 jest.mock("three/examples/jsm/Addons.js", () => ({
@@ -64,6 +73,7 @@ jest.mock("@react-three/fiber", () => ({
     pointer: { x: 0, y: 0 },
     camera: new THREE.PerspectiveCamera(),
   })),
+  extend: jest.fn(),
 }));
 
 jest.mock("@react-spring/three", () => ({
@@ -559,6 +569,11 @@ jest.mock("@react-three/drei", () => {
   return {
     ...jest.requireActual("@react-three/drei"),
     useGLTF,
+    shaderMaterial: jest.fn(),
+    Instances: (props: React.ComponentProps<typeof Instances>) =>
+      <div className={"instances"}>{props.children}</div>,
+    Instance: (props: React.ComponentProps<typeof Instance>) =>
+      <div className={"instance"}>{props.name}</div>,
     RoundedBox: ({ name }: { name: string }) =>
       <div className={"cylinder"}>{name}</div>,
     Plane: (props: React.ComponentProps<typeof Plane>) =>

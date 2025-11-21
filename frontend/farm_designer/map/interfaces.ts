@@ -17,6 +17,7 @@ import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { TimeSettings } from "../../interfaces";
 import { UUID } from "../../resources/interfaces";
 import { PeripheralValues } from "./layers/farmbot/bot_trail";
+import { GetColor } from "./layers/points/interpolation_map";
 
 export type TaggedPlant = TaggedPlantPointer | TaggedPlantTemplate;
 
@@ -52,7 +53,6 @@ export interface GardenMapLegendProps {
   showZones: boolean;
   showSensorReadings: boolean;
   showMoistureInterpolationMap: boolean;
-  hasSensorReadings: boolean;
   dispatch: Function;
   timeSettings: TimeSettings;
   getConfigValue: GetWebAppConfigValue;
@@ -67,8 +67,8 @@ export interface GardenMapLegendProps {
 }
 
 export type MapTransformProps = {
-  quadrant: BotOriginQuadrant,
-  gridSize: AxisNumberProperty
+  quadrant: BotOriginQuadrant;
+  gridSize: AxisNumberProperty;
   xySwap: boolean;
 };
 
@@ -103,7 +103,7 @@ export interface GardenPointProps {
   hovered: boolean;
   dispatch: Function;
   soilHeightLabels: boolean;
-  getSoilHeightColor(z: number): string;
+  getSoilHeightColor: GetColor;
   animate: boolean;
 }
 

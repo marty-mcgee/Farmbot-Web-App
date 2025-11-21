@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  getMoistureColor,
   SensorReadingsLayer, SensorReadingsLayerProps,
 } from "../sensor_readings_layer";
 import {
@@ -48,7 +49,7 @@ describe("<SensorReadingsLayer />", () => {
     p.sensorReadings[0].body.mode = ANALOG;
     const reading = fakeSensorReading();
     reading.body.mode = ANALOG;
-    reading.body.value = 1000;
+    reading.body.value = 800;
     reading.body.x = 100;
     reading.body.y = 200;
     p.sensorReadings.push(reading);
@@ -56,5 +57,19 @@ describe("<SensorReadingsLayer />", () => {
     const layer = wrapper.find("#sensor-readings-layer");
     expect(layer.find("#interpolation-map").length).toEqual(1);
     expect(layer.find("rect").length).toEqual(1800);
+  });
+});
+
+describe("getMoistureColor()", () => {
+  it.each<[number, string, number]>([
+    [0, "rgb(0, 0, 255)", 0],
+    [200, "rgb(0, 0, 255)", 0],
+    [700, "rgb(0, 0, 255)", 0.2],
+    [900, "rgb(0, 0, 255)", 0.42],
+    [1024, "rgb(0, 0, 0)", 0],
+  ])("returns color for %s: %s %s", (value, color, alpha) => {
+    const c = getMoistureColor(value);
+    expect(c.rgb).toEqual(color);
+    expect(c.a).toEqual(alpha);
   });
 });

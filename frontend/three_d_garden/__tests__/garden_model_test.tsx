@@ -9,10 +9,10 @@ import React from "react";
 import { mount } from "enzyme";
 import { GardenModelProps, GardenModel } from "../garden_model";
 import { clone } from "lodash";
-import { INITIAL } from "../config";
+import { INITIAL, SurfaceDebugOption } from "../config";
 import { render, screen } from "@testing-library/react";
 import {
-  fakePlant, fakePoint, fakeWeed,
+  fakePlant, fakePoint, fakeSensor, fakeSensorReading, fakeWeed,
 } from "../../__test_support__/fake_state/resources";
 import { fakeAddPlantProps } from "../../__test_support__/fake_props";
 import { ASSETS } from "../constants";
@@ -108,12 +108,48 @@ describe("<GardenModel />", () => {
     p.config.viewCube = true;
     p.config.lab = true;
     p.config.lightsDebug = true;
-    p.config.surfaceDebug = true;
+    p.config.surfaceDebug = SurfaceDebugOption.normals;
+    p.config.moistureDebug = true;
     p.activeFocus = "plant";
     p.addPlantProps = undefined;
     const { container } = render(<GardenModel {...p} />);
     expect(container).toContainHTML("gray");
     expect(container).toContainHTML("stats");
+  });
+
+  it("renders debug options", () => {
+    mockIsDesktop = false;
+    const p = fakeProps();
+    const sensor = fakeSensor();
+    sensor.body.id = 1;
+    sensor.body.label = "soil moisture";
+    p.sensors = [sensor];
+    const reading0 = fakeSensorReading();
+    reading0.body.pin = 1;
+    reading0.body.x = 100;
+    reading0.body.y = 100;
+    reading0.body.z = 100;
+    reading0.body.value = 1000;
+    const reading1 = fakeSensorReading();
+    reading1.body.pin = 1;
+    reading1.body.x = 0;
+    reading1.body.y = 0;
+    reading1.body.z = 0;
+    reading1.body.value = 1000;
+    p.sensorReadings = [reading0, reading1];
+    p.config.surfaceDebug = SurfaceDebugOption.height;
+    p.config.moistureDebug = true;
+    const { container } = render(<GardenModel {...p} />);
+    expect(container).toContainHTML("gray");
+  });
+
+  it("renders without sensor readings", () => {
+    mockIsDesktop = false;
+    const p = fakeProps();
+    p.sensorReadings = undefined;
+    p.config.moistureDebug = true;
+    const { container } = render(<GardenModel {...p} />);
+    expect(container).toContainHTML("gray");
   });
 
   it("sets hover", () => {

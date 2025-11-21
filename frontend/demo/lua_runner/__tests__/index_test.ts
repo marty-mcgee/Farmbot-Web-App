@@ -1410,6 +1410,15 @@ describe("runDemoLuaCode()", () => {
     expect(error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("0");
     expect(info).not.toHaveBeenCalled();
+    expect(initSave).toHaveBeenCalledWith("SensorReading", {
+      pin: 5,
+      mode: 1,
+      x: 1,
+      y: 2,
+      z: 0,
+      value: 0,
+      read_at: expect.any(String),
+    });
   });
 
   it("runs move_relative", () => {

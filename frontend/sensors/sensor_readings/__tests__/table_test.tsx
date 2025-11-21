@@ -1,3 +1,7 @@
+jest.mock("../../../api/crud", () => ({
+  destroy: jest.fn(),
+}));
+
 import React from "react";
 import { mount } from "enzyme";
 import { SensorReadingsTable } from "../table";
@@ -6,6 +10,7 @@ import {
   fakeSensorReading, fakeSensor,
 } from "../../../__test_support__/fake_state/resources";
 import { fakeTimeSettings } from "../../../__test_support__/fake_time_settings";
+import { destroy } from "../../../api/crud";
 
 describe("<SensorReadingsTable />", () => {
   const fakeProps = (sr = fakeSensorReading()): SensorReadingsTableProps => ({
@@ -14,6 +19,7 @@ describe("<SensorReadingsTable />", () => {
     timeSettings: fakeTimeSettings(),
     hover: jest.fn(),
     hovered: undefined,
+    dispatch: jest.fn(),
   });
 
   it("renders", () => {
@@ -67,5 +73,15 @@ describe("<SensorReadingsTable />", () => {
     p.hovered = sr.uuid;
     const wrapper = mount(<SensorReadingsTable {...p} />);
     expect(wrapper.find("tr").last().hasClass("selected")).toEqual(true);
+  });
+
+  it("deletes reading", () => {
+    const sr = fakeSensorReading();
+    const p = fakeProps(sr);
+    p.hovered = sr.uuid;
+    const wrapper = mount(<SensorReadingsTable {...p} />);
+    expect(wrapper.find("tr").last().hasClass("selected")).toEqual(true);
+    wrapper.find(".fa-trash").first().simulate("click");
+    expect(destroy).toHaveBeenCalledWith(sr.uuid);
   });
 });

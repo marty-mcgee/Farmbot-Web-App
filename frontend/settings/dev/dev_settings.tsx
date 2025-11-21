@@ -2,6 +2,9 @@ import React from "react";
 import { Row, BlurableInput, ToggleButton } from "../../ui";
 import { DevSettings } from "./dev_support";
 import { store } from "../../redux/store";
+import { INITIAL } from "../../three_d_garden/config";
+import { edit, initSave, save } from "../../api/crud";
+import { selectAllFarmwareEnvs } from "../../resources/selectors_by_kind";
 
 export const DevWidgetFERow = () =>
   <Row className="grid-exp-1">
@@ -102,6 +105,35 @@ export const DevWidgetChunkingDisabledRow = () =>
         : () => localStorage.setItem("DISABLE_CHUNKING", "true")} />
   </Row>;
 
+export const Dev3dDebugSettings = () => {
+  const dispatch = store.dispatch as Function;
+  const farmwareEnvs = selectAllFarmwareEnvs(store.getState().resources.index);
+  return <>
+    {Object.keys(INITIAL)
+      .filter(key => key.includes("Debug"))
+      .map(key => "3D_" + key)
+      .map(key => {
+        const farmwareEnv = farmwareEnvs.filter(e => e.body.key == key)[0];
+        const value = farmwareEnv?.body.value ? 1 : 0;
+        return <Row key={key} className="grid-exp-1">
+          <label style={{ textTransform: "none" }}>
+            {key}
+          </label>
+          <ToggleButton
+            toggleValue={!!value}
+            toggleAction={() => {
+              if (farmwareEnv) {
+                dispatch(edit(farmwareEnv, { value: value == 0 ? 1 : 0 }));
+                dispatch(save(farmwareEnv.uuid));
+              } else {
+                dispatch(initSave("FarmwareEnv", { key, value: 1 }));
+              }
+            }} />
+        </Row>;
+      })}
+  </>;
+};
+
 export const DevSettingsRows = () =>
   <div className={"dev-settings-rows grid"}>
     <DevWidgetFERow />
@@ -111,5 +143,6 @@ export const DevSettingsRows = () =>
     <DevWidgetFBOSRow />
     <DevWidgetAllOrderOptionsRow />
     <DevWidgetChunkingDisabledRow />
+    <Dev3dDebugSettings />
     <p>Demo Queue Length: {store.getState().bot.demoQueueLength}</p>
   </div>;

@@ -1,5 +1,5 @@
 import React from "react";
-import { TaggedImage } from "farmbot";
+import { TaggedImage, TaggedSensor, TaggedSensorReading } from "farmbot";
 import { Config } from "../config";
 import { isNumber } from "lodash";
 import {
@@ -9,7 +9,7 @@ import { DoubleSide } from "three";
 import { ASSETS } from "../constants";
 import { MeshBasicMaterial } from "../components";
 import { soilSurfaceExtents } from "../triangles";
-import { getColorFromBrightness } from "../helpers";
+import { getColorFromBrightness, zZero } from "../helpers";
 import {
   filterImages, TaggedImagePlus,
 } from "../../farm_designer/map/layers/images/image_layer";
@@ -17,6 +17,7 @@ import { AddPlantProps } from "../bed";
 import { BooleanSetting } from "../../session_keys";
 import { imageSizeCheck } from "../../farm_designer/map/layers/images/map_image";
 import { forceOnline } from "../../devices/must_be_online";
+import { MoistureSurface } from "./moisture_texture";
 
 interface BaseProps {
   config: Config;
@@ -28,12 +29,17 @@ interface BaseProps {
 export interface ImageTextureProps extends BaseProps {
   images?: TaggedImage[];
   addPlantProps?: AddPlantProps;
+  sensors: TaggedSensor[];
+  sensorReadings: TaggedSensorReading[];
+  showMoistureReadings: boolean;
+  showMoistureMap: boolean;
 }
 
 export const ImageTexture = (props: ImageTextureProps) => {
   const extents = soilSurfaceExtents(props.config);
   const width = extents.x.max - extents.x.min;
   const height = extents.y.max - extents.y.min;
+  const { bedXOffset, bedYOffset, bedWallThickness } = props.config;
   const soilTexture = useTexture(ASSETS.textures.soil + "?=soilT");
   const color = getColorFromBrightness(props.config.soilBrightness);
   const { addPlantProps, images } = props;
@@ -54,16 +60,24 @@ export const ImageTexture = (props: ImageTextureProps) => {
     ({ children, z }: { z: number, children: React.ReactNode }) =>
       <Plane
         args={[width, height]}
-        position={[width / 2, height / 2, z]}
-        scale={[1, -1, 1]}>
+        position={[
+          bedWallThickness + width / 2,
+          bedWallThickness + height / 2,
+          z,
+        ]}
+        scale={[1, 1, 1]}>
         {children}
       </Plane>;
   return <RenderTexture attach={"map"} width={width} height={height}>
     <OrthographicCamera makeDefault near={10} far={10000}
-      left={0} right={width} top={height} bottom={0}
-      position={[0, 0, 1000]}
+      left={extents.x.min}
+      right={extents.x.max}
+      top={extents.y.min}
+      bottom={extents.y.max}
+      position={[bedXOffset, bedYOffset, 4000]}
       rotation={[0, 0, 0]}
       zoom={1}
+      scale={[1, 1, 1]}
       up={[0, 0, 1]} />
     <PlaneWrapper z={0}>
       <MeshBasicMaterial side={DoubleSide} color={color} map={soilTexture} />
@@ -78,6 +92,20 @@ export const ImageTexture = (props: ImageTextureProps) => {
         <MeshBasicMaterial opacity={0} transparent={true} />
         <Images {...props} images={lastImageArray} />
       </PlaneWrapper>}
+    <MoistureSurface
+      config={props.config}
+      color={"black"}
+      radius={10}
+      sensors={props.sensors}
+      sensorReadings={props.sensorReadings}
+      showMoistureReadings={props.showMoistureReadings}
+      showMoistureMap={props.showMoistureMap}
+      position={[
+        props.config.bedXOffset,
+        props.config.bedYOffset,
+        zZero(props.config),
+      ]}
+      readingZOverride={2000} />
   </RenderTexture>;
 };
 

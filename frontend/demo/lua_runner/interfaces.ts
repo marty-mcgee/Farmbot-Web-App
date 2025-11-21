@@ -8,6 +8,8 @@ export interface Action {
     | "move"
     | "_move"
     | "toggle_pin"
+    | "read_pin"
+    | "sensor_reading"
     | "emergency_lock"
     | "emergency_unlock"
     | "find_home"

@@ -35,6 +35,9 @@ interface MockXCrosshairRefCurrent {
 interface MockYCrosshairRefCurrent {
   position: { set: Function; };
 }
+interface MockInstancesRefCurrent {
+  geometry: { setAttribute: Function; };
+}
 interface MockPlantRef {
   current: MockPlantRefCurrent | undefined;
 }
@@ -56,6 +59,9 @@ interface MockXCrosshairRef {
 interface MockYCrosshairRef {
   current: MockYCrosshairRefCurrent | undefined;
 }
+interface MockInstancesRef {
+  current: MockInstancesRefCurrent | undefined;
+}
 const mockPlantRef: MockPlantRef = { current: undefined };
 const mockRadiusRef: MockRadiusRef = { current: undefined };
 const mockTorusRef: MockTorusRef = { current: undefined };
@@ -63,6 +69,8 @@ const mockBillboardRef: MockBillboardRef = { current: undefined };
 const mockImageRef: MockImageRef = { current: undefined };
 const mockXCrosshairRef: MockXCrosshairRef = { current: undefined };
 const mockYCrosshairRef: MockYCrosshairRef = { current: undefined };
+const mockInstancesRef: MockInstancesRef =
+  { current: { geometry: { setAttribute: jest.fn() } } };
 jest.mock("react", () => ({
   ...jest.requireActual("react"),
   useRef: jest.fn(),
@@ -92,15 +100,20 @@ describe("<Bed />", () => {
       .mockImplementationOnce(() => mockBillboardRef)
       .mockImplementationOnce(() => mockImageRef)
       .mockImplementationOnce(() => mockXCrosshairRef)
-      .mockImplementationOnce(() => mockYCrosshairRef);
+      .mockImplementationOnce(() => mockYCrosshairRef)
+      .mockImplementation(() => mockInstancesRef);
   });
 
   const fakeProps = (): BedProps => ({
     config: clone(INITIAL),
     activeFocus: "",
     mapPoints: [],
-    geometry: new BufferGeometry(),
+    soilSurfaceGeometry: new BufferGeometry(),
     getZ: () => 0,
+    showMoistureMap: true,
+    sensors: [],
+    sensorReadings: [],
+    showMoistureReadings: true,
   });
 
   it("renders bed", () => {
@@ -244,6 +257,7 @@ describe("<Bed />", () => {
     mockPlantRef.current = undefined;
     mockXCrosshairRef.current = undefined;
     mockYCrosshairRef.current = undefined;
+    mockInstancesRef.current = undefined;
     const p = fakeProps();
     p.addPlantProps = fakeAddPlantProps();
     render(<Bed {...p} />);

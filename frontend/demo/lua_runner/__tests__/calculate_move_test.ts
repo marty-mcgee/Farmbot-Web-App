@@ -420,7 +420,7 @@ describe("calculateMove()", () => {
   });
 
   it("handles soil height z axis overwrite: triangle data", () => {
-    sessionStorage.setItem("triangles", "[\"foo\"]");
+    sessionStorage.setItem("soilSurfaceTriangles", "[\"foo\"]");
     const command: Move = {
       kind: "move",
       args: {},

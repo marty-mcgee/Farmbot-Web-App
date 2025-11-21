@@ -536,6 +536,7 @@ export const runLua =
         jsToLua(L, toolMounted ? 0 : 1);
         return 1;
       }
+      actions.push({ type: "read_pin", args: [pin] });
       jsToLua(L, 0);
       return 1;
     });

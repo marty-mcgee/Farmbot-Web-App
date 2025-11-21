@@ -28,7 +28,7 @@ describe("<GardenPoint/>", () => {
     cropPhotos: false,
     showUncroppedArea: false,
     soilHeightLabels: false,
-    getSoilHeightColor: () => "rgb(128, 128, 128)",
+    getSoilHeightColor: () => ({ rgb: "rgb(128, 128, 128)", a: 1 }),
     current: false,
     animate: false,
   });
@@ -125,7 +125,7 @@ describe("<GardenPoint/>", () => {
     const wrapper = svgMount(<GardenPoint {...p} />);
     expect(wrapper.text()).toContain("-100");
     expect(wrapper.find("text").first().props().fill)
-      .toEqual(p.getSoilHeightColor(-100));
+      .toEqual(p.getSoilHeightColor(-100).rgb);
     expect(wrapper.find("text").first().props().stroke).toEqual(Color.black);
   });
 
