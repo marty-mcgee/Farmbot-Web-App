@@ -2,11 +2,11 @@
 # `Authorization` header, or used a password to gain access to the MQTT server.
 class SessionToken < AbstractJwtToken
   MUST_VERIFY = "Verify account first"
-  MQTT = ENV.fetch("MQTT_HOST2")
+  MQTT = ENV.fetch("MQTT_HOST")
   # If you are not using the standard MQTT broker (eg: you use a 3rd party
   # MQTT vendor), you will need to change this line.
   DEFAULT_MQTT_WS =
-    "#{ENV["FORCE_SSL"] ? "wss://" : "ws://"}#{ENV.fetch("MQTT_HOST2")}:3002/ws"
+    "#{ENV["FORCE_SSL"] ? "wss://" : "ws://"}#{ENV.fetch("MQTT_HOST")}:3002/ws"
   MQTT_WS = ENV["MQTT_WS"] || DEFAULT_MQTT_WS
   EXPIRY = 60.days
   VHOST = ENV.fetch("MQTT_VHOST") { "/" }

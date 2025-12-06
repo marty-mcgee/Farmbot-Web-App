@@ -80,7 +80,7 @@ module FarmBot
       config.referrer_policy =
         %w(origin-when-cross-origin strict-origin-when-cross-origin)
       connect_src = ALL_LOCAL_URIS + [
-        ENV["MQTT_HOST2"],
+        ENV["MQTT_HOST"],
         "api.github.com",
         "raw.githubusercontent.com",
         "api.rollbar.com",
