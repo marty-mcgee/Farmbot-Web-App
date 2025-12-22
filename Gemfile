@@ -50,6 +50,7 @@ group :development, :test do
   gem "webmock"
 end
 
-gem "passenger"
+# gem "passenger"
+gem "puma"
 
-gem 'dotenv-rails', '~> 3.2'
+gem "dotenv-rails", "~> 3.2"
