@@ -1,7 +1,18 @@
 source "https://rubygems.org"
 ruby "~> 3.4.7"
 
+# MM
+
 gem "rails", "~> 6"
+gem "rake"
+
+# gem "passenger"
+gem "puma"
+
+gem "dotenv-rails", "~> 3.2"
+
+# MM
+
 gem "active_model_serializers"
 gem "bunny"
 gem "delayed_job_active_record"
@@ -49,8 +60,3 @@ group :development, :test do
   gem "simplecov-cobertura"
   gem "webmock"
 end
-
-# gem "passenger"
-gem "puma"
-
-gem "dotenv-rails", "~> 3.2"
