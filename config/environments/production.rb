@@ -12,9 +12,9 @@ FarmBot::Application.configure do
   config.log_formatter               = ::Logger::Formatter.new
   config.log_level                   = :info
   config.perform_caching             = false
-  config.public_file_server.enabled  = false
+  config.public_file_server.enabled  = true # MM false
   config.serve_static_assets         = true
-  config.assets.compile              = false
+  config.assets.compile              = true # MM false
   # config.assets.digest               = true # MM
   # HACK AHEAD! Here's why:
   # 1. FarmBot Inc. Uses Sendgrid for email.
