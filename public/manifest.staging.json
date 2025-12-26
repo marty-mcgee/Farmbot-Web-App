@@ -1,6 +1,6 @@
 {
-  "name": "FarmBot Staging",
-  "short_name": "FarmBot",
+  "name": "ThreeD.Bot Staging",
+  "short_name": "ThreeD.Bot",
   "icons": [
     {
       "src": "/images/pwa_icon_staging.png",
@@ -12,7 +12,7 @@
   "background_color": "#0c170f",
   "start_url": "/",
   "display": "standalone",
-  "description": "Setup, customize, and control your garden from anywhere",
+  "description": "Setup, customize, and control your FarmBot from anywhere",
   "categories": ["utilities", "food", "education"],
   "screenshots": [
     {
