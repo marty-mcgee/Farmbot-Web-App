@@ -133,6 +133,7 @@ module FarmBot
           "'unsafe-eval'",
           "'self'",
           "blob:", # 3D
+          "threed.bot", # MM
         ],
         style_src: %w(
           fonts.gstatic.com
