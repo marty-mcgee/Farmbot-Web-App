@@ -32,25 +32,25 @@ FarmBot::Application.configure do
                                          password:  pw }
 
 
-  # [MM] support GLB|FBX files
-  # config/environments/production.rb
-  # Increase max file size for static files (default is 1MB)
-  # config.public_file_server.max_age = 86_400 ???
-  config.middleware.use Rack::Deflater
+  # # [MM] support GLB|FBX files
+  # # config/environments/production.rb
+  # # Increase max file size for static files (default is 1MB)
+  # # config.public_file_server.max_age = 86_400 ???
+  # config.middleware.use Rack::Deflater
 
-  # If using Action Dispatch static
-  config.middleware.insert_before(
-    ActionDispatch::Static,
-    Rack::Static,
-    urls: [''], 
-    root: 'public',
-    index: 'index',
-    header_rules: [
-      # Serve GLB files with correct headers
-      [:all, { 'Cache-Control' => 'public, max-age=86400' }],
-      [%w[glb fbx obj stl], { 'Content-Type' => 'application/octet-stream' }]
-    ]
-  )
+  # # If using Action Dispatch static
+  # config.middleware.insert_before(
+  #   ActionDispatch::Static,
+  #   Rack::Static,
+  #   urls: [''], 
+  #   root: 'public',
+  #   index: 'index',
+  #   header_rules: [
+  #     # Serve GLB files with correct headers
+  #     [:all, { 'Cache-Control' => 'public, max-age=86400' }],
+  #     [%w[glb fbx obj stl], { 'Content-Type' => 'application/octet-stream' }]
+  #   ]
+  # )
 
 
 end
