@@ -224,6 +224,7 @@ export class FrontPage extends React.Component<{}, Partial<FrontPageState>> {
         <div className="titles text-center">
           <h1>{t("ThreeD.Bot Web App")}</h1>
           <h2>{t("Setup, customize, and control your FarmBot from anywhere.")}</h2>
+          <h3>[MM] ThreeD.Bot Web App</h3>
         </div>
         <this.activePanel />
         <OrDivider />

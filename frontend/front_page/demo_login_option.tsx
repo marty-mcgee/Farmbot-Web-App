@@ -6,7 +6,7 @@ import { Widget, WidgetBody, WidgetHeader } from "../ui";
 export class DemoLoginOption extends DemoAccountBase {
   ok = () => {
     return <Widget>
-      <WidgetHeader title={t("Demo the app")} />
+      <WidgetHeader title={t("Demo the Farmbot Web App")} />
       <WidgetBody>
         <div className="demo-widget-body grid">
           <div>
