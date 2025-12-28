@@ -69,9 +69,11 @@ namespace :api do
     # Clear out cache and previous builds on initial load.
     sh [
       "rm -rf",
-      DashboardController::CACHE_DIR,
-      # DashboardController::PUBLIC_OUTPUT_DIR, # [MM] do not delete public/assets directory
+      # [MM] ??? do not delete public/assets directory
+      # DashboardController::CACHE_DIR,
+      # DashboardController::PUBLIC_OUTPUT_DIR, 
       "public/assets/monaco",
+      "public/assets/parcel",
       ".parcel-cache",
     ].join(" ") unless ENV["NO_CLEAN"]
   end
