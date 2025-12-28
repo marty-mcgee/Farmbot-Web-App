@@ -23,7 +23,7 @@ log/
 node_modules
 package-lock.json
 yarn.lock
-public/assets/**
+# public/assets/** 
 public/direct_upload/temp/*.jpg
 public/dist
 core
