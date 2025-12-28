@@ -70,7 +70,7 @@ namespace :api do
     sh [
       "rm -rf",
       DashboardController::CACHE_DIR,
-      DashboardController::PUBLIC_OUTPUT_DIR,
+      # DashboardController::PUBLIC_OUTPUT_DIR, # [MM] do not delete public/assets directory
       "public/assets/monaco",
       ".parcel-cache",
     ].join(" ") unless ENV["NO_CLEAN"]
@@ -90,10 +90,10 @@ namespace :api do
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
-    sh "mkdir -p public/assets/"
+    sh "mkdir -v -p public/assets || echo '[MM] mkdir public/assets failed'"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
-    sh "mkdir #{dst}/basic-languages"
+    sh "mkdir #{dst}/basic-languages || echo '[MM] mkdir basic-languages failed'"
     sh "cp -r #{lua_src}/#{lua} #{dst}/#{lua}"
   end
 
