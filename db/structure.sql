@@ -1,7 +1,11 @@
+\restrict U3dMvKfBRCHmyjatrtk2aVt2GfiFyEmI8lNwrqfrHHZffsmknpE4c9irnEtGATp
+
+-- Dumped from database version 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1)
+-- Dumped by pg_dump version 16.11 (Ubuntu 16.11-0ubuntu0.24.04.1)
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -1539,7 +1543,7 @@ CREATE VIEW public.resource_update_steps AS
             edge_nodes.kind,
             edge_nodes.value
            FROM public.edge_nodes
-          WHERE (((edge_nodes.kind)::text = 'resource_type'::text) AND ((edge_nodes.value)::text = ANY (ARRAY[('"GenericPointer"'::character varying)::text, ('"ToolSlot"'::character varying)::text, ('"Plant"'::character varying)::text])))
+          WHERE (((edge_nodes.kind)::text = 'resource_type'::text) AND ((edge_nodes.value)::text = ANY ((ARRAY['"GenericPointer"'::character varying, '"ToolSlot"'::character varying, '"Plant"'::character varying])::text[])))
         ), resource_id AS (
          SELECT edge_nodes.primary_node_id,
             edge_nodes.kind,
@@ -3062,10 +3066,10 @@ CREATE INDEX index_fragments_on_device_id ON public.fragments USING btree (devic
 
 
 --
--- Name: index_fragments_on_owner; Type: INDEX; Schema: public; Owner: -
+-- Name: index_fragments_on_owner_type_and_owner_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_fragments_on_owner ON public.fragments USING btree (owner_type, owner_id);
+CREATE INDEX index_fragments_on_owner_type_and_owner_id ON public.fragments USING btree (owner_type, owner_id);
 
 
 --
@@ -3709,6 +3713,14 @@ ALTER TABLE ONLY public.plant_templates
 
 
 --
+-- Name: plant_templates plant_templates_saved_garden_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.plant_templates
+    ADD CONSTRAINT plant_templates_saved_garden_id_fk FOREIGN KEY (saved_garden_id) REFERENCES public.saved_gardens(id);
+
+
+--
 -- Name: point_group_items point_group_items_point_group_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3759,6 +3771,8 @@ ALTER TABLE ONLY public.users
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict U3dMvKfBRCHmyjatrtk2aVt2GfiFyEmI8lNwrqfrHHZffsmknpE4c9irnEtGATp
 
 SET search_path TO "$user", public;
 

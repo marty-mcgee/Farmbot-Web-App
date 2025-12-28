@@ -5,8 +5,9 @@ gem "rails", "~> 6"
 gem "rake"
 gem "dotenv-rails", "~> 3.2"
 
-# gem "passenger"
-gem "puma"
+# web servers
+gem "passenger" # heroku
+gem "puma" # render
 
 gem "active_model_serializers"
 gem "bunny"
