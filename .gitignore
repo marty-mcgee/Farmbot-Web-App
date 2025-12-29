@@ -18,10 +18,10 @@ passenger.*.pid
 
 /config/master.key
 
+config/credentials.yml.enc
+
 
 api_docs.md
-
-config/credentials.yml.enc
 
 coverage_api
 coverage_fe
@@ -31,6 +31,7 @@ docker_volumes
 erd_diagram.png
 erd.pdf
 latest_corpus.ts
+
 log/
 
 node_modules
@@ -43,6 +44,7 @@ public/direct_upload/temp/*.jpg
 public/dist
 core
 upgrade_deps.sh
+
 # ActiveStorage blobs:
 storage/*
 tmp
