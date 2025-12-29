@@ -9,6 +9,25 @@
 # MM
 db/*.sql
 
+log/
+
+
+
+node_modules
+package-lock.json
+yarn.lock
+
+
+
+# MM
+public/assets
+
+
+public/direct_upload/temp/*.jpg
+public/dist
+
+
+
 
 passenger.*.pid
 *.tsbuildinfo
@@ -16,8 +35,7 @@ passenger.*.pid
 *scratchpad*
 
 
-/config/master.key
-
+config/master.key
 config/credentials.yml.enc
 
 
@@ -32,16 +50,8 @@ erd_diagram.png
 erd.pdf
 latest_corpus.ts
 
-log/
 
-node_modules
-package-lock.json
-yarn.lock
 
-# MM
-# public/assets/**
-public/direct_upload/temp/*.jpg
-public/dist
 core
 upgrade_deps.sh
 

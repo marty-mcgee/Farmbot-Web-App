@@ -222,9 +222,9 @@ export class FrontPage extends React.Component<{}, Partial<FrontPageState>> {
     return <div className="static-page">
       <div className="front-page-container">
         <div className="titles text-center">
-          <h1>{t("ThreeD.Bot Homestead App")}</h1>
+          <h1>{t("ThreeD.Bot App")}</h1>
           <h2>{t("Setup, customize, control your FarmBot from anywhere.")}</h2>
-          {/* <h3>[MM] ThreeD.Bot Web App</h3> */}
+          {/* <h3>[MM] ThreeD.Bot: Farmbot Web App</h3> */}
         </div>
         <this.activePanel />
         <OrDivider />
