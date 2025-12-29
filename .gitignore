@@ -6,24 +6,39 @@
 *.log
 *.pem
 *.sql
+# MM
+db/*.sql
+
+
 passenger.*.pid
 *.tsbuildinfo
 *.pid.lock
 *scratchpad*
+
+
 /config/master.key
+
+
 api_docs.md
+
 config/credentials.yml.enc
+
 coverage_api
 coverage_fe
+
 docker_volumes
+
 erd_diagram.png
 erd.pdf
 latest_corpus.ts
 log/
+
 node_modules
 package-lock.json
 yarn.lock
-# public/assets/** 
+
+# MM
+# public/assets/**
 public/direct_upload/temp/*.jpg
 public/dist
 core
