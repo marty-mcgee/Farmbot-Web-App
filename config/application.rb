@@ -82,18 +82,19 @@ module FarmBot
         %w(origin-when-cross-origin strict-origin-when-cross-origin)
       connect_src = ALL_LOCAL_URIS + [
         ENV["MQTT_HOST"],
-        "api.github.com",
+        # "api.github.com",
         "raw.githubusercontent.com",
-        "api.rollbar.com",
+        # "api.rollbar.com",
+        # "browser-http-intake.logs.datadoghq.com",
         PARCELJS_URL,
         ENV["FORCE_SSL"] ? "wss:" : "ws:",
         "localhost:#{API_PORT}",
         "localhost:3808",
-        "browser-http-intake.logs.datadoghq.com",
         "#{ENV.fetch("API_HOST")}:#{API_PORT}",
         "#{ENV.fetch("API_HOST")}:3808",
         "blob:", # 3D
         "threed.bot", # MM
+        "ws://duck.lmq.cloudamqp.com/yylopbzh:1883", # MM
       ]
       config.csp = {
         default_src: %w(https: 'self'),
@@ -134,7 +135,7 @@ module FarmBot
           "'unsafe-eval'",
           "'self'",
           "blob:", # 3D
-          "threed.bot", # MM
+          # "threed.bot", # MM
         ],
         style_src: %w(
           fonts.gstatic.com

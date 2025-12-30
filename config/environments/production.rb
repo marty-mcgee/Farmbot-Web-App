@@ -15,24 +15,29 @@ FarmBot::Application.configure do
   config.public_file_server.enabled  = true # MM false
   config.serve_static_assets         = true
   config.assets.compile              = true # MM false
-  # config.assets.digest               = true # MM
-  # HACK AHEAD! Here's why:
+  # config.assets.digest             = true # MM
+
+  # [FB] HACKS AHEAD: here's why..
   # 1. FarmBot Inc. Uses Sendgrid for email.
   # 2. FarmBot is an open source project that must be vendor neutral.
-  # 3. Heroku uses non-neutral ENV names like "SENDGRID_PASSWORD"
-  # SOLUTION: Support neutral names like "SMTP_HOST",
-  #           but fallback to non-neutral var names like "SENDGRID_USERNAME" if
-  #           required.
+  # 3. Your host may use non-neutral ENV names like "SENDGRID_PASSWORD".
+  # SOLUTION: Support neutral names like "SMTP_HOST" 
+  # and non-neutral names like "SENDGRID_USERNAME",
+  # with fallback/default to non-neutral name..
   pw    = ENV['SMTP_PASSWORD'] || ENV['SENDGRID_PASSWORD']
   uname = ENV['SMTP_USERNAME'] || ENV['SENDGRID_USERNAME']
-
-  config.action_mailer.smtp_settings = { port:      ENV.fetch("SMTP_PORT", 587),
-                                         address:   ENV['SMTP_HOST'],
-                                         user_name: uname,
-                                         password:  pw }
+  # [FB] HACKS END: now use chosen variables to 
+  # SMTP SETTINGS for RAILS ACTION MAILER
+  config.action_mailer.smtp_settings = { 
+    port:      ENV.fetch("SMTP_PORT", 587),
+    address:   ENV['SMTP_HOST'],
+    user_name: uname,
+    password:  pw
+  }
 
 
   # # [MM] support GLB|FBX files
+
   # # config/environments/production.rb
   # # Increase max file size for static files (default is 1MB)
   # # config.public_file_server.max_age = 86_400 ???
@@ -52,5 +57,6 @@ FarmBot::Application.configure do
   #   ]
   # )
 
+  # # [MM] END: support GLB|FBX files
 
 end
