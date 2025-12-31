@@ -137,9 +137,9 @@ module FarmBot
           'self'
         ),
         form_action: %w('self'),
-        frame_src: %w(*),       # We need "*" to support webcam users.
+        frame_src: %w(* 'self'),       # We need "*" to support webcam users.
         frame_ancestors: %w('self' https://threed.bot https://farm.bot https://*.shopify.com https://*.shopifypreview.com),
-        img_src: %w(* data:),   # We need "*" to support webcam users.
+        img_src: %w(* 'self' data:),   # We need "*" to support webcam users.
         manifest_src: %w('self'),
         media_src: %w(),
         object_src: %w(),
