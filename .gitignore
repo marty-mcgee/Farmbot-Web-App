@@ -1,38 +1,37 @@
+# [MM] 
+
+.env*
 .cache
 .parcel-cache
-.env*
-.idea
 .vscode
 *.log
+log/
 *.pem
 *.sql
-# MM
+# [MM]
 db/*.sql
 
-log/
-
-
-
+# NODE.JS
 node_modules
 package-lock.json
 yarn.lock
 
-
-
-# MM
+# [MM]
 public/assets/*
 !public/assets/readme.md
-
 
 public/direct_upload/temp/*.jpg
 public/dist
 
 
-
+# [MM] should not be here..
 
 passenger.*.pid
+
 *.tsbuildinfo
+
 *.pid.lock
+
 *scratchpad*
 
 
@@ -51,12 +50,13 @@ erd_diagram.png
 erd.pdf
 latest_corpus.ts
 
-
-
 core
+
 upgrade_deps.sh
 
 # ActiveStorage blobs:
 storage/*
+
 tmp
+
 module_graph.*
