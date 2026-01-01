@@ -20,7 +20,7 @@ yarn.lock
 
 
 # MM
-public/assets
+public/assets/*
 
 
 public/direct_upload/temp/*.jpg
