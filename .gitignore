@@ -17,7 +17,7 @@ package-lock.json
 yarn.lock
 
 # [MM]
-public/assets/*
+# public/assets/*
 !public/assets/readme.md
 
 public/direct_upload/temp/*.jpg
