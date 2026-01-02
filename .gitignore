@@ -21,12 +21,15 @@ public/assets
 # public/assets/monaco/
 # !public/assets
 !public/assets/readme.md
+# [??]
+# public/direct_upload/temp/*.jpg
+# public/dist
 
-public/direct_upload/temp/*.jpg
-public/dist
 
 
-# [MM] should not be here..
+
+
+# [MM] the following should not be here..
 
 passenger.*.pid
 

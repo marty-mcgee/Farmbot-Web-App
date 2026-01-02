@@ -104,7 +104,12 @@ module FarmBot
         %w(origin-when-cross-origin strict-origin-when-cross-origin)
 
       connect_src = ALL_LOCAL_URIS + [
-        # "threed.bot", # [MM]
+        # [MM]
+        # "threed.bot",
+        "threed.bot:7777",
+        "threed.bot:7777/api",
+        # [MM]
+
         "#{ENV.fetch("API_HOST")}",
         "localhost:#{API_PORT}",
         "localhost:3808",
