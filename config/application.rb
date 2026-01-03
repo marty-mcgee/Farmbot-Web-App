@@ -118,7 +118,9 @@ module FarmBot
         
         ENV["MQTT_HOST"],
         # "ws://duck.lmq.cloudamqp.com/yylopbzh:1883", # [MM]
-        "ws://gull.rmq.cloudamqp.com/wdyqpbvy:1883", # [MM]
+        # "ws://gull.rmq.cloudamqp.com/wdyqpbvy:1883", # [MM]
+        # "ws://s844a762.ala.us-east-1.emqxsl.com:8084", # [MM]
+
         ENV["FORCE_SSL"] ? "wss:" : "ws:",
 
         # "api.github.com",
