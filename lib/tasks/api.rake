@@ -69,9 +69,8 @@ namespace :api do
     # Clear out cache and previous builds on initial load.
     sh [
       "rm -rf",
-      # [MM] ??? do not delete public/assets directory
-      # DashboardController::CACHE_DIR,
-      # DashboardController::PUBLIC_OUTPUT_DIR, 
+      DashboardController::CACHE_DIR,
+      DashboardController::PUBLIC_OUTPUT_DIR, 
       "public/assets/monaco",
       "public/assets/parcel",
       ".parcel-cache",
@@ -92,10 +91,10 @@ namespace :api do
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
-    sh "mkdir -v -p public/assets || echo '[MM] mkdir public/assets failed'"
+    sh "mkdir -v -p public/assets"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
-    sh "mkdir #{dst}/basic-languages || echo '[MM] mkdir basic-languages failed'"
+    sh "mkdir #{dst}/basic-languages"
     sh "cp -r #{lua_src}/#{lua} #{dst}/#{lua}"
   end
 

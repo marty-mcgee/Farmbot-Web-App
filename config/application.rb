@@ -106,18 +106,18 @@ module FarmBot
       connect_src = ALL_LOCAL_URIS + [
         # [MM]
         # "threed.bot",
-        "threed.bot:7777",
-        "threed.bot:7777/api",
+        # "threed.bot:7777",
+        # "threed.bot:7777/api",
         # [MM]
 
         "#{ENV.fetch("API_HOST")}",
         "localhost:#{API_PORT}",
-        "localhost:3808",
+        # "localhost:3808",
         "#{ENV.fetch("API_HOST")}:#{API_PORT}",
-        "#{ENV.fetch("API_HOST")}:3808",
+        # "#{ENV.fetch("API_HOST")}:3808",
         
         ENV["MQTT_HOST"],
-        "ws://duck.lmq.cloudamqp.com/yylopbzh:1883", # [MM]
+        # "ws://duck.lmq.cloudamqp.com/yylopbzh:1883", # [MM]
         "ws://gull.rmq.cloudamqp.com/wdyqpbvy:1883", # [MM]
         ENV["FORCE_SSL"] ? "wss:" : "ws:",
 
