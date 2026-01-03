@@ -120,6 +120,8 @@ module FarmBot
         # "ws://duck.lmq.cloudamqp.com/yylopbzh:1883", # [MM]
         # "ws://gull.rmq.cloudamqp.com/wdyqpbvy:1883", # [MM]
         # "ws://s844a762.ala.us-east-1.emqxsl.com:8084", # [MM]
+        "ws://0.0.34.179/", # [MM] EMQX
+        ENV["MQTT_WS"], # [MM]
 
         ENV["FORCE_SSL"] ? "wss:" : "ws:",
 
