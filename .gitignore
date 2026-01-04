@@ -17,19 +17,17 @@ package-lock.json
 yarn.lock
 
 # [MM]
-public/assets
-# public/assets/monaco/
 # !public/assets
+public/assets
 !public/assets/readme.md
-# [??]
+# public/assets/monaco
+!public/assets/parcel
+# [?? other]
 # public/direct_upload/temp/*.jpg
 # public/dist
 
 
-
-
-
-# [MM] the following should not be here..
+# [MM] the following entries should not be here..
 
 passenger.*.pid
 
