@@ -91,7 +91,7 @@ namespace :api do
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
-    sh "mkdir -v -p public/assets"
+    # sh "mkdir -v -p public/assets" [MM] FAIL: PRODUCTION RELEASE
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
     sh "mkdir #{dst}/basic-languages"
