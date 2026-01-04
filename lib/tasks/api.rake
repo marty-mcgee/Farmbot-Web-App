@@ -87,17 +87,18 @@ namespace :api do
   end
 
   def add_monaco
-    # [MM] ADD:
-    clean_assets
-
+    # [MM] ADD ???:
+    # clean_assets
 
     src = "node_modules/monaco-editor/min/vs"
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
     
-    # sh "mkdir -v -p public/assets" [MM] FAIL: PRODUCTION RELEASE
-    
+    # [MM] FAIL: PRODUCTION RELEASE
+    # sh "mkdir -v -p public/assets"
+    # [MM] FAIL: PRODUCTION RELEASE: SOLUTION ATTEMPT:
+    sh "mkdir -p public/assets"
 
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
