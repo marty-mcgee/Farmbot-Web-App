@@ -70,7 +70,7 @@ namespace :api do
     sh [
       "rm -rf",
       DashboardController::CACHE_DIR,
-      DashboardController::PUBLIC_OUTPUT_DIR, 
+      # DashboardController::PUBLIC_OUTPUT_DIR, 
       # "public/assets/monaco",
       # "public/assets/parcel",
       ".parcel-cache",
