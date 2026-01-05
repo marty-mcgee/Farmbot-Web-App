@@ -102,7 +102,7 @@ namespace :api do
 
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
-    sh "mkdir #{dst}/basic-languages"
+    sh "mkdir -v -p #{dst}/basic-languages"
     sh "cp -r #{lua_src}/#{lua} #{dst}/#{lua}"
   end
 
