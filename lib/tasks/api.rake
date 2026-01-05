@@ -71,8 +71,8 @@ namespace :api do
       "rm -rf",
       DashboardController::CACHE_DIR,
       DashboardController::PUBLIC_OUTPUT_DIR, 
-      "public/assets/monaco",
-      "public/assets/parcel",
+      # "public/assets/monaco",
+      # "public/assets/parcel",
       ".parcel-cache",
     ].join(" ") unless ENV["NO_CLEAN"]
   end
@@ -96,9 +96,9 @@ namespace :api do
     lua = "basic-languages/lua"
     
     # [MM] FAIL: PRODUCTION RELEASE
-    # sh "mkdir -v -p public/assets"
+    sh "mkdir -v -p public/assets"
     # [MM] FAIL: PRODUCTION RELEASE: SOLUTION ATTEMPT:
-    sh "mkdir -p public/assets"
+    # sh "mkdir -p public/assets"
 
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
