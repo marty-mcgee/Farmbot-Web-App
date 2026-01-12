@@ -4,6 +4,7 @@
 .cache
 .parcel-cache
 .vscode
+*.code-workspace
 *.log
 log/
 *.pem
