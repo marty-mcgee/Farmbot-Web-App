@@ -1,4 +1,4 @@
-if Rails.env == "development"
+# if Rails.env == "development"
   POINT_COUNT = 8
   PLANT_COUNT = 8
   DATE_RANGE_LO = 1..3
@@ -191,4 +191,4 @@ if Rails.env == "development"
                         z: z,
                         meta: { "at_soil_level" => true })
   end
-end
+# end
