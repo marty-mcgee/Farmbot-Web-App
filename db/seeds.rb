@@ -3,7 +3,7 @@ if Rails.env == "development"
   PLANT_COUNT = 8
   DATE_RANGE_LO = 1..3
   DATE_RANGE_HI = 3..8
-  ENV["MQTT_HOST"] = "blooper.io"
+  ENV["MQTT_HOST"] = "threed.bot"
   # CREDIT: Faker Ruby Gem
   VEGGIES = %w(artichoke arugula asparagus broccoli cabbage carrot cauliflower
                celery cucumber eggplant garlic kale kohlrabi leek lettuce okra
