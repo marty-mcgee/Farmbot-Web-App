@@ -27,9 +27,10 @@
     "linters": "npm run typecheck --cache=/tmp;X=$(($X+$?));npm run dev-typecheck --cache=/tmp;X=$(($X+$?));npm run eslint --cache=/tmp;X=$(($X+$?));npm run sass-lint --cache=/tmp;X=$(($X+$?));npm run sass-check --cache=/tmp;X=$(($X+$?));npm run translation-check --cache=/tmp;X=$(($X+$?));[ $X = 0 ]"
   },
   "keywords": [
-    "farmbot"
+    "farmbot",
+    "threed"
   ],
-  "author": "farmbot.io",
+  "author": "threed.ai",
   "license": "MIT",
   "overrides": {
     "cheerio": "1.0.0-rc.12",
