@@ -1,8 +1,3 @@
-jest.mock("../../api/crud", () => ({
-  edit: jest.fn(),
-  save: jest.fn(),
-}));
-
 import React from "react";
 import { EditPlantStatusProps } from "../plant_panel";
 import { shallow } from "enzyme";
@@ -10,7 +5,7 @@ import {
   fakeCurve,
   fakePlant, fakePoint, fakeWeed,
 } from "../../__test_support__/fake_state/resources";
-import { edit } from "../../api/crud";
+import * as crud from "../../api/crud";
 import {
   EditPlantStatus, PlantStatusBulkUpdateProps, PlantStatusBulkUpdate,
   EditWeedStatus, EditWeedStatusProps, PointSizeBulkUpdate,
@@ -30,6 +25,16 @@ import { fakeTimeSettings } from "../../__test_support__/fake_time_settings";
 import { Actions } from "../../constants";
 import { Path } from "../../internal_urls";
 import { CurveType } from "../../curves/templates";
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.spyOn(crud, "edit").mockImplementation(jest.fn());
+  jest.spyOn(crud, "save").mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe("<EditPlantStatus />", () => {
   const fakeProps = (): EditPlantStatusProps => ({
@@ -77,7 +82,7 @@ describe("<PlantStatusBulkUpdate />", () => {
     window.confirm = jest.fn(() => false);
     wrapper.find("FBSelect").simulate("change", { label: "", value: "planted" });
     expect(window.confirm).toHaveBeenCalled();
-    expect(edit).not.toHaveBeenCalled();
+    expect(crud.edit).not.toHaveBeenCalled();
   });
 
   it("updates plant statuses", () => {
@@ -92,12 +97,12 @@ describe("<PlantStatusBulkUpdate />", () => {
     wrapper.find("FBSelect").simulate("change", { label: "", value: "planted" });
     expect(window.confirm).toHaveBeenCalledWith(
       "Change status to 'planted' for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, {
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, {
       plant_stage: "planted",
       planted_at: expect.stringContaining("Z"),
     });
-    expect(edit).toHaveBeenCalledWith(plant2, {
+    expect(crud.edit).toHaveBeenCalledWith(plant2, {
       plant_stage: "planted",
       planted_at: expect.stringContaining("Z"),
     });
@@ -116,9 +121,9 @@ describe("<PlantStatusBulkUpdate />", () => {
     wrapper.find("FBSelect").simulate("change", { label: "", value: "removed" });
     expect(window.confirm).toHaveBeenCalledWith(
       "Change status to 'removed' for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(weed1, { plant_stage: "removed" });
-    expect(edit).toHaveBeenCalledWith(weed2, { plant_stage: "removed" });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(weed1, { plant_stage: "removed" });
+    expect(crud.edit).toHaveBeenCalledWith(weed2, { plant_stage: "removed" });
   });
 });
 
@@ -141,7 +146,7 @@ describe("<PlantDateBulkUpdate />", () => {
     wrapper.find("BlurableInput").simulate("commit",
       { currentTarget: { value: "2017-05-29T05:00:00.000Z" } });
     expect(window.confirm).toHaveBeenCalled();
-    expect(edit).not.toHaveBeenCalled();
+    expect(crud.edit).not.toHaveBeenCalled();
   });
 
   it("updates plant dates", () => {
@@ -157,11 +162,11 @@ describe("<PlantDateBulkUpdate />", () => {
       { currentTarget: { value: "2017-05-29T05:00:00.000Z" } });
     expect(window.confirm).toHaveBeenCalledWith(
       "Change start date to 2017-05-29 for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, {
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, {
       planted_at: "2017-05-29T05:00:00.000Z",
     });
-    expect(edit).toHaveBeenCalledWith(plant2, {
+    expect(crud.edit).toHaveBeenCalledWith(plant2, {
       planted_at: "2017-05-29T05:00:00.000Z",
     });
   });
@@ -185,7 +190,7 @@ describe("<PointSizeBulkUpdate />", () => {
     wrapper.find("input").simulate("change", { currentTarget: { value: "1" } });
     wrapper.find("input").simulate("blur");
     expect(window.confirm).toHaveBeenCalled();
-    expect(edit).not.toHaveBeenCalled();
+    expect(crud.edit).not.toHaveBeenCalled();
   });
 
   it("updates plant sizes", () => {
@@ -201,9 +206,9 @@ describe("<PointSizeBulkUpdate />", () => {
     wrapper.find("input").simulate("blur");
     expect(window.confirm).toHaveBeenCalledWith(
       "Change radius to 1mm for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, { radius: 1 });
-    expect(edit).toHaveBeenCalledWith(plant2, { radius: 1 });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, { radius: 1 });
+    expect(crud.edit).toHaveBeenCalledWith(plant2, { radius: 1 });
   });
 });
 
@@ -227,9 +232,9 @@ describe("<PlantDepthBulkUpdate />", () => {
     wrapper.find("input").simulate("blur");
     expect(window.confirm).toHaveBeenCalledWith(
       "Change depth to 1mm for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, { depth: 1 });
-    expect(edit).toHaveBeenCalledWith(plant2, { depth: 1 });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, { depth: 1 });
+    expect(crud.edit).toHaveBeenCalledWith(plant2, { depth: 1 });
   });
 });
 
@@ -254,9 +259,9 @@ describe("<PlantCurveBulkUpdate />", () => {
     wrapper.find("FBSelect").first().simulate("change", { label: "", value: "1" });
     expect(window.confirm).toHaveBeenCalledWith(
       "Change Water curve for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, { water_curve_id: 1 });
-    expect(edit).toHaveBeenCalledWith(plant2, { water_curve_id: 1 });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, { water_curve_id: 1 });
+    expect(crud.edit).toHaveBeenCalledWith(plant2, { water_curve_id: 1 });
   });
 
   it("updates plant curves to None", () => {
@@ -272,9 +277,9 @@ describe("<PlantCurveBulkUpdate />", () => {
       { label: "", value: "", isNull: true });
     expect(window.confirm).toHaveBeenCalledWith(
       "Change Water curve for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, { water_curve_id: undefined });
-    expect(edit).toHaveBeenCalledWith(plant2, { water_curve_id: undefined });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, { water_curve_id: undefined });
+    expect(crud.edit).toHaveBeenCalledWith(plant2, { water_curve_id: undefined });
   });
 });
 
@@ -310,7 +315,7 @@ describe("<PointColorBulkUpdate />", () => {
     window.confirm = jest.fn(() => false);
     wrapper.find("ColorPicker").simulate("change", "green");
     expect(window.confirm).toHaveBeenCalled();
-    expect(edit).not.toHaveBeenCalled();
+    expect(crud.edit).not.toHaveBeenCalled();
   });
 
   it("updates point colors", () => {
@@ -325,9 +330,9 @@ describe("<PointColorBulkUpdate />", () => {
     wrapper.find("ColorPicker").simulate("change", "green");
     expect(window.confirm).toHaveBeenCalledWith(
       "Change color to green for 2 items?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(point1, { meta: { color: "green" } });
-    expect(edit).toHaveBeenCalledWith(point2, { meta: { color: "green" } });
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(point1, { meta: { color: "green" } });
+    expect(crud.edit).toHaveBeenCalledWith(point2, { meta: { color: "green" } });
   });
 });
 
@@ -350,7 +355,7 @@ describe("<PlantSlugBulkUpdate />", () => {
     window.confirm = jest.fn(() => false);
     wrapper.find("button").simulate("click");
     expect(window.confirm).toHaveBeenCalled();
-    expect(edit).not.toHaveBeenCalled();
+    expect(crud.edit).not.toHaveBeenCalled();
   });
 
   it("sets bulk plant slug", () => {
@@ -377,12 +382,12 @@ describe("<PlantSlugBulkUpdate />", () => {
     wrapper.find("button").simulate("click");
     expect(window.confirm).toHaveBeenCalledWith(
       "Change crop type to slug for 2 plants?");
-    expect(edit).toHaveBeenCalledTimes(2);
-    expect(edit).toHaveBeenCalledWith(plant1, {
+    expect(crud.edit).toHaveBeenCalledTimes(2);
+    expect(crud.edit).toHaveBeenCalledWith(plant1, {
       openfarm_slug: "slug",
       name: "Slug",
     });
-    expect(edit).toHaveBeenCalledWith(plant2, {
+    expect(crud.edit).toHaveBeenCalledWith(plant2, {
       openfarm_slug: "slug",
       name: "Slug",
     });

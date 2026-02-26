@@ -1,15 +1,4 @@
-jest.mock("../../farm_designer/map/actions", () => ({
-  mapPointClickAction: jest.fn(() => jest.fn()),
-}));
-
 let mockDelMode = false;
-jest.mock("../../settings/dev/dev_support", () => ({
-  DevSettings: {
-    quickDeleteEnabled: () => mockDelMode,
-  }
-}));
-
-jest.mock("../../api/crud", () => ({ destroy: jest.fn() }));
 
 import React from "react";
 import { shallow, mount } from "enzyme";
@@ -18,9 +7,22 @@ import {
 } from "../point_inventory_item";
 import { fakePoint } from "../../__test_support__/fake_state/resources";
 import { Actions } from "../../constants";
-import { mapPointClickAction } from "../../farm_designer/map/actions";
-import { destroy } from "../../api/crud";
+import * as mapActions from "../../farm_designer/map/actions";
+import * as crud from "../../api/crud";
 import { Path } from "../../internal_urls";
+import * as devSupport from "../../settings/dev/dev_support";
+
+beforeEach(() => {
+  jest.spyOn(mapActions, "mapPointClickAction")
+    .mockImplementation(jest.fn(() => jest.fn()));
+  jest.spyOn(devSupport.DevSettings, "quickDeleteEnabled")
+    .mockImplementation(() => mockDelMode);
+  jest.spyOn(crud, "destroy").mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe("<PointInventoryItem> />", () => {
   const fakeProps = (): PointInventoryItemProps => ({
@@ -52,9 +54,9 @@ describe("<PointInventoryItem> />", () => {
     p.tpp.body.id = 1;
     const wrapper = shallow(<PointInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mapActions.mapPointClickAction).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
-    expect(destroy).toHaveBeenCalledWith(p.tpp.uuid, true);
+    expect(crud.destroy).toHaveBeenCalledWith(p.tpp.uuid, true);
     mockDelMode = false;
   });
 
@@ -78,7 +80,7 @@ describe("<PointInventoryItem> />", () => {
     p.tpp.body.id = 1;
     const wrapper = mount(<PointInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mapActions.mapPointClickAction).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(Path.points(1));
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_HOVERED_POINT,
@@ -92,7 +94,7 @@ describe("<PointInventoryItem> />", () => {
     p.tpp.body.id = undefined;
     const wrapper = mount(<PointInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mapActions.mapPointClickAction).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(Path.points("ERR_NO_POINT_ID"));
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_HOVERED_POINT,
@@ -105,7 +107,7 @@ describe("<PointInventoryItem> />", () => {
     const p = fakeProps();
     const wrapper = mount(<PointInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).toHaveBeenCalledWith(
+    expect(mapActions.mapPointClickAction).toHaveBeenCalledWith(
       expect.any(Function),
       expect.any(Function),
       p.tpp.uuid);

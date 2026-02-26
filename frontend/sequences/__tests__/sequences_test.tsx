@@ -1,15 +1,4 @@
 let mockIsMobile = false;
-jest.mock("../../screen_size", () => ({
-  isMobile: () => mockIsMobile,
-}));
-
-jest.mock("axios", () => ({
-  get: () => Promise.resolve({
-    data: [
-      { id: 1, name: "name", description: "", path: "", color: "gray" },
-    ]
-  }),
-}));
 
 import React from "react";
 import {
@@ -29,7 +18,28 @@ import { sequencesPanelState } from "../../__test_support__/panel_state";
 import { emptyState } from "../../resources/reducer";
 import { Path } from "../../internal_urls";
 import { API } from "../../api";
+import * as screenSize from "../../screen_size";
+import axios from "axios";
 
+let isMobileSpy: jest.SpyInstance;
+let axiosGetSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  mockIsMobile = false;
+  isMobileSpy = jest.spyOn(screenSize, "isMobile")
+    .mockImplementation(() => mockIsMobile);
+  axiosGetSpy = jest.spyOn(axios, "get")
+    .mockImplementation(() => Promise.resolve({
+      data: [
+        { id: 1, name: "name", description: "", path: "", color: "gray" },
+      ]
+    }) as never);
+});
+
+afterEach(() => {
+  isMobileSpy.mockRestore();
+  axiosGetSpy.mockRestore();
+});
 describe("<Sequences />", () => {
   API.setBaseUrl("");
 

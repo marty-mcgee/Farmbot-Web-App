@@ -1,11 +1,19 @@
 const mockDevice = { execScript: jest.fn((_) => Promise.resolve({})) };
-jest.mock("../../device", () => ({ getDevice: () => mockDevice }));
 
 import React from "react";
 import { mount } from "enzyme";
 import { BasicFarmwarePage, BasicFarmwarePageProps } from "../basic_farmware_page";
 import { fakeFarmware } from "../../__test_support__/fake_farmwares";
+import * as deviceModule from "../../device";
 
+beforeEach(() => {
+  jest.spyOn(deviceModule, "getDevice")
+    .mockImplementation(() => mockDevice as never);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe("<BasicFarmwarePage />", () => {
   const fakeProps = (): BasicFarmwarePageProps => ({
     farmwareName: "My Farmware",

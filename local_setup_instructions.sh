@@ -55,17 +55,18 @@ nano .env
 
 # Install project dependencies
 # ============================
+sudo docker compose build web
 # Install the correct version of bundler for the project
 sudo docker compose run web gem install bundler
 # Install application specific Ruby dependencies
 sudo docker compose run web bundle install
 # Install application specific Javascript deps
-sudo docker compose run web npm install
+sudo docker compose run web bun install
 # Create a database in PostgreSQL
 sudo docker compose run web bundle exec rails db:create db:migrate
 # Generate a set of *.pem files for data encryption
 # ⚠ SKIP THIS STEP IF UPGRADING!
-sudo docker compose run web rake keys:generate
+sudo docker compose run web bundle exec rake keys:generate
 
 # Run the server! 🌱
 # ==================
@@ -91,9 +92,9 @@ sudo docker compose up
 # Create the database for the app to use
 sudo docker compose run -e RAILS_ENV=test web bundle exec rails db:setup
 # Run the tests in the "test" RAILS_ENV
-sudo docker compose run -e RAILS_ENV=test web rspec spec
+sudo docker compose run -e RAILS_ENV=test web bundle exec rspec spec
 # Run user-interface unit tests (requires a large amount of RAM)
-sudo docker compose run web npm run test
+sudo docker compose run web bun run test
 
 
 # === BEGIN OPTIONAL UPGRADES to later versions of the FarmBot Web App ===
@@ -132,17 +133,18 @@ sudo docker compose run web npm run test
   # sudo docker volume rm $(sudo docker volume ls -q)
   # Verify that the database has been deleted. Do not continue on until "OK".
   if [ -d docker_volumes/db ]; then echo "ERROR"; else echo "OK"; fi
-  # Delete the parcel cache
-  sudo rm -rf .parcel-cache/
-  # Remove installed NPM packages
+  # Delete generated asset output
+  sudo rm -rf public/assets/
+  # Remove installed JS packages
   sudo rm -rf node_modules/
   # Download the latest version of the web app
   git pull https://github.com/FarmBot/Farmbot-Web-App.git main
+  sudo docker compose build web
   # Install Ruby gems
   sudo docker compose run web gem install bundler
   sudo docker compose run web bundle install
-  # Install NPM packages
-  sudo docker compose run web npm install
+  # Install JS packages
+  sudo docker compose run web bun install
   # Edit the `dump.sql` file to replace the PASSWORD value at the end of line 15
   # with the value of POSTGRES_PASSWORD from .env
   nano dump.sql
@@ -157,9 +159,9 @@ sudo docker compose run web npm run test
   exit
   # --- end db container shell commands ---
   # Migrate the database
-  sudo docker compose run web rails db:migrate
-  # Verify that parcel builds successfully
-  sudo docker compose run web rake assets:precompile
+  sudo docker compose run web bundle exec rails db:migrate
+  # Verify that assets build successfully
+  sudo docker compose run web bundle exec rake assets:precompile
   # Run the server
   sudo docker compose up
 # === END OPTIONAL UPGRADES ===

@@ -1,11 +1,8 @@
 let mockDev = false;
-jest.mock("../../settings/dev/dev_support", () => ({
-  DevSettings: { futureFeaturesEnabled: () => mockDev }
-}));
 
 import { fakeState } from "../../__test_support__/fake_state";
+import { store } from "../../redux/store";
 const mockState = fakeState();
-jest.mock("../../redux/store", () => ({ store: { getState: () => mockState } }));
 
 import React from "react";
 import { mount, shallow } from "enzyme";
@@ -21,6 +18,24 @@ import {
 import { fakeFarmwareEnv } from "../../__test_support__/fake_state/resources";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import { svgMount } from "../../__test_support__/svg_mount";
+import { DevSettings } from "../../settings/dev/dev_support";
+
+let originalGetState: typeof store.getState;
+let futureFeaturesEnabledSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  futureFeaturesEnabledSpy = jest.spyOn(DevSettings, "futureFeaturesEnabled")
+    .mockImplementation(() => mockDev);
+  originalGetState = store.getState;
+  (store as unknown as { getState: () => typeof mockState }).getState =
+    () => mockState;
+});
+
+afterEach(() => {
+  futureFeaturesEnabledSpy.mockRestore();
+  (store as unknown as { getState: typeof store.getState }).getState =
+    originalGetState;
+});
 
 describe("<CustomToolGraphicsInput />", () => {
   const fakeProps = (): CustomToolGraphicsInputProps => ({

@@ -5,17 +5,20 @@ import {
   OrbitControls, PerspectiveCamera,
   Stats, Image, OrthographicCamera,
   Sphere,
+  StatsGl,
 } from "@react-three/drei";
 import { BackSide, MeshBasicMaterial as ThreeMeshBasicMaterial } from "three";
 import { Bot } from "./bot";
 import { AddPlantProps, Bed } from "./bed";
 import {
   Sky, Solar, Sun, sunPosition, ZoomBeacons,
-  ThreeDPlant,
+  PlantInstances,
+  PlantSpreadInstances,
   Point, Grid, Clouds, Ground, Weed,
   ThreeDGardenPlant,
   NorthArrow,
   skyColor,
+  ThreeDPlantLabel,
 } from "./garden";
 import { Config } from "./config";
 import { useSpring, animated } from "@react-spring/three";
@@ -25,6 +28,7 @@ import {
   AmbientLight, AxesHelper, Group, MeshBasicMaterial,
 } from "./components";
 import { ICON_URLS } from "../crops/constants";
+import { isUndefined } from "lodash";
 import {
   TaggedGenericPointer, TaggedImage, TaggedPoint, TaggedPointGroup,
   TaggedSensor,
@@ -41,6 +45,7 @@ import { getZFunc } from "./triangle_functions";
 import { Visualization } from "./visualization";
 import { GroupOrderVisual } from "./group_order_visual";
 import { MoistureReadings } from "./garden/moisture_texture";
+import { FPSProbe } from "./fps_probe";
 
 const AnimatedGroup = animated(Group);
 
@@ -71,8 +76,19 @@ export const GardenModel = (props: GardenModelProps) => {
   const [hoveredPlant, setHoveredPlant] =
     React.useState<number | undefined>(undefined);
 
-  const getI = (e: ThreeEvent<PointerEvent>) =>
-    e.buttons ? -1 : parseInt(e.intersections[0].object.name);
+  const getI = (e: ThreeEvent<PointerEvent>) => {
+    if (e.buttons) { return -1; }
+    const intersection = e.intersections[0];
+    const instanceId = intersection.instanceId;
+    if (!isUndefined(instanceId)) {
+      const plantIndexes =
+        intersection.object.userData.plantIndexes as number[] | undefined;
+      if (plantIndexes) {
+        return plantIndexes[instanceId];
+      }
+    }
+    return parseInt(intersection.object.name);
+  };
 
   const setHover = (active: boolean) => {
     return config.labelsOnHover
@@ -104,6 +120,7 @@ export const GardenModel = (props: GardenModelProps) => {
   const showPoints = config.showSoilPoints
     || !!addPlantProps?.getConfigValue(BooleanSetting.show_points);
   const showWeeds = !!addPlantProps?.getConfigValue(BooleanSetting.show_weeds);
+  const showSpread = !!addPlantProps?.getConfigValue(BooleanSetting.show_spread);
 
   const soilPoints = filterSoilPoints({ points: props.mapPoints, config });
   const soilSurface = React.useMemo(() =>
@@ -121,12 +138,17 @@ export const GardenModel = (props: GardenModelProps) => {
 
   // eslint-disable-next-line no-null/no-null
   const skyRef = React.useRef<ThreeMeshBasicMaterial>(null);
+  const sunFactorRef = React.useRef<number>(1);
+  // eslint-disable-next-line no-null/no-null
+  const activePositionRef = React.useRef<{ x: number, y: number }>(null);
 
   // eslint-disable-next-line no-null/no-null
   return <Group dispose={null}
     onPointerMove={config.eventDebug
       ? e => console.log(e.intersections.map(x => x.object.name))
       : undefined}>
+    <FPSProbe />
+    {config.stats && <StatsGl className={"stats-gl"} />}
     {config.stats && <Stats />}
     {config.zoomBeacons && <ZoomBeacons
       config={config}
@@ -161,7 +183,11 @@ export const GardenModel = (props: GardenModelProps) => {
       maxDistance={config.lightsDebug ? BigDistance.devZoom : BigDistance.zoom} />
     <AxesHelper args={[5000]} visible={config.threeAxes} />
     {config.viewCube && <GizmoHelper><GizmoViewcube /></GizmoHelper>}
-    <Sun config={config} skyRef={skyRef} startTimeRef={props.startTimeRef} />
+    <Sun
+      config={config}
+      skyRef={skyRef}
+      startTimeRef={props.startTimeRef}
+      sunFactorRef={sunFactorRef} />
     <AmbientLight intensity={config.ambient / 100} />
     <Ground config={config} />
     <Clouds config={config} />
@@ -177,6 +203,7 @@ export const GardenModel = (props: GardenModelProps) => {
       showMoistureReadings={showMoistureReadings}
       sensors={props.sensors || []}
       sensorReadings={props.sensorReadings || []}
+      activePositionRef={activePositionRef}
       addPlantProps={addPlantProps} />
     {showMoistureMap && props.config.moistureDebug &&
       <MoistureReadings
@@ -198,9 +225,8 @@ export const GardenModel = (props: GardenModelProps) => {
     </Group>
     <Group name={"plant-labels"} visible={!props.activeFocus}>
       {threeDPlants.map((plant, i) =>
-        <ThreeDPlant key={i} i={i}
+        <ThreeDPlantLabel key={i} i={i}
           plant={plant}
-          labelOnly={true}
           config={config}
           getZ={getZ}
           hoveredPlant={hoveredPlant} />)}
@@ -214,15 +240,22 @@ export const GardenModel = (props: GardenModelProps) => {
       onPointerEnter={setHover(true)}
       onPointerMove={setHover(true)}
       onPointerLeave={setHover(false)}>
-      {threeDPlants.map((plant, i) =>
-        <ThreeDPlant key={i} i={i}
-          plant={plant}
-          visible={plantsVisible}
-          config={config}
-          hoveredPlant={hoveredPlant}
-          getZ={getZ}
-          startTimeRef={props.startTimeRef}
-          dispatch={dispatch} />)}
+      <PlantInstances
+        plants={threeDPlants}
+        config={config}
+        getZ={getZ}
+        visible={plantsVisible}
+        startTimeRef={props.startTimeRef}
+        dispatch={dispatch}
+        sunFactorRef={sunFactorRef} />
+      <PlantSpreadInstances
+        plants={threeDPlants}
+        visible={plantsVisible}
+        spreadVisible={showSpread}
+        config={config}
+        activePositionRef={activePositionRef}
+        getZ={getZ}
+        dispatch={dispatch} />
     </Group>
     <Group name={"points"}
       visible={showPoints}>

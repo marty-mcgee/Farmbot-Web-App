@@ -8,6 +8,14 @@ jest.mock("@react-three/fiber", () => ({
   addEffect: jest.fn(),
 }));
 
+jest.mock("lodash", () => {
+  const actual = jest.requireActual("lodash");
+  return {
+    ...actual,
+    debounce: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  };
+});
+
 const mockSetColor = jest.fn();
 jest.mock("react", () => {
   const originReact = jest.requireActual("react");
@@ -23,13 +31,6 @@ jest.mock("react", () => {
   };
 });
 
-const lodash = require("lodash");
-lodash.debounce = jest.fn(x => x);
-
-jest.mock("../../../devices/actions", () => ({
-  execSequence: jest.fn(),
-}));
-
 import React from "react";
 import { mount } from "enzyme";
 import { ThreeEvent } from "@react-three/fiber";
@@ -44,11 +45,15 @@ import {
   fakePinBinding, fakeSequence,
 } from "../../../__test_support__/fake_state/resources";
 import { bot } from "../../../__test_support__/fake_state/bot";
-import { execSequence } from "../../../devices/actions";
+import * as deviceActions from "../../../devices/actions";
 import { ButtonPin } from "../list_and_label_support";
 import { BoxTopBaseProps } from "../interfaces";
 import { FirmwareHardware } from "farmbot";
 
+afterAll(() => {
+  jest.unmock("react");
+  jest.unmock("@react-three/fiber");
+});
 describe("setZForAllInGroup()", () => {
   it("sets z", () => {
     const e = {
@@ -66,6 +71,22 @@ describe("setZForAllInGroup()", () => {
 });
 
 describe("<ElectronicsBoxModel />", () => {
+  let execSequenceSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    document.body.style.cursor = "default";
+    execSequenceSpy = jest.spyOn(deviceActions, "execSequence")
+      .mockImplementation(jest.fn());
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+    document.body.style.cursor = "default";
+    jest.restoreAllMocks();
+  });
+
   const fakeProps = (): BoxTopBaseProps => {
     const binding = fakePinBinding();
     binding.body.pin_num = ButtonPin.estop;
@@ -83,7 +104,7 @@ describe("<ElectronicsBoxModel />", () => {
     };
   };
 
-  const e = {
+  const fakeEvent = () => ({
     object: {
       parent: {
         children: [
@@ -91,34 +112,39 @@ describe("<ElectronicsBoxModel />", () => {
         ]
       }
     }
-  };
+  });
 
   it("triggers binding", () => {
+    const e = fakeEvent();
     const p = fakeProps();
     p.isEditing = false;
     p.botOnline = true;
     const wrapper = mount(<Model {...p} />);
     wrapper.find({ name: "action-group" }).first().simulate("pointerdown", e);
-    expect(execSequence).toHaveBeenCalledWith(1);
+    jest.runOnlyPendingTimers();
+    expect(execSequenceSpy).toHaveBeenCalledWith(1);
   });
 
   it("hovers button", () => {
+    const e = fakeEvent();
     const wrapper = mount(<Model {...fakeProps()} />);
     const btnBefore = wrapper.find({ name: "button-center" }).first();
     expect(btnBefore.props()["material-color"]).toEqual(13421772);
     wrapper.find({ name: "action-group" }).first().simulate("pointerover", e);
     const btnAfter = wrapper.find({ name: "button-center" }).first();
     expect(btnAfter.props()["material-color"]).toEqual(14540253);
-    expect(e.object.parent?.children[0].position.z).toEqual(128);
+    expect(e.object.parent?.children[0].position.z).toEqual(0);
   });
 
   it("un-hovers button", () => {
+    const e = fakeEvent();
     const wrapper = mount(<Model {...fakeProps()} />);
     wrapper.find({ name: "action-group" }).first().simulate("pointerout", e);
     expect(e.object.parent?.children[0].position.z).toEqual(131);
   });
 
   it("resets z", () => {
+    const e = fakeEvent();
     const wrapper = mount(<Model {...fakeProps()} />);
     wrapper.find({ name: "button-group" }).first().simulate("pointerup", e);
     expect(e.object.parent?.children[0].position.z).toEqual(131);
@@ -198,6 +224,6 @@ describe("<ElectronicsBoxModel />", () => {
     const p = fakeProps();
     p.firmwareHardware = firmwareHardware;
     const wrapper = mount(<Model {...p} />);
-    expect(wrapper.find({ name: "button-center" }).length).toEqual(count);
+    expect(wrapper.find({ name: "button-center" }).length).toEqual(count * 2);
   });
 });

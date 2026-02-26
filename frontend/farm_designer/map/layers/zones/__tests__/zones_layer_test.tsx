@@ -1,6 +1,7 @@
 import React from "react";
 import { svgMount } from "../../../../../__test_support__/svg_mount";
 import { ZonesLayer, ZonesLayerProps } from "../zones_layer";
+import * as mapUtil from "../../../util";
 import {
   fakePointGroup,
 } from "../../../../../__test_support__/fake_state/resources";
@@ -10,6 +11,18 @@ import {
 import { HTMLAttributes, ReactWrapper } from "enzyme";
 
 describe("<ZonesLayer />", () => {
+  let allowGroupAreaInteractionSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    allowGroupAreaInteractionSpy =
+      jest.spyOn(mapUtil, "allowGroupAreaInteraction")
+        .mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    allowGroupAreaInteractionSpy.mockRestore();
+  });
+
   const fakeProps = (): ZonesLayerProps => ({
     visible: true,
     groups: [fakePointGroup(), fakePointGroup()],
@@ -103,7 +116,7 @@ describe("<ZonesLayer />", () => {
     const wrapper = svgMount(<ZonesLayer {...p} />);
     expect(wrapper.html()).toEqual(
       `<svg>
-        <g class="zones-layer" style="cursor: pointer;">
+        <g class="zones-layer" style="pointer-events: none;">
           <g id="zones-2D-1" class="current">
           </g>
         </g>
@@ -115,6 +128,6 @@ describe("<ZonesLayer />", () => {
     p.visible = false;
     const wrapper = svgMount(<ZonesLayer {...p} />);
     expect(wrapper.html()).toEqual(
-      "<svg><g class=\"zones-layer\" style=\"cursor: pointer;\"></g></svg>");
+      "<svg><g class=\"zones-layer\" style=\"pointer-events: none;\"></g></svg>");
   });
 });

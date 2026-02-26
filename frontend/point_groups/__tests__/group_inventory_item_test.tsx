@@ -1,13 +1,4 @@
-jest.mock("../../api/crud", () => ({
-  destroy: jest.fn(),
-}));
-
 let mockDelMode = false;
-jest.mock("../../settings/dev/dev_support", () => ({
-  DevSettings: {
-    quickDeleteEnabled: () => mockDelMode,
-  }
-}));
 
 import React from "react";
 import {
@@ -17,7 +8,19 @@ import {
   fakePointGroup, fakePlant,
 } from "../../__test_support__/fake_state/resources";
 import { mount } from "enzyme";
-import { destroy } from "../../api/crud";
+import * as crud from "../../api/crud";
+import * as devSupport from "../../settings/dev/dev_support";
+
+beforeEach(() => {
+  mockDelMode = false;
+  jest.spyOn(crud, "destroy").mockImplementation(jest.fn());
+  jest.spyOn(devSupport.DevSettings, "quickDeleteEnabled")
+    .mockImplementation(() => mockDelMode);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe("<GroupInventoryItem />", () => {
   const fakeProps = (): GroupInventoryItemProps => ({
@@ -59,17 +62,17 @@ describe("<GroupInventoryItem />", () => {
   it("opens group", () => {
     const p = fakeProps();
     const wrapper = mount(<GroupInventoryItem {...p} />);
-    wrapper.find("div").first().simulate("click");
+    wrapper.find(".group-search-item").first().simulate("click");
     expect(p.onClick).toHaveBeenCalled();
-    expect(destroy).not.toHaveBeenCalledWith(p.group.uuid);
+    expect(crud.destroy).not.toHaveBeenCalledWith(p.group.uuid);
   });
 
   it("deletes group", () => {
     mockDelMode = true;
     const p = fakeProps();
     const wrapper = mount(<GroupInventoryItem {...p} />);
-    wrapper.find("div").first().simulate("click");
+    wrapper.find(".group-search-item").first().simulate("click");
     expect(p.onClick).not.toHaveBeenCalled();
-    expect(destroy).toHaveBeenCalledWith(p.group.uuid);
+    expect(crud.destroy).toHaveBeenCalledWith(p.group.uuid);
   });
 });

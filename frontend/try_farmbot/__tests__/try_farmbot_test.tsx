@@ -1,14 +1,22 @@
+const mockMqttClient = {
+  on: jest.fn(),
+  subscribe: jest.fn(),
+};
+const mockConnect = jest.fn(() => mockMqttClient);
+
 jest.mock("mqtt", () => ({
-  connect: () => ({
-    on: jest.fn(),
-    subscribe: jest.fn(),
-  })
+  __esModule: true,
+  connect: mockConnect,
+  default: { connect: mockConnect },
 }));
 
 import React from "react";
 import { shallow } from "enzyme";
 import { DEMO_LOADING, TryFarmbot } from "../try_farmbot";
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 describe("<TryFarmbot />", () => {
   it("renders OK", () => {
     const tfb = new TryFarmbot({});

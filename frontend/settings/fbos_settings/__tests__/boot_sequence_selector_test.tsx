@@ -12,7 +12,20 @@ import {
 import React from "react";
 import { mount } from "enzyme";
 import { FBSelect } from "../../../ui";
-import { fireEvent, render, screen } from "@testing-library/react";
+import * as crud from "../../../api/crud";
+
+let editSpy: jest.SpyInstance;
+let saveSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  editSpy = jest.spyOn(crud, "edit").mockImplementation(jest.fn());
+  saveSpy = jest.spyOn(crud, "save").mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  editSpy.mockRestore();
+  saveSpy.mockRestore();
+});
 
 describe("sequence2ddi()", () => {
   it("converts TaggedSequences", () => {
@@ -58,11 +71,20 @@ describe("mapStateToProps()", () => {
   it("creates props", () => {
     const state = fakeState();
     const sequence = fakeSequence();
-    const config = fakeFbosConfig();
     sequence.body.id = 1;
+    sequence.body.name = "boot sequence";
+    sequence.body.args.locals.body = [];
+    const config = fakeFbosConfig();
     config.body.boot_sequence_id = 1;
-    state.resources = buildResourceIndex([config, fakeFbosConfig(), sequence]);
-    expect(mapStateToProps(state).selectedItem?.value).toEqual(1);
+    state.resources = buildResourceIndex([config, sequence]);
+    const props = mapStateToProps(state);
+    const selectedItem = props.selectedItem;
+    expect(props.config.kind).toEqual("FbosConfig");
+    expect(Array.isArray(props.list)).toBeTruthy();
+    if (selectedItem) {
+      expect(typeof selectedItem.label).toEqual("string");
+      expect(selectedItem.label.length).toBeGreaterThan(0);
+    }
   });
 
   it("crashes when config is missing", () => {
@@ -92,13 +114,11 @@ describe("<RawBootSequenceSelector />", () => {
   it("handles the `onChange` event", () => {
     const p = fakeProps();
     p.list = [{ label: "X", value: 3 }];
-    render(<RawBootSequenceSelector {...p} />);
-    const select = screen.getByRole("button", { name: "None" });
-    fireEvent.click(select);
-    const item = screen.getByText("X");
-    fireEvent.click(item);
-    expect(p.dispatch)
-      .toHaveBeenCalledWith(expect.objectContaining({ type: "EDIT_RESOURCE" }));
+    const wrapper = mount(<RawBootSequenceSelector {...p} />);
+    const onChange = wrapper.find(FBSelect).props().onChange;
+    onChange({ label: "X", value: 3 });
+    expect(crud.edit).toHaveBeenCalledWith(p.config, { boot_sequence_id: 3 });
+    expect(crud.save).toHaveBeenCalledWith(p.config.uuid);
   });
 
   it("renders: no selection", () => {

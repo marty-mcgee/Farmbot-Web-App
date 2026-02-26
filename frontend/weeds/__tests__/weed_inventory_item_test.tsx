@@ -1,14 +1,3 @@
-jest.mock("../../farm_designer/map/actions", () => ({
-  mapPointClickAction: jest.fn(() => jest.fn()),
-  selectPoint: jest.fn(),
-}));
-
-jest.mock("../../api/crud", () => ({
-  destroy: jest.fn(),
-  edit: jest.fn(),
-  save: jest.fn(),
-}));
-
 import React from "react";
 import { shallow, mount } from "enzyme";
 import {
@@ -16,10 +5,25 @@ import {
 } from "../weed_inventory_item";
 import { fakeWeed } from "../../__test_support__/fake_state/resources";
 import { Actions } from "../../constants";
-import { mapPointClickAction } from "../../farm_designer/map/actions";
-import { edit, save, destroy } from "../../api/crud";
+import * as mapActions from "../../farm_designer/map/actions";
+import * as crud from "../../api/crud";
 import { Path } from "../../internal_urls";
 
+beforeEach(() => {
+  jest.clearAllMocks();
+  location.pathname = Path.mock(Path.weeds());
+  jest.spyOn(mapActions, "mapPointClickAction")
+    .mockImplementation(jest.fn(() => jest.fn()));
+  jest.spyOn(mapActions, "selectPoint")
+    .mockImplementation(jest.fn());
+  jest.spyOn(crud, "destroy").mockImplementation(jest.fn());
+  jest.spyOn(crud, "edit").mockImplementation(jest.fn());
+  jest.spyOn(crud, "save").mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe("<WeedInventoryItem /> />", () => {
   const fakeProps = (): WeedInventoryItemProps => ({
     tpp: fakeWeed(),
@@ -47,7 +51,7 @@ describe("<WeedInventoryItem /> />", () => {
     p.tpp.body.id = 1;
     const wrapper = shallow(<WeedInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mapActions.mapPointClickAction).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(Path.weeds(1));
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_HOVERED_POINT,
@@ -60,7 +64,7 @@ describe("<WeedInventoryItem /> />", () => {
     p.tpp.body.id = undefined;
     const wrapper = shallow(<WeedInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).not.toHaveBeenCalled();
+    expect(mapActions.mapPointClickAction).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith(Path.weeds("ERR_NO_POINT_ID"));
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.TOGGLE_HOVERED_POINT,
@@ -73,7 +77,7 @@ describe("<WeedInventoryItem /> />", () => {
     const p = fakeProps();
     const wrapper = shallow(<WeedInventoryItem {...p} />);
     wrapper.simulate("click");
-    expect(mapPointClickAction).toHaveBeenCalledWith(
+    expect(mapActions.mapPointClickAction).toHaveBeenCalledWith(
       expect.any(Function),
       expect.any(Function),
       p.tpp.uuid);
@@ -116,8 +120,8 @@ describe("<WeedInventoryItem /> />", () => {
     p.pending = true;
     const wrapper = mount(<WeedInventoryItem {...p} />);
     wrapper.find(".fb-button.green").first().simulate("click");
-    expect(edit).toHaveBeenCalledWith(p.tpp, { plant_stage: "active" });
-    expect(save).toHaveBeenCalledWith(p.tpp.uuid);
+    expect(crud.edit).toHaveBeenCalledWith(p.tpp, { plant_stage: "active" });
+    expect(crud.save).toHaveBeenCalledWith(p.tpp.uuid);
   });
 
   it("rejects weed", () => {
@@ -125,7 +129,7 @@ describe("<WeedInventoryItem /> />", () => {
     p.pending = true;
     const wrapper = mount(<WeedInventoryItem {...p} />);
     wrapper.find(".fb-button.red").first().simulate("click");
-    expect(destroy).toHaveBeenCalledWith(p.tpp.uuid, true);
+    expect(crud.destroy).toHaveBeenCalledWith(p.tpp.uuid, true);
   });
 
   it.each<[number, number, number]>([

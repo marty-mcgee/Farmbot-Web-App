@@ -1,31 +1,3 @@
-let mockAxiosResponse = Promise.resolve({ data: "" });
-
-jest.mock("axios", () => ({
-  post: jest.fn(() => mockAxiosResponse)
-}));
-
-let mockAuth: AuthState | undefined = undefined;
-jest.mock("../../session", () => ({
-  Session: {
-    replaceToken: jest.fn(),
-    fetchStoredToken: () => mockAuth,
-  }
-}));
-
-jest.mock("../../api", () => ({
-  API: {
-    setBaseUrl: jest.fn(),
-    fetchBrowserLocation: jest.fn(),
-    fetchHostName: () => "localhost",
-    inferPort: () => 3000,
-    current: {
-      tokensPath: "://localhost:3000/api/tokens/",
-      passwordResetPath: "resetPath",
-      usersPath: "usersPath"
-    }
-  }
-}));
-
 import React from "react";
 import { mount, shallow } from "enzyme";
 import {
@@ -42,9 +14,54 @@ import { formEvent } from "../../__test_support__/fake_html_events";
 import { changeBlurableInput } from "../../__test_support__/helpers";
 import { CreateAccount } from "../create_account";
 import { ForgotPassword } from "../forgot_password";
+import { store } from "../../redux/store";
+import { fakeState } from "../../__test_support__/fake_state";
+
+let mockAxiosResponse = Promise.resolve({ data: "" });
+let mockAuth: AuthState | undefined = undefined;
+let postSpy: jest.SpyInstance;
+let fetchStoredTokenSpy: jest.SpyInstance;
+let replaceTokenSpy: jest.SpyInstance;
+let fetchBrowserLocationSpy: jest.SpyInstance;
+let getStateSpy: jest.SpyInstance;
+let originalTosUrl: string;
+let originalPrivUrl: string;
 
 describe("<FrontPage />", () => {
-  beforeEach(() => { mockAuth = undefined; });
+  const flushPromises = async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  };
+
+  beforeEach(() => {
+    mockAuth = undefined;
+    mockAxiosResponse = Promise.resolve({ data: "" });
+    originalTosUrl = globalConfig.TOS_URL;
+    originalPrivUrl = globalConfig.PRIV_URL;
+    const mockState = fakeState();
+    getStateSpy = jest.spyOn(store, "getState")
+      .mockReturnValue(mockState as never);
+    postSpy = jest.spyOn(axios, "post")
+      .mockImplementation(() => mockAxiosResponse as never);
+    fetchStoredTokenSpy = jest.spyOn(Session, "fetchStoredToken")
+      .mockImplementation(() => mockAuth);
+    replaceTokenSpy = jest.spyOn(Session, "replaceToken")
+      .mockImplementation(jest.fn());
+    fetchBrowserLocationSpy = jest.spyOn(API, "fetchBrowserLocation")
+      .mockImplementation(() => "//localhost:3000");
+    API.setBaseUrl("//localhost:3000");
+  });
+
+  afterEach(() => {
+    getStateSpy.mockRestore();
+    postSpy.mockRestore();
+    fetchStoredTokenSpy.mockRestore();
+    replaceTokenSpy.mockRestore();
+    fetchBrowserLocationSpy.mockRestore();
+    globalConfig.TOS_URL = originalTosUrl;
+    globalConfig.PRIV_URL = originalPrivUrl;
+    jest.useRealTimers();
+  });
 
   const fakeFormEvent = formEvent();
 
@@ -103,8 +120,9 @@ describe("<FrontPage />", () => {
     const wrapper = mount<FrontPage>(<FrontPage />);
     wrapper.setState({ email: "foo@bar.io", loginPassword: "password" });
     wrapper.instance().update = jest.fn();
-    await wrapper.instance().submitLogin(fakeFormEvent);
-    await expect(Session.replaceToken).not.toHaveBeenCalled();
+    wrapper.instance().submitLogin(fakeFormEvent);
+    await flushPromises();
+    expect(Session.replaceToken).not.toHaveBeenCalled();
     expect(wrapper.instance().update).toHaveBeenCalled();
   });
 
@@ -112,10 +130,11 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.resolve({ data: "new data" });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", loginPassword: "password" });
-    await el.instance().submitLogin(fakeFormEvent);
-    expect(API.setBaseUrl).toHaveBeenCalled();
+    el.instance().submitLogin(fakeFormEvent);
+    await flushPromises();
+    expect(fetchBrowserLocationSpy).toHaveBeenCalled();
     expect(axios.post).toHaveBeenCalledWith(
-      "://localhost:3000/api/tokens/",
+      "http://localhost:3000/api/tokens/",
       { user: { email: "foo@bar.io", password: "password" } });
     expect(Session.replaceToken).toHaveBeenCalledWith("new data");
     expect(location.assign).toHaveBeenCalledWith(DEFAULT_APP_PAGE);
@@ -126,12 +145,13 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.reject({ response: { status: 403 } });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", loginPassword: "password" });
-    await el.instance().submitLogin(fakeFormEvent);
-    expect(API.setBaseUrl).toHaveBeenCalled();
+    el.instance().submitLogin(fakeFormEvent);
+    await flushPromises();
+    expect(fetchBrowserLocationSpy).toHaveBeenCalled();
     expect(axios.post).toHaveBeenCalledWith(
-      "://localhost:3000/api/tokens/",
+      "http://localhost:3000/api/tokens/",
       { user: { email: "foo@bar.io", password: "password" } });
-    await expect(Session.replaceToken).not.toHaveBeenCalled();
+    expect(Session.replaceToken).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith("Account Not Verified");
     expect(el.instance().state.activePanel).toEqual("resendVerificationEmail");
     jest.runAllTimers();
@@ -141,12 +161,13 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.reject({ response: { status: 451 } });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", loginPassword: "password" });
-    await el.instance().submitLogin(fakeFormEvent);
-    expect(API.setBaseUrl).toHaveBeenCalled();
+    el.instance().submitLogin(fakeFormEvent);
+    await flushPromises();
+    expect(fetchBrowserLocationSpy).toHaveBeenCalled();
     expect(axios.post).toHaveBeenCalledWith(
-      "://localhost:3000/api/tokens/",
+      "http://localhost:3000/api/tokens/",
       { user: { email: "foo@bar.io", password: "password" } });
-    await expect(Session.replaceToken).not.toHaveBeenCalled();
+    expect(Session.replaceToken).not.toHaveBeenCalled();
     expect(window.location.assign).toHaveBeenCalledWith("/tos_update");
   });
 
@@ -156,12 +177,13 @@ describe("<FrontPage />", () => {
     });
     const wrapper = mount<FrontPage>(<FrontPage />);
     wrapper.setState({ email: "foo@bar.io", loginPassword: "password" });
-    await wrapper.instance().submitLogin(fakeFormEvent);
-    expect(API.setBaseUrl).toHaveBeenCalled();
+    wrapper.instance().submitLogin(fakeFormEvent);
+    await flushPromises();
+    expect(fetchBrowserLocationSpy).toHaveBeenCalled();
     expect(axios.post).toHaveBeenCalledWith(
-      "://localhost:3000/api/tokens/",
+      "http://localhost:3000/api/tokens/",
       { user: { email: "foo@bar.io", password: "password" } });
-    await expect(Session.replaceToken).not.toHaveBeenCalled();
+    expect(Session.replaceToken).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith("Error: error");
   });
 
@@ -175,13 +197,15 @@ describe("<FrontPage />", () => {
       regConfirmation: "password",
       agreeToTerms: true
     });
-    await el.instance().submitRegistration(fakeFormEvent);
-    expect(axios.post).toHaveBeenCalledWith("usersPath", {
-      user: {
-        agree_to_terms: true, email: "foo@bar.io", name: "Foo Bar",
-        password: "password", password_confirmation: "password"
-      }
-    });
+    el.instance().submitRegistration(fakeFormEvent);
+    await flushPromises();
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:3000/api/users/", {
+        user: {
+          agree_to_terms: true, email: "foo@bar.io", name: "Foo Bar",
+          password: "password", password_confirmation: "password"
+        },
+      });
     expect(success).toHaveBeenCalledWith(
       expect.stringContaining("Almost done!"));
     expect(el.instance().state.registrationSent).toEqual(true);
@@ -197,14 +221,16 @@ describe("<FrontPage />", () => {
       regConfirmation: "password",
       agreeToTerms: true
     });
-    await el.instance().submitRegistration(fakeFormEvent);
-    await expect(axios.post).toHaveBeenCalledWith("usersPath", {
-      user: {
-        agree_to_terms: true, email: "foo@bar.io", name: "Foo Bar",
-        password: "password", password_confirmation: "password"
-      }
-    });
-    await expect(error).toHaveBeenCalledWith(
+    el.instance().submitRegistration(fakeFormEvent);
+    await flushPromises();
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:3000/api/users/", {
+        user: {
+          agree_to_terms: true, email: "foo@bar.io", name: "Foo Bar",
+          password: "password", password_confirmation: "password"
+        },
+      });
+    expect(error).toHaveBeenCalledWith(
       expect.stringContaining("failure"));
     expect(el.instance().state.registrationSent).toEqual(false);
   });
@@ -213,10 +239,12 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.resolve({ data: "" });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", activePanel: "forgotPassword" });
-    await el.instance().submitForgotPassword(fakeFormEvent);
-    await expect(axios.post).toHaveBeenCalledWith("resetPath",
+    el.instance().submitForgotPassword(fakeFormEvent);
+    await flushPromises();
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:3000/api/password_resets/",
       { email: "foo@bar.io" });
-    await expect(success).toHaveBeenCalledWith(
+    expect(success).toHaveBeenCalledWith(
       "Email has been sent.", { title: "Forgot Password" });
     expect(el.instance().state.activePanel).toEqual("login");
   });
@@ -225,10 +253,12 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.reject({ response: { data: ["failure"] } });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", activePanel: "forgotPassword" });
-    await el.instance().submitForgotPassword(fakeFormEvent);
-    await expect(axios.post).toHaveBeenCalledWith("resetPath",
+    el.instance().submitForgotPassword(fakeFormEvent);
+    await flushPromises();
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:3000/api/password_resets/",
       { email: "foo@bar.io" });
-    await expect(error).toHaveBeenCalledWith(
+    expect(error).toHaveBeenCalledWith(
       expect.stringContaining("failure"));
     expect(el.instance().state.activePanel).toEqual("forgotPassword");
   });
@@ -237,10 +267,12 @@ describe("<FrontPage />", () => {
     mockAxiosResponse = Promise.reject({ response: { data: ["not found"] } });
     const el = mount<FrontPage>(<FrontPage />);
     el.setState({ email: "foo@bar.io", activePanel: "forgotPassword" });
-    await el.instance().submitForgotPassword(fakeFormEvent);
-    await expect(axios.post).toHaveBeenCalledWith("resetPath",
+    el.instance().submitForgotPassword(fakeFormEvent);
+    await flushPromises();
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://localhost:3000/api/password_resets/",
       { email: "foo@bar.io" });
-    await expect(error).toHaveBeenCalledWith(expect.stringContaining(
+    expect(error).toHaveBeenCalledWith(expect.stringContaining(
       "not associated with an account"));
     expect(el.instance().state.activePanel).toEqual("forgotPassword");
   });
@@ -274,14 +306,14 @@ describe("<FrontPage />", () => {
     const expected2 = { agreeToTerms: event2.currentTarget.checked };
     agreeToTerms(event2);
     expect(spy).toHaveBeenCalledWith(expected2);
-    jest.resetAllMocks();
+    jest.clearAllMocks();
 
     const regName = setField("regName", spy);
     const event3 = fakeEv({ value: "hello!" });
     const expected3 = { regName: event3.currentTarget.value };
     regName(event3);
     expect(spy).toHaveBeenCalledWith(expected3);
-    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   it("resendVerificationPanel(): ok()", () => {

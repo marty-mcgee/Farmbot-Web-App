@@ -1,22 +1,33 @@
 const mockDevice = { updateFarmware: jest.fn((_) => Promise.resolve({})) };
-jest.mock("../../device", () => ({ getDevice: () => mockDevice }));
-
-jest.mock("../../api/crud", () => ({ destroy: jest.fn() }));
-
-jest.mock("../actions", () => ({ retryFetchPackageName: jest.fn() }));
 
 import React from "react";
 import { mount } from "enzyme";
 import { FarmwareInfoProps, FarmwareInfo } from "../farmware_info";
 import { fakeFarmware } from "../../__test_support__/fake_farmwares";
 import { clickButton } from "../../__test_support__/helpers";
-import { destroy } from "../../api/crud";
 import {
   fakeFarmwareInstallation,
 } from "../../__test_support__/fake_state/resources";
 import { error } from "../../toast/toast";
-import { retryFetchPackageName } from "../actions";
 import { Path } from "../../internal_urls";
+import * as crud from "../../api/crud";
+import * as deviceModule from "../../device";
+import * as farmwareActions from "../actions";
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockDevice.updateFarmware = jest.fn((_) => Promise.resolve({}));
+  jest.spyOn(deviceModule, "getDevice")
+    .mockImplementation(() => mockDevice as never);
+  jest.spyOn(crud, "destroy")
+    .mockImplementation(jest.fn());
+  jest.spyOn(farmwareActions, "retryFetchPackageName")
+    .mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe("<FarmwareInfo />", () => {
   const fakeProps = (): FarmwareInfoProps => ({
@@ -95,7 +106,7 @@ describe("<FarmwareInfo />", () => {
     p.installations = [fakeFarmwareInstallation()];
     const wrapper = mount(<FarmwareInfo {...p} />);
     clickButton(wrapper, 1, "Remove");
-    expect(destroy).toHaveBeenCalledWith(p.installations[0].uuid);
+    expect(crud.destroy).toHaveBeenCalledWith(p.installations[0].uuid);
     expect(mockNavigate).toHaveBeenCalledWith(Path.farmware());
   });
 
@@ -108,7 +119,7 @@ describe("<FarmwareInfo />", () => {
     p.firstPartyFarmwareNames = ["fake"];
     const wrapper = mount(<FarmwareInfo {...p} />);
     clickButton(wrapper, 1, "Remove");
-    expect(destroy).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
@@ -118,7 +129,7 @@ describe("<FarmwareInfo />", () => {
     p.installations = [];
     const wrapper = mount(<FarmwareInfo {...p} />);
     clickButton(wrapper, 1, "Remove");
-    expect(destroy).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith("Farmware not found.");
   });
 
@@ -129,7 +140,7 @@ describe("<FarmwareInfo />", () => {
     if (p.farmware) { p.farmware.url = ""; }
     const wrapperNoUrl = mount(<FarmwareInfo {...p} />);
     clickButton(wrapperNoUrl, 1, "Remove");
-    expect(destroy).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith("Farmware not found.");
   });
 
@@ -139,7 +150,7 @@ describe("<FarmwareInfo />", () => {
     p.installations = [fakeFarmwareInstallation()];
     const wrapper = mount(<FarmwareInfo {...p} />);
     clickButton(wrapper, 1, "Remove");
-    await expect(destroy).toHaveBeenCalled();
+    await expect(crud.destroy).toHaveBeenCalled();
     expect(error).toHaveBeenCalledWith("Farmware not found.");
   });
 
@@ -160,7 +171,7 @@ describe("<FarmwareInfo />", () => {
     p.installations = [farmwareInstallation];
     const wrapper = mount(<FarmwareInfo {...p} />);
     clickButton(wrapper, 2, "retry");
-    expect(retryFetchPackageName)
+    expect(farmwareActions.retryFetchPackageName)
       .toHaveBeenCalledWith(farmwareInstallation.body.id);
   });
 

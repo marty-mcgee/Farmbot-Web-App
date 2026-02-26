@@ -4,9 +4,13 @@ import { render } from "@testing-library/react";
 import { Bot, FarmbotModelProps } from "../bot";
 import { INITIAL } from "../../config";
 import { clone } from "lodash";
-import { SVGLoader } from "three/examples/jsm/Addons";
+import { SVGLoader } from "three/examples/jsm/Addons.js";
 
 describe("<Bot />", () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   const fakeProps = (): FarmbotModelProps => {
     const config = clone(INITIAL);
     config.bot = true;

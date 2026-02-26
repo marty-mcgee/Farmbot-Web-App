@@ -1,7 +1,3 @@
-jest.mock("../../../devices/actions", () => ({
-  flashFirmware: jest.fn(),
-}));
-
 import React from "react";
 import { mount } from "enzyme";
 import {
@@ -11,7 +7,15 @@ import {
 } from "../firmware_hardware_status";
 import { bot } from "../../../__test_support__/fake_state/bot";
 import { fakeTimeSettings } from "../../../__test_support__/fake_time_settings";
+import * as deviceActions from "../../../devices/actions";
 
+beforeEach(() => {
+  jest.spyOn(deviceActions, "flashFirmware").mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe("<FirmwareHardwareStatusDetails />", () => {
   const fakeProps = (): FirmwareHardwareStatusDetailsProps => ({
     alerts: [],

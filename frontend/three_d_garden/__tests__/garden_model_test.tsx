@@ -1,16 +1,12 @@
 let mockIsDesktop = false;
 let mockIsMobile = false;
-jest.mock("../../screen_size", () => ({
-  isDesktop: () => mockIsDesktop,
-  isMobile: () => mockIsMobile,
-}));
 
 import React from "react";
 import { mount } from "enzyme";
 import { GardenModelProps, GardenModel } from "../garden_model";
 import { clone } from "lodash";
 import { INITIAL, SurfaceDebugOption } from "../config";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   fakePlant, fakePoint, fakeSensor, fakeSensorReading, fakeWeed,
 } from "../../__test_support__/fake_state/resources";
@@ -19,10 +15,26 @@ import { ASSETS } from "../constants";
 import { Path } from "../../internal_urls";
 import { fakeDrawnPoint } from "../../__test_support__/fake_designer_state";
 import { convertPlants } from "../../farm_designer/three_d_garden_map";
+import * as screenSize from "../../screen_size";
+
+let isDesktopSpy: jest.SpyInstance;
+let isMobileSpy: jest.SpyInstance;
+const originalPathname = location.pathname;
 
 describe("<GardenModel />", () => {
   beforeEach(() => {
+    mockIsDesktop = false;
     mockIsMobile = false;
+    isDesktopSpy = jest.spyOn(screenSize, "isDesktop")
+      .mockImplementation(() => mockIsDesktop);
+    isMobileSpy = jest.spyOn(screenSize, "isMobile")
+      .mockImplementation(() => mockIsMobile);
+  });
+
+  afterEach(() => {
+    isDesktopSpy.mockRestore();
+    isMobileSpy.mockRestore();
+    location.pathname = originalPathname;
   });
 
   const fakeProps = (): GardenModelProps => ({
@@ -35,9 +47,9 @@ describe("<GardenModel />", () => {
 
   it("renders", () => {
     const { container } = render(<GardenModel {...fakeProps()} />);
-    expect(container).toContainHTML("zoom-beacons");
-    expect(container).not.toContainHTML("stats");
-    expect(container).toContainHTML("darkgreen");
+    expect(container.innerHTML).toContain("zoom-beacons");
+    expect(container.innerHTML).not.toContain("stats");
+    expect(container.innerHTML).toContain("darkgreen");
   });
 
   it("renders top down view", () => {
@@ -47,14 +59,14 @@ describe("<GardenModel />", () => {
     addPlantProps.designer.threeDTopDownView = true;
     p.addPlantProps = addPlantProps;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("darkgreen");
+    expect(container.innerHTML).toContain("darkgreen");
   });
 
   it("renders no user plants", () => {
     const p = fakeProps();
     p.threeDPlants = convertPlants(p.config, []);
-    render(<GardenModel {...p} />);
-    const plantLabels = screen.queryAllByText("Beet");
+    const { queryAllByText } = render(<GardenModel {...p} />);
+    const plantLabels = queryAllByText("Beet");
     expect(plantLabels.length).toEqual(0);
   });
 
@@ -63,8 +75,8 @@ describe("<GardenModel />", () => {
     const plant = fakePlant();
     plant.body.name = "Beet";
     p.threeDPlants = convertPlants(p.config, [plant]);
-    render(<GardenModel {...p} />);
-    const plantLabels = screen.queryAllByText("Beet");
+    const { queryAllByText } = render(<GardenModel {...p} />);
+    const plantLabels = queryAllByText("Beet");
     expect(plantLabels.length).toEqual(1);
   });
 
@@ -73,8 +85,8 @@ describe("<GardenModel />", () => {
     p.mapPoints = [fakePoint()];
     p.weeds = [fakeWeed()];
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("cylinder");
-    expect(container).toContainHTML(ASSETS.other.weed);
+    expect(container.innerHTML).toContain("cylinder");
+    expect(container.innerHTML).toContain(ASSETS.other.weed);
   });
 
   it("renders drawn point", () => {
@@ -84,7 +96,7 @@ describe("<GardenModel />", () => {
     addPlantProps.designer.drawnPoint = fakeDrawnPoint();
     p.addPlantProps = addPlantProps;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("drawn-point");
+    expect(container.innerHTML).toContain("drawn-point");
   });
 
   it("doesn't render bot", () => {
@@ -92,7 +104,7 @@ describe("<GardenModel />", () => {
     p.addPlantProps = fakeAddPlantProps();
     p.addPlantProps.getConfigValue = () => false;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).not.toContainHTML("bot");
+    expect(container.innerHTML).not.toContain('name="bot"');
   });
 
   it("renders other options", () => {
@@ -106,15 +118,14 @@ describe("<GardenModel />", () => {
     p.config.sizePreset = "Genesis XL";
     p.config.stats = true;
     p.config.viewCube = true;
-    p.config.lab = true;
     p.config.lightsDebug = true;
     p.config.surfaceDebug = SurfaceDebugOption.normals;
     p.config.moistureDebug = true;
     p.activeFocus = "plant";
     p.addPlantProps = undefined;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("gray");
-    expect(container).toContainHTML("stats");
+    expect(container.innerHTML).toContain("gray");
+    expect(container.innerHTML).toContain("stats");
   });
 
   it("renders debug options", () => {
@@ -140,7 +151,7 @@ describe("<GardenModel />", () => {
     p.config.surfaceDebug = SurfaceDebugOption.height;
     p.config.moistureDebug = true;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("gray");
+    expect(container.innerHTML).toContain("gray");
   });
 
   it("renders without sensor readings", () => {
@@ -149,7 +160,7 @@ describe("<GardenModel />", () => {
     p.sensorReadings = undefined;
     p.config.moistureDebug = true;
     const { container } = render(<GardenModel {...p} />);
-    expect(container).toContainHTML("gray");
+    expect(container.innerHTML).toContain("gray");
   });
 
   it("sets hover", () => {
@@ -159,6 +170,21 @@ describe("<GardenModel />", () => {
     const e = {
       stopPropagation: jest.fn(),
       intersections: [{ object: { name: "obj" } }],
+    };
+    wrapper.find({ name: "plants" }).first().simulate("pointerEnter", e);
+    expect(e.stopPropagation).toHaveBeenCalled();
+  });
+
+  it("sets hover with instance id", () => {
+    const p = fakeProps();
+    p.config.labelsOnHover = true;
+    const wrapper = mount(<GardenModel {...p} />);
+    const e = {
+      stopPropagation: jest.fn(),
+      intersections: [{
+        instanceId: 0,
+        object: { userData: { plantIndexes: [0] }, name: "0" },
+      }],
     };
     wrapper.find({ name: "plants" }).first().simulate("pointerEnter", e);
     expect(e.stopPropagation).toHaveBeenCalled();
@@ -199,7 +225,8 @@ describe("<GardenModel />", () => {
   });
 
   it("logs debug event", () => {
-    console.log = jest.fn();
+    const consoleLogSpy = jest.spyOn(console, "log")
+      .mockImplementation(jest.fn());
     const p = fakeProps();
     p.config.eventDebug = true;
     const wrapper = mount(<GardenModel {...p} />);
@@ -209,7 +236,8 @@ describe("<GardenModel />", () => {
         { object: { name: "2" } },
       ],
     });
-    expect(console.log).toHaveBeenCalledWith(["1", "2"]);
+    expect(consoleLogSpy).toHaveBeenCalledWith(["1", "2"]);
+    consoleLogSpy.mockRestore();
   });
 
   it.each<[string, string]>([

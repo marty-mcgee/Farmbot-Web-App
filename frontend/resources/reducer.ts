@@ -14,10 +14,10 @@ import {
 import { TaggedResource, SpecialStatus } from "farmbot";
 import { Actions } from "../constants";
 import { EditResourceParams } from "../api/interfaces";
-import { defensiveClone, equals } from "../util";
+import { defensiveClone, equals } from "../util/util";
 import { isUndefined, merge } from "lodash";
 import { SyncBodyContents } from "../sync/actions";
-import { GeneralizedError } from "./actions";
+import type { GeneralizedError } from "./actions";
 import { initialState as helpState } from "../help/reducer";
 import { initialState as designerState } from "../farm_designer/reducer";
 import { farmwareState } from "../farmware/reducer";
@@ -157,6 +157,13 @@ export const resourceReducer =
     .add<TaggedResource>(Actions.DESTROY_RESOURCE_OK, (s, { payload }) => {
       indexRemove(s.index, payload);
       folderIndexer(payload, s.index);
+      return s;
+    })
+    .add<TaggedResource[]>(Actions.BATCH_DESTROY_RESOURCE_OK, (s, { payload }) => {
+      payload.map(p => {
+        indexRemove(s.index, p);
+        folderIndexer(p, s.index);
+      });
       return s;
     })
     .add<GeneralizedError>(Actions._RESOURCE_NO, (s, { payload }) => {

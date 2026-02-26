@@ -9,13 +9,20 @@ import {
   BoxGeometry,
   DirectionalLight,
   Group,
+  InstancedMesh,
+  LineBasicMaterial,
+  LineSegments,
   Mesh,
   MeshBasicMaterial,
+  MeshPhongMaterial,
   PointLight,
   SpotLight,
 } from "../components";
 import { ThreeElements } from "@react-three/fiber";
 
+afterAll(() => {
+  jest.unmock("../components");
+});
 describe("<Group />", () => {
   const fakeProps = (): ThreeElements["group"] => ({
     visible: true,
@@ -82,6 +89,28 @@ describe("<Mesh />", () => {
   });
 });
 
+describe("<LineSegments />", () => {
+  const fakeProps = (): ThreeElements["lineSegments"] => ({
+    name: "lineSegments",
+  });
+
+  it("adds props", () => {
+    const wrapper = mount(<LineSegments {...fakeProps()} />);
+    expect(wrapper.props().name).toEqual("lineSegments");
+  });
+});
+
+describe("<InstancedMesh />", () => {
+  const fakeProps = (): ThreeElements["instancedMesh"] => ({
+    name: "instancedMesh",
+  });
+
+  it("adds props", () => {
+    const wrapper = mount(<InstancedMesh {...fakeProps()} />);
+    expect(wrapper.props().name).toEqual("instancedMesh");
+  });
+});
+
 describe("<MeshBasicMaterial />", () => {
   const fakeProps = (): ThreeElements["meshBasicMaterial"] => ({
     name: "material",
@@ -89,6 +118,28 @@ describe("<MeshBasicMaterial />", () => {
 
   it("adds props", () => {
     const wrapper = mount(<MeshBasicMaterial {...fakeProps()} />);
+    expect(wrapper.props().name).toEqual("material");
+  });
+});
+
+describe("<LineBasicMaterial />", () => {
+  const fakeProps = (): ThreeElements["lineBasicMaterial"] => ({
+    name: "lineMaterial",
+  });
+
+  it("adds props", () => {
+    const wrapper = mount(<LineBasicMaterial {...fakeProps()} />);
+    expect(wrapper.props().name).toEqual("lineMaterial");
+  });
+});
+
+describe("<MeshPhongMaterial />", () => {
+  const fakeProps = (): ThreeElements["meshPhongMaterial"] => ({
+    name: "material",
+  });
+
+  it("adds props", () => {
+    const wrapper = mount(<MeshPhongMaterial {...fakeProps()} />);
     expect(wrapper.props().name).toEqual("material");
   });
 });

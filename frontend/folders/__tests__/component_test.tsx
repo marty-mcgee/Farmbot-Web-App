@@ -21,21 +21,13 @@ jest.mock("@blueprintjs/core", () => ({
   MenuItem: jest.fn(),
   Alignment: jest.fn(),
 }));
-
-import { PopoverProps } from "../../ui/popover";
-let mockPopover = ({ target, content }: PopoverProps) =>
+import * as popover from "../../ui/popover";
+let mockPopover = ({ target, content }: popover.PopoverProps) =>
   <div>{target}{content}</div>;
-jest.mock("../../ui/popover", () => ({
-  Popover: jest.fn((p: PopoverProps) => mockPopover(p)),
-}));
 
 jest.mock("@blueprintjs/select", () => ({
   Select: { ofType: jest.fn() },
   ItemRenderer: jest.fn(),
-}));
-
-jest.mock("../../sequences/actions", () => ({
-  copySequence: jest.fn(),
 }));
 
 import React from "react";
@@ -66,9 +58,30 @@ import { fakeSequence } from "../../__test_support__/fake_state/resources";
 import { SpecialStatus, Color, SequenceBodyItem } from "farmbot";
 import { SearchField } from "../../ui/search_field";
 import { Path } from "../../internal_urls";
-import { copySequence } from "../../sequences/actions";
+import * as sequenceActions from "../../sequences/actions";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import { fakeMenuOpenState } from "../../__test_support__/fake_designer_state";
+
+let copySequenceSpy: jest.SpyInstance;
+let popoverSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  popoverSpy = jest.spyOn(popover, "Popover")
+    .mockImplementation((p: popover.PopoverProps) => mockPopover(p));
+  copySequenceSpy = jest.spyOn(sequenceActions, "copySequence")
+    .mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  popoverSpy.mockRestore();
+  copySequenceSpy.mockRestore();
+});
+
+afterAll(() => {
+  jest.unmock("../actions");
+  jest.unmock("@blueprintjs/core");
+  jest.unmock("@blueprintjs/select");
+});
 
 const fakeRootFolder = (): FolderNodeInitial => ({
   kind: "initial",
@@ -260,7 +273,7 @@ describe("<FolderListItem />", () => {
   });
 
   beforeEach(() => {
-    mockPopover = ({ target, content }: PopoverProps) =>
+    mockPopover = ({ target, content }: popover.PopoverProps) =>
       <div>{target}{content}</div>;
   });
 
@@ -424,7 +437,8 @@ describe("<FolderListItem />", () => {
     const wrapper = mount(<FolderListItem {...p} />);
     wrapper.find(".fa-ellipsis-v").simulate("click");
     wrapper.find(".fa-copy").simulate("click");
-    expect(copySequence).toHaveBeenCalledWith(expect.any(Function), p.sequence);
+    expect(sequenceActions.copySequence)
+      .toHaveBeenCalledWith(expect.any(Function), p.sequence);
   });
 });
 

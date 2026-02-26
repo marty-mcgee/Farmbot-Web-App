@@ -44,7 +44,7 @@ describe("<ImageWorkspace />", () => {
     p.images = [fakeImage()];
     p.currentImage = undefined;
     render(<ImageWorkspace {...p} />);
-    const button = screen.getByText("Scan current image");
+    const button = screen.getAllByText("Scan current image")[0];
     fireEvent.click(button);
     expect(p.onProcessPhoto).not.toHaveBeenCalled();
   });
@@ -58,7 +58,7 @@ describe("<ImageWorkspace />", () => {
     p.images = [photo1, photo2];
     p.currentImage = photo2;
     render(<ImageWorkspace {...p} />);
-    const button = screen.getByText("Scan current image");
+    const button = screen.getAllByText("Scan current image")[0];
     fireEvent.click(button);
     expect(p.onProcessPhoto).toHaveBeenCalledWith(photo2.body.id);
   });
@@ -71,7 +71,7 @@ describe("<ImageWorkspace />", () => {
     p.currentImage = image;
     p.showAdvanced = true;
     render(<ImageWorkspace {...p} />);
-    const button = screen.getByText("Scan current image");
+    const button = screen.getAllByText("Scan current image")[0];
     fireEvent.click(button);
     expect(p.onProcessPhoto).toHaveBeenCalledWith(image.body.id);
   });
@@ -80,7 +80,7 @@ describe("<ImageWorkspace />", () => {
     const p = fakeProps();
     p.botOnline = false;
     render(<ImageWorkspace {...p} />);
-    const button = screen.getByText("Scan current image");
+    const button = screen.getAllByText("Scan current image")[0];
     expect(button).toBeDisabled();
   });
 

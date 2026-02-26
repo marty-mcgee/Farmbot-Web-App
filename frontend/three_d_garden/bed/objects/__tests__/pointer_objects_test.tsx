@@ -1,14 +1,7 @@
-jest.mock("../../../../farm_designer/map/layers/plants/plant_actions", () => ({
-  dropPlant: jest.fn(),
-}));
-
 let mockIsMobile = false;
-jest.mock("../../../../screen_size", () => ({
-  isMobile: () => mockIsMobile,
-}));
-
 import React from "react";
 import {
+  ActivePositionRef,
   BillboardRef,
   ImageRef,
   PointerObjects, PointerObjectsProps,
@@ -27,9 +20,23 @@ import { clone } from "lodash";
 import { Path } from "../../../../internal_urls";
 import { Vector3 } from "three";
 import { ThreeEvent } from "@react-three/fiber";
-import {
-  dropPlant,
-} from "../../../../farm_designer/map/layers/plants/plant_actions";
+import * as plantActions from "../../../../farm_designer/map/layers/plants/plant_actions";
+import * as screenSize from "../../../../screen_size";
+
+let dropPlantSpy: jest.SpyInstance;
+let isMobileSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  mockIsMobile = false;
+  dropPlantSpy = jest.spyOn(plantActions, "dropPlant").mockImplementation(jest.fn());
+  isMobileSpy = jest.spyOn(screenSize, "isMobile")
+    .mockImplementation(() => mockIsMobile);
+});
+
+afterEach(() => {
+  dropPlantSpy.mockRestore();
+  isMobileSpy.mockRestore();
+});
 
 describe("<PointerObjects />", () => {
   const fakeProps = (): PointerObjectsProps => ({
@@ -43,6 +50,7 @@ describe("<PointerObjects />", () => {
     imageRef: { current: { scale: new Vector3(0, 0, 0) } } as ImageRef,
     xCrosshairRef: { current: { position: new Vector3(0, 0, 0) } } as XCrosshairRef,
     yCrosshairRef: { current: { position: new Vector3(0, 0, 0) } } as YCrosshairRef,
+    activePositionRef: { current: { x: 0, y: 0 } } as ActivePositionRef,
   });
 
   it("renders", () => {
@@ -72,7 +80,7 @@ describe("soilClick()", () => {
     } as unknown as ThreeEvent<MouseEvent>;
     soilClick(p)(e);
     expect(e.stopPropagation).toHaveBeenCalled();
-    expect(dropPlant).toHaveBeenCalledWith(expect.objectContaining({
+    expect(dropPlantSpy).toHaveBeenCalledWith(expect.objectContaining({
       gardenCoords: { x: 1360, y: 660 },
     }));
   });
@@ -90,6 +98,7 @@ describe("soilPointerMove()", () => {
     imageRef: { current: { scale: { set: jest.fn() } } } as unknown as ImageRef,
     xCrosshairRef: { current: { position: { set: jest.fn() } } } as unknown as XCrosshairRef,
     yCrosshairRef: { current: { position: { set: jest.fn() } } } as unknown as YCrosshairRef,
+    activePositionRef: { current: { x: 0, y: 0 } } as ActivePositionRef,
   });
 
   it("updates plant position", () => {

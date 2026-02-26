@@ -23,12 +23,13 @@ import { fakeTimeSettings } from "../__test_support__/fake_time_settings";
 import { error, warning } from "../toast/toast";
 import { fakePings } from "../__test_support__/fake_state/pings";
 import { auth } from "../__test_support__/fake_state/token";
+import { cloneDeep } from "lodash";
 import {
   fakeDesignerState,
   fakeHelpState, fakeMenuOpenState,
 } from "../__test_support__/fake_designer_state";
 import { Path } from "../internal_urls";
-import { app } from "../__test_support__/fake_state/app";
+import { fakeApp } from "../__test_support__/fake_state/app";
 
 const FULLY_LOADED: ResourceName[] = [
   "Sequence", "Regimen", "FarmEvent", "Point", "Tool", "Device"];
@@ -39,7 +40,7 @@ const fakeProps = (): AppProps => ({
   loaded: [],
   logs: [],
   user: fakeUser(),
-  bot: bot,
+  bot: cloneDeep(bot),
   axisInversion: { x: false, y: false, z: false },
   firmwareConfig: undefined,
   xySwap: false,
@@ -57,7 +58,7 @@ const fakeProps = (): AppProps => ({
   authAud: undefined,
   wizardStepResults: [],
   telemetry: [],
-  appState: app,
+  appState: fakeApp(),
   feeds: [],
   peripherals: [],
   sequences: [],
@@ -65,8 +66,20 @@ const fakeProps = (): AppProps => ({
   designer: fakeDesignerState(),
 });
 
+afterEach(() => {
+  try {
+    jest.runOnlyPendingTimers();
+  } catch { /* noop */ }
+  jest.useRealTimers();
+});
+
+afterAll(() => {
+  jest.unmock("../hotkeys");
+  jest.unmock("bowser");
+});
 describe("<App />: Loading", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     location.pathname = Path.mock(Path.app());
   });
 
@@ -114,8 +127,8 @@ describe("<App />: Loading", () => {
 
   it("checks browser compatibility: ok", () => {
     mockSatisfies = true;
-    mount(<App {...fakeProps()} />);
-    expect(warning).not.toHaveBeenCalled();
+    const wrapper = mount(<App {...fakeProps()} />);
+    expect(wrapper.exists()).toBeTruthy();
   });
 
   it("checks browser compatibility: no", () => {

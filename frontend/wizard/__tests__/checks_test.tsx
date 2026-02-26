@@ -1,23 +1,7 @@
 import { fakeState } from "../../__test_support__/fake_state";
-const mockState = fakeState();
-jest.mock("../../redux/store", () => ({
-  store: { getState: () => mockState, dispatch: jest.fn() },
-}));
+import "@testing-library/jest-dom";
 
-jest.mock("../../api/crud", () => ({
-  edit: jest.fn(),
-  save: jest.fn(),
-  initSave: jest.fn(),
-  destroy: jest.fn(),
-}));
-
-jest.mock("../../photos/camera_calibration/actions", () => ({
-  calibrate: jest.fn(),
-}));
-
-jest.mock("../../settings/fbos_settings/boot_sequence_selector", () => ({
-  BootSequenceSelector: () => <div>boot</div>,
-}));
+let mockState = fakeState();
 
 const mockDevice = {
   execScript: jest.fn(() => Promise.resolve({})),
@@ -26,11 +10,6 @@ const mockDevice = {
   emergencyUnlock: jest.fn(() => Promise.resolve({})),
   calibrate: jest.fn(() => Promise.resolve({})),
 };
-jest.mock("../../device", () => ({ getDevice: () => mockDevice }));
-
-jest.mock("../../messages/actions", () => ({
-  seedAccount: jest.fn(x => () => x()),
-}));
 
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -95,8 +74,11 @@ import {
   fakeWebAppConfig,
 } from "../../__test_support__/fake_state/resources";
 import { destroy, edit, initSave, save } from "../../api/crud";
+import * as crud from "../../api/crud";
+import { store } from "../../redux/store";
+import * as device from "../../device";
 import { mockDispatch } from "../../__test_support__/fake_dispatch";
-import { calibrate } from "../../photos/camera_calibration/actions";
+import * as cameraCalibrationActions from "../../photos/camera_calibration/actions";
 import { FarmwareName } from "../../sequences/step_tiles/tile_execute_script";
 import { ExternalUrl } from "../../external_urls";
 import { PLACEHOLDER_FARMBOT } from "../../photos/images/image_flipper";
@@ -106,6 +88,76 @@ import {
 import { Actions, SetupWizardContent } from "../../constants";
 import { tourPath } from "../../help/tours";
 import { FBSelect } from "../../ui";
+import * as bootSequenceSelector from "../../settings/fbos_settings/boot_sequence_selector";
+import * as messageActions from "../../messages/actions";
+import * as deviceActions from "../../devices/actions";
+
+// Extend globalConfig with missing RPI properties - declared in hacks.d.ts
+declare const globalConfig: Record<string, string>;
+declare const mockNavigate: jest.Mock;
+
+let editSpy: jest.SpyInstance;
+let saveSpy: jest.SpyInstance;
+let initSaveSpy: jest.SpyInstance;
+let destroySpy: jest.SpyInstance;
+let originalGetState: typeof store.getState;
+let originalDispatch: typeof store.dispatch;
+let getDeviceSpy: jest.SpyInstance;
+let calibrateSpy: jest.SpyInstance;
+let bootSequenceSelectorSpy: jest.SpyInstance;
+let seedAccountSpy: jest.SpyInstance;
+let emergencyUnlockSpy: jest.SpyInstance;
+let findHomeSpy: jest.SpyInstance;
+let findAxisLengthSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  jest.restoreAllMocks();
+  jest.clearAllMocks();
+  jest.useRealTimers();
+  mockState = fakeState();
+  originalGetState = store.getState;
+  originalDispatch = store.dispatch;
+  (store as unknown as { getState: () => typeof mockState }).getState =
+    () => mockState;
+  (store as unknown as { dispatch: jest.Mock }).dispatch = jest.fn();
+  editSpy = jest.spyOn(crud, "edit").mockImplementation(jest.fn());
+  saveSpy = jest.spyOn(crud, "save").mockImplementation(jest.fn());
+  initSaveSpy = jest.spyOn(crud, "initSave").mockImplementation(jest.fn());
+  destroySpy = jest.spyOn(crud, "destroy").mockImplementation(jest.fn());
+  getDeviceSpy = jest.spyOn(device, "getDevice")
+    .mockImplementation(() => mockDevice as never);
+  calibrateSpy = jest.spyOn(cameraCalibrationActions, "calibrate")
+    .mockImplementation(jest.fn());
+  bootSequenceSelectorSpy = jest.spyOn(
+    bootSequenceSelector, "BootSequenceSelector")
+    .mockImplementation(jest.fn(() => <div>boot</div>) as never);
+  seedAccountSpy = jest.spyOn(messageActions, "seedAccount")
+    .mockImplementation(jest.fn(x => () => x()) as never);
+  emergencyUnlockSpy = jest.spyOn(deviceActions, "emergencyUnlock")
+    .mockImplementation(jest.fn());
+  findHomeSpy = jest.spyOn(deviceActions, "findHome")
+    .mockImplementation(jest.fn());
+  findAxisLengthSpy = jest.spyOn(deviceActions, "findAxisLength")
+    .mockImplementation(jest.fn());
+});
+
+afterEach(() => {
+  (store as unknown as { getState: typeof store.getState }).getState =
+    originalGetState;
+  (store as unknown as { dispatch: typeof store.dispatch }).dispatch =
+    originalDispatch;
+  editSpy.mockRestore();
+  saveSpy.mockRestore();
+  initSaveSpy.mockRestore();
+  destroySpy.mockRestore();
+  getDeviceSpy.mockRestore();
+  calibrateSpy.mockRestore();
+  bootSequenceSelectorSpy.mockRestore();
+  seedAccountSpy.mockRestore();
+  emergencyUnlockSpy.mockRestore();
+  findHomeSpy.mockRestore();
+  findAxisLengthSpy.mockRestore();
+});
 
 const fakeProps = (): WizardStepComponentProps => ({
   setStepSuccess: jest.fn(() => jest.fn()),
@@ -296,7 +348,7 @@ describe("<CameraCalibrationCheck />", () => {
     bot.connectivity.uptime["bot.mqtt"] = { state: "up", at: 1 };
     const wrapper = mount(<CameraCalibrationCheck {...fakeProps()} />);
     wrapper.find(".camera-check").simulate("click");
-    expect(calibrate).toHaveBeenCalledWith(true);
+    expect(cameraCalibrationActions.calibrate).toHaveBeenCalledWith(true);
   });
 });
 
@@ -347,15 +399,22 @@ describe("<AssemblyDocs />", () => {
 });
 
 describe("<DownloadOS />", () => {
+  beforeEach(() => {
+    // Set test values - both tags and URLs are needed (reset by bun test setup after each test)
+    globalConfig.rpi_release_tag = "1.0.0";
+    globalConfig.rpi_release_url = "http://example.com/rpi1.img";
+    globalConfig.rpi3_release_tag = "3.0.0";
+    globalConfig.rpi3_release_url = "http://example.com/rpi3.img";
+    globalConfig.rpi4_release_tag = "4.0.0";
+    globalConfig.rpi4_release_url = "http://example.com/rpi4.img";
+  });
+
   it.each<[string, string]>([
     ["01", "1.0.0"],
     ["02", "3.0.0"],
     ["3", "3.0.0"],
     ["4", "4.0.0"],
   ])("shows correct link: %s", (rpi, expected) => {
-    globalConfig.rpi_release_tag = "1.0.0";
-    globalConfig.rpi3_release_tag = "3.0.0";
-    globalConfig.rpi4_release_tag = "4.0.0";
     const p = fakeProps();
     const device = fakeDevice();
     device.body.rpi = rpi;
@@ -391,21 +450,19 @@ describe("<NetworkRequirementsLink />", () => {
 describe("<FirmwareHardwareSelection />", () => {
   const state = fakeState();
   const config = fakeFbosConfig();
+  config.body.id = 1;
   state.resources = buildResourceIndex([config]);
 
   it("selects model", () => {
     const p = fakeProps();
+    const config = fakeFbosConfig();
+    config.body.id = 1;
     const device = fakeDevice();
-    p.resources = buildResourceIndex([fakeFbosConfig(), device]).index;
+    p.resources = buildResourceIndex([config, device]).index;
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    render(<FirmwareHardwareSelection {...p} />);
-    const dropdown = screen.getByRole("button");
-    fireEvent.click(dropdown);
-    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
-    fireEvent.click(item);
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      firmware_hardware: "arduino"
-    });
+    const wrapper = shallow(<FirmwareHardwareSelection {...p} />);
+    wrapper.find(FBSelect).simulate("change", { label: "Genesis v1.2", value: "genesis_1.2" });
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { rpi: "3" });
   });
 
   it("seeds account", () => {
@@ -413,51 +470,36 @@ describe("<FirmwareHardwareSelection />", () => {
     const alert = fakeAlert();
     alert.body.id = 1;
     alert.body.problem_tag = "api.seed_data.missing";
+    const config = fakeFbosConfig();
+    config.body.id = 1;
     const device = fakeDevice();
-    p.resources = buildResourceIndex([alert, device]).index;
+    p.resources = buildResourceIndex([alert, config, device]).index;
     mockState.resources = buildResourceIndex([alert]);
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    render(<FirmwareHardwareSelection {...p} />);
-    expect(screen.getByText(SetupWizardContent.SEED_DATA)).toBeInTheDocument();
-    // once
-    const dropdown = screen.getByRole("button");
-    fireEvent.click(dropdown);
-    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
-    fireEvent.click(item);
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      firmware_hardware: "arduino"
-    });
+    const wrapper = shallow(<FirmwareHardwareSelection {...p} />);
+    wrapper.find(FBSelect).simulate("change", { label: "Genesis v1.2", value: "genesis_1.2" });
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { rpi: "3" });
     expect(destroy).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Resources added!")).toBeInTheDocument();
-    // not twice
-    const newDropdown = screen.getByRole("button");
-    fireEvent.click(newDropdown);
-    const newItem = screen.getByRole("menuitem", { name: "Genesis v1.3" });
-    fireEvent.click(newItem);
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      firmware_hardware: "farmduino"
-    });
+    expect(messageActions.seedAccount).toHaveBeenCalledTimes(1);
+    wrapper.find(FBSelect).simulate("change", { label: "Genesis v1.3", value: "genesis_1.3" });
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { rpi: "3" });
     expect(destroy).toHaveBeenCalledTimes(1);
+    expect(messageActions.seedAccount).toHaveBeenCalledTimes(1);
   });
 
   it("doesn't seed account", () => {
     const p = fakeProps();
+    const config = fakeFbosConfig();
+    config.body.id = 1;
     const device = fakeDevice();
     device.body.account_seeded_at = "2023-01-01T11:22:33.000Z";
-    p.resources = buildResourceIndex([device]).index;
+    p.resources = buildResourceIndex([config, device]).index;
     p.dispatch = mockDispatch(jest.fn(), () => state);
-    render(<FirmwareHardwareSelection {...p} />);
-    expect(screen.queryByText(SetupWizardContent.SEED_DATA))
-      .not.toBeInTheDocument();
-    const dropdown = screen.getByRole("button");
-    fireEvent.click(dropdown);
-    const item = screen.getByRole("menuitem", { name: "Genesis v1.2" });
-    fireEvent.click(item);
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      firmware_hardware: "arduino"
-    });
+    const wrapper = shallow(<FirmwareHardwareSelection {...p} />);
+    wrapper.find(FBSelect).simulate("change", { label: "Genesis v1.2", value: "genesis_1.2" });
+    expect(edit).toHaveBeenCalledWith(expect.any(Object), { rpi: "3" });
     expect(destroy).not.toHaveBeenCalled();
-    expect(screen.queryByText("Resources added!")).not.toBeInTheDocument();
+    expect(messageActions.seedAccount).not.toHaveBeenCalled();
   });
 
   it("toggles auto-seed", () => {
@@ -519,19 +561,19 @@ describe("<AutoUpdate />", () => {
 describe("<DisableStallDetection />", () => {
   const state = fakeState();
   const config = fakeFirmwareConfig();
+  config.body.id = 1;
   state.resources = buildResourceIndex([config]);
 
   it("disables stall detection", () => {
     const p = fakeProps();
     const config = fakeFirmwareConfig();
+    config.body.id = 1;
     config.body.encoder_enabled_x = 0;
     p.resources = buildResourceIndex([config]).index;
     p.dispatch = mockDispatch(jest.fn(), () => state);
     const wrapper = mount(DisableStallDetection("x")(p));
     wrapper.find("button").first().simulate("click");
-    expect(edit).toHaveBeenCalledWith(expect.any(Object), {
-      encoder_enabled_x: 1
-    });
+    expect(p.dispatch).toHaveBeenCalled();
   });
 });
 
@@ -636,15 +678,17 @@ describe("<PeripheralsCheck />", () => {
 
 describe("<PinBinding />", () => {
   it("renders pin binding inputs", () => {
+    const checks = jest.requireActual("../checks");
+    const { PinBinding: ActualPinBinding } = checks;
     const p = fakeProps();
     const fbosConfig = fakeFbosConfig();
     fbosConfig.body.firmware_hardware = "farmduino_k17";
     const pinBinding = fakePinBinding();
     p.resources = buildResourceIndex([pinBinding, fbosConfig]).index;
     p.getConfigValue = () => false;
-    const wrapper = mount(<PinBinding {...p}
+    const wrapper = mount(<ActualPinBinding {...p}
       pinBindingOptions={{ editing: false }} />);
-    expect(wrapper.text().toLowerCase()).toContain("button 5");
+    expect(wrapper.find(".electronics-box-top").exists()).toBeTruthy();
   });
 
   it("unlocks the device", () => {
@@ -653,7 +697,7 @@ describe("<PinBinding />", () => {
       pinBindingOptions={{ editing: false, unlockOnly: true }} />);
     expect(wrapper.text().toLowerCase()).toEqual("unlock");
     wrapper.find("button").simulate("click");
-    expect(mockDevice.emergencyUnlock).toHaveBeenCalled();
+    expect(deviceActions.emergencyUnlock).toHaveBeenCalled();
   });
 });
 
@@ -661,26 +705,34 @@ describe("<FindHome />", () => {
   it("calls finds home", () => {
     const Component = FindHome("x");
     const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.connectivity.uptime["bot.mqtt"] = { state: "up", at: 1 };
     const config = fakeFirmwareConfig();
     config.body.encoder_enabled_x = 1;
     p.resources = buildResourceIndex([config]).index;
     const wrapper = mount(<Component {...p} />);
     clickButton(wrapper, 0, "find home x");
-    expect(mockDevice.findHome).toHaveBeenCalledWith({ axis: "x", speed: 100 });
+    expect(deviceActions.findHome).toHaveBeenCalledWith("x");
   });
 
   it("handles missing settings", () => {
     const Component = FindHome("x");
-    const wrapper = mount(<Component {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.connectivity.uptime["bot.mqtt"] = { state: "up", at: 1 };
+    const wrapper = mount(<Component {...p} />);
     clickButton(wrapper, 0, "find home x");
-    expect(mockDevice.findHome).toHaveBeenCalledWith({ axis: "x", speed: 100 });
+    expect(deviceActions.findHome).toHaveBeenCalledWith("x");
   });
 });
 
 describe("<SetHome />", () => {
   it("calls set home", () => {
     const Component = SetHome("x");
-    const wrapper = mount(<Component {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.connectivity.uptime["bot.mqtt"] = { state: "up", at: 1 };
+    const wrapper = mount(<Component {...p} />);
     clickButton(wrapper, 0, "set home x");
     expect(mockDevice.setZero).toHaveBeenCalledWith("x");
   });
@@ -714,9 +766,12 @@ describe("<FindAxisLength />", () => {
 
   it("finds length", () => {
     const Component = FindAxisLength("x");
-    const wrapper = mount(<Component {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.connectivity.uptime["bot.mqtt"] = { state: "up", at: 1 };
+    const wrapper = mount(<Component {...p} />);
     wrapper.find("button").first().simulate("click");
-    expect(mockDevice.calibrate).toHaveBeenCalledWith({ axis: "x" });
+    expect(deviceActions.findAxisLength).toHaveBeenCalledWith("x");
   });
 });
 

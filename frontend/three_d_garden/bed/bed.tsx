@@ -31,6 +31,7 @@ import { GetWebAppConfigValue } from "../../config_storage/actions";
 import { DesignerState } from "../../farm_designer/interfaces";
 import { useNavigate } from "react-router";
 import {
+  ActivePositionRef,
   BillboardRef,
   ImageRef,
   PointerObjects, PointerPlantRef, RadiusRef, soilClick, soilPointerMove,
@@ -40,7 +41,7 @@ import {
 } from "./objects/pointer_objects";
 import { ThreeElements } from "@react-three/fiber";
 import { ImageTexture } from "../garden";
-import { VertexNormalsHelper } from "three/examples/jsm/Addons";
+import { VertexNormalsHelper } from "three/examples/jsm/Addons.js";
 import { MoistureSurface } from "../garden/moisture_texture";
 import { HeightMaterial } from "../garden/height_material";
 
@@ -113,6 +114,7 @@ export interface BedProps {
   showMoistureReadings: boolean;
   sensors: TaggedSensor[];
   sensorReadings: TaggedSensorReading[];
+  activePositionRef: ActivePositionRef;
 }
 
 export const Bed = (props: BedProps) => {
@@ -217,6 +219,7 @@ export const Bed = (props: BedProps) => {
           imageRef,
           xCrosshairRef,
           yCrosshairRef,
+          activePositionRef: props.activePositionRef,
           getZ: props.getZ,
         })}
       castShadow={true}
@@ -372,6 +375,7 @@ export const Bed = (props: BedProps) => {
         imageRef={imageRef}
         xCrosshairRef={xCrosshairRef}
         yCrosshairRef={yCrosshairRef}
+        activePositionRef={props.activePositionRef}
         config={props.config}
         addPlantProps={props.addPlantProps}
         mapPoints={props.mapPoints} />}

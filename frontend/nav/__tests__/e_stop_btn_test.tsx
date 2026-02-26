@@ -1,40 +1,67 @@
 const mockDevice = { emergencyUnlock: jest.fn(() => Promise.resolve()) };
-jest.mock("../../device", () => ({ getDevice: () => mockDevice }));
 
 import React from "react";
 import { mount } from "enzyme";
+import * as deviceModule from "../../device";
 import { EStopButton } from "../e_stop_btn";
 import { bot } from "../../__test_support__/fake_state/bot";
 import { EStopButtonProps } from "../interfaces";
+import * as screenSize from "../../screen_size";
+import { cloneDeep } from "lodash";
 
+let getDeviceSpy: jest.SpyInstance;
+let maybeGetDeviceSpy: jest.SpyInstance;
+let fetchNewDeviceSpy: jest.SpyInstance;
+let isMobileSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  getDeviceSpy = jest.spyOn(deviceModule, "getDevice")
+    .mockImplementation(() => mockDevice);
+  maybeGetDeviceSpy = jest.spyOn(deviceModule, "maybeGetDevice")
+    .mockImplementation(() => mockDevice);
+  fetchNewDeviceSpy = jest.spyOn(deviceModule, "fetchNewDevice")
+    .mockImplementation(jest.fn(() => Promise.resolve(mockDevice)));
+  isMobileSpy = jest.spyOn(screenSize, "isMobile").mockReturnValue(false);
+});
+
+afterEach(() => {
+  getDeviceSpy.mockRestore();
+  maybeGetDeviceSpy.mockRestore();
+  fetchNewDeviceSpy.mockRestore();
+  isMobileSpy.mockRestore();
+});
 describe("<EStopButton />", () => {
-  const fakeProps = (): EStopButtonProps => ({ bot, forceUnlock: false });
+  const fakeProps = (): EStopButtonProps =>
+    ({ bot: cloneDeep(bot), forceUnlock: false });
   it("renders", () => {
-    bot.hardware.informational_settings.sync_status = "synced";
-    const wrapper = mount(<EStopButton {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    const wrapper = mount(<EStopButton {...p} />);
     expect(wrapper.text()).toEqual("E-STOP");
     expect(wrapper.find("button").hasClass("red")).toBeTruthy();
   });
 
   it("is grayed out when offline", () => {
-    bot.hardware.informational_settings.sync_status = undefined;
-    const wrapper = mount(<EStopButton {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = undefined;
+    const wrapper = mount(<EStopButton {...p} />);
     expect(wrapper.text()).toEqual("E-STOP");
     expect(wrapper.find("button").hasClass("pseudo-disabled")).toBeTruthy();
   });
 
   it("shows locked state", () => {
-    bot.hardware.informational_settings.sync_status = "synced";
-    bot.hardware.informational_settings.locked = true;
-    const wrapper = mount(<EStopButton {...fakeProps()} />);
+    const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.hardware.informational_settings.locked = true;
+    const wrapper = mount(<EStopButton {...p} />);
     expect(wrapper.text()).toEqual("UNLOCK");
     expect(wrapper.find("button").hasClass("yellow")).toBeTruthy();
   });
 
   it("confirms unlock", () => {
-    bot.hardware.informational_settings.sync_status = "synced";
-    bot.hardware.informational_settings.locked = true;
     const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.hardware.informational_settings.locked = true;
     p.forceUnlock = false;
     window.confirm = jest.fn(() => false);
     const wrapper = mount(<EStopButton {...p} />);
@@ -46,9 +73,9 @@ describe("<EStopButton />", () => {
   });
 
   it("doesn't confirm unlock", () => {
-    bot.hardware.informational_settings.sync_status = "synced";
-    bot.hardware.informational_settings.locked = true;
     const p = fakeProps();
+    p.bot.hardware.informational_settings.sync_status = "synced";
+    p.bot.hardware.informational_settings.locked = true;
     p.forceUnlock = true;
     window.confirm = jest.fn(() => false);
     const wrapper = mount(<EStopButton {...p} />);

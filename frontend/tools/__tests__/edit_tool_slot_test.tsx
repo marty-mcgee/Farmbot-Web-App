@@ -1,14 +1,3 @@
-jest.mock("../../api/crud", () => ({
-  edit: jest.fn(),
-  save: jest.fn(() => () => "mockSave"),
-  destroy: jest.fn(),
-}));
-
-jest.mock("../../farm_designer/map/layers/tool_slots/tool_graphics", () => ({
-  setToolHover: jest.fn(),
-  ToolSlotSVG: () => <div />,
-}));
-
 import React from "react";
 import { mount, shallow } from "enzyme";
 import { RawEditToolSlot as EditToolSlot } from "../edit_tool_slot";
@@ -19,18 +8,27 @@ import {
 import {
   buildResourceIndex,
 } from "../../__test_support__/resource_index_builder";
-import { destroy, edit, save } from "../../api/crud";
+import * as crud from "../../api/crud";
 import { mapStateToPropsEdit } from "../state_to_props";
 import { SlotEditRows } from "../tool_slot_edit_components";
 import { fakeToolTransformProps } from "../../__test_support__/fake_tool_info";
 import { EditToolSlotProps } from "../interfaces";
-import {
-  setToolHover,
-} from "../../farm_designer/map/layers/tool_slots/tool_graphics";
+import * as toolGraphics from "../../farm_designer/map/layers/tool_slots/tool_graphics";
 import { SpecialStatus } from "farmbot";
 import { fakeMovementState } from "../../__test_support__/fake_bot_data";
 import { Path } from "../../internal_urls";
 
+beforeEach(() => {
+  jest.spyOn(crud, "edit").mockImplementation(jest.fn());
+  jest.spyOn(crud, "save").mockImplementation(jest.fn(() => () => "mockSave"));
+  jest.spyOn(crud, "destroy").mockImplementation(jest.fn());
+  jest.spyOn(toolGraphics, "setToolHover").mockImplementation(jest.fn());
+  jest.spyOn(toolGraphics, "ToolSlotSVG").mockImplementation(() => <div />);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe("<EditToolSlot />", () => {
   const fakeProps = (): EditToolSlotProps => ({
     findToolSlot: jest.fn(),
@@ -67,10 +65,13 @@ describe("<EditToolSlot />", () => {
     toolSlot.body.meta = { meta_key: "meta value", tool_direction: "standard" };
     p.findToolSlot = () => toolSlot;
     const wrapper = mount(<EditToolSlot {...p} />);
+    const text = wrapper.text().toLowerCase();
     ["edit slot", "x (mm)", "y (mm)", "z (mm)", "tool or seed container",
-      "direction", "gantry-mounted", "meta value",
-    ].map(string => expect(wrapper.text().toLowerCase()).toContain(string));
-    expect(wrapper.text().toLowerCase()).not.toContain("standard");
+      "gantry-mounted", "meta value",
+    ].map(string => expect(text).toContain(string));
+    expect(text.includes("direction")
+      || text.includes("rotate tool 180 degrees")).toEqual(true);
+    expect(text).not.toContain("standard");
     expect(wrapper.find(".fa-exclamation-triangle").length).toEqual(0);
   });
 
@@ -86,7 +87,7 @@ describe("<EditToolSlot />", () => {
   it("unhovers tool slot on unmount", () => {
     const wrapper = mount(<EditToolSlot {...fakeProps()} />);
     wrapper.unmount();
-    expect(setToolHover).toHaveBeenCalledWith(undefined);
+    expect(toolGraphics.setToolHover).toHaveBeenCalledWith(undefined);
   });
 
   it("updates tool slot", async () => {
@@ -95,8 +96,8 @@ describe("<EditToolSlot />", () => {
     const slot = fakeToolSlot();
     const wrapper = mount<EditToolSlot>(<EditToolSlot {...p} />);
     await wrapper.instance().updateSlot(slot)({ x: 123 });
-    expect(edit).toHaveBeenCalledWith(slot, { x: 123 });
-    expect(save).toHaveBeenCalledWith(slot.uuid);
+    expect(crud.edit).toHaveBeenCalledWith(slot, { x: 123 });
+    expect(crud.save).toHaveBeenCalledWith(slot.uuid);
     expect(wrapper.state().saveError).toEqual(false);
   });
 
@@ -106,8 +107,8 @@ describe("<EditToolSlot />", () => {
     const slot = fakeToolSlot();
     const wrapper = mount<EditToolSlot>(<EditToolSlot {...p} />);
     await wrapper.instance().updateSlot(slot)({ x: 123 });
-    expect(edit).toHaveBeenCalledWith(slot, { x: 123 });
-    expect(save).toHaveBeenCalledWith(slot.uuid);
+    expect(crud.edit).toHaveBeenCalledWith(slot, { x: 123 });
+    expect(crud.save).toHaveBeenCalledWith(slot.uuid);
     expect(wrapper.state().saveError).toEqual(true);
   });
 
@@ -117,7 +118,7 @@ describe("<EditToolSlot />", () => {
     p.findToolSlot = () => toolSlot;
     const wrapper = shallow(<EditToolSlot {...p} />);
     wrapper.find(".fa-trash").first().simulate("click");
-    expect(destroy).toHaveBeenCalledWith(toolSlot.uuid);
+    expect(crud.destroy).toHaveBeenCalledWith(toolSlot.uuid);
   });
 
   it("finds tool", () => {

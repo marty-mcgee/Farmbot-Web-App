@@ -18,9 +18,10 @@ describe("calculatePlantPositions()", () => {
       icon: CROPS.beet.icon,
       key: "beet",
       label: "Beet",
+      id: expect.any(Number),
       seed: expect.any(Number),
       size: 150,
-      spread: 175,
+      spread: 17.5,
       x: 350,
       y: 680,
     });

@@ -11,7 +11,7 @@ import {
   zZero as zZeroFunc,
 } from "../helpers";
 import { Config } from "../config";
-import { GLTF } from "three-stdlib";
+import type { GLTF } from "three-stdlib";
 import { ASSETS, LIB_DIR, PartName } from "../constants";
 import { SVGLoader } from "three/examples/jsm/Addons.js";
 import { range } from "lodash";
@@ -30,6 +30,7 @@ import {
   CableCarrierY,
   CableCarrierSupportHorizontal,
   GantryBeam,
+  CameraView,
 } from "./components";
 import { SlotWithTool } from "../../resources/interfaces";
 import { WateringAnimations } from "./components/watering_animations";
@@ -37,6 +38,15 @@ import { WateringAnimations } from "./components/watering_animations";
 export const extrusionWidth = 20;
 const utmRadius = 35;
 export const utmHeight = 35;
+export const cameraMountOffset = {
+  x: extrusionWidth + 3,
+  y: utmRadius,
+};
+export const cameraMountToLensOffset = new THREE.Vector3(
+  0,
+  extrusionWidth + 9,
+  0,
+);
 const xTrackPadding = 280;
 export const distinguishableBlack = "#333";
 
@@ -241,6 +251,12 @@ export const Bot = (props: FarmbotModelProps) => {
         ];
     }
   };
+
+  const cameraMountPosition = new THREE.Vector3(
+    threeSpace(x + cameraMountOffset.x, bedLengthOuter) + bedXOffset,
+    threeSpace(y + cameraMountOffset.y, bedWidthOuter) + bedYOffset,
+    zZero - zDir * z - 140 + zGantryOffset + 20,
+  );
 
   return <Group name={"bot"}
     visible={props.config.bot && props.activeFocus != "Planter bed"}>
@@ -548,11 +564,7 @@ export const Bot = (props: FarmbotModelProps) => {
       position={vacuumPumpCoverPosition(config.kitVersion)} />
     <Group name={"camera"}
       rotation={[Math.PI, 0, 0]}
-      position={[
-        threeSpace(x + 23, bedLengthOuter) + bedXOffset,
-        threeSpace(y + 25 + extrusionWidth / 2, bedWidthOuter) + bedYOffset,
-        zZero - zDir * z - 140 + zGantryOffset + 20,
-      ]}>
+      position={cameraMountPosition}>
       <Mesh name={"cameraMount"}
         rotation={[0, 0, 0]}
         position={[0, 0, -40]}
@@ -567,6 +579,10 @@ export const Bot = (props: FarmbotModelProps) => {
         <MeshPhongMaterial color={"silver"} />
       </Mesh>
     </Group>
+    <CameraView
+      config={config}
+      cameraMountPosition={cameraMountPosition}
+      distanceToSoil={distanceToSoil} />
     <Trail
       width={trail ? defaultTrailWidth : 0}
       attenuation={t => Math.pow(t, 3)}

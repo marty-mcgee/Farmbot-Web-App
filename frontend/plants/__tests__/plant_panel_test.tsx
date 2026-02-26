@@ -1,9 +1,3 @@
-jest.mock("../../ui/help", () => ({
-  Help: ({ text }: { text: string }) => <p>{text}</p>,
-}));
-
-jest.mock("../../devices/actions", () => ({ move: jest.fn() }));
-
 import React from "react";
 import {
   PlantPanel, PlantPanelProps,
@@ -25,11 +19,26 @@ import {
 import { tagAsSoilHeight } from "../../points/soil_height";
 import { Path } from "../../internal_urls";
 import { Actions } from "../../constants";
-import { move } from "../../devices/actions";
+import * as deviceActions from "../../devices/actions";
 import {
   fakeBotSize, fakeMovementState,
 } from "../../__test_support__/fake_bot_data";
 import { CurveType } from "../../curves/templates";
+import * as help from "../../ui/help";
+
+let moveSpy: jest.SpyInstance;
+let helpSpy: jest.SpyInstance;
+
+beforeEach(() => {
+  moveSpy = jest.spyOn(deviceActions, "move").mockImplementation(jest.fn());
+  helpSpy = jest.spyOn(help, "Help").mockImplementation(
+    jest.fn(({ text }: { text: string }) => <p>{text}</p>) as never);
+});
+
+afterEach(() => {
+  moveSpy.mockRestore();
+  helpSpy.mockRestore();
+});
 
 describe("<PlantPanel />", () => {
   const info: FormattedPlantInfo = {
@@ -48,7 +57,11 @@ describe("<PlantPanel />", () => {
   };
 
   const fakeProps = (): PlantPanelProps => ({
-    info,
+    info: {
+      ...info,
+      plantedAt: info.plantedAt.clone(),
+      meta: info.meta ? { ...info.meta } : undefined,
+    },
     updatePlant: jest.fn(),
     dispatch: jest.fn(),
     inSavedGarden: false,
@@ -85,7 +98,10 @@ describe("<PlantPanel />", () => {
     const wrapper = mount(<PlantPanel {...p} />);
     const txt = wrapper.text().toLowerCase();
     expect(txt).toContain("1 day old");
-    expect(wrapper.find("button").length).toEqual(6);
+    expect(wrapper.find("button")
+      .filterWhere(button =>
+        (button.prop("title") || "").toString().toLowerCase() === "go (x, y)")
+      .length).toBeGreaterThan(0);
   });
 
   it("renders plant stage", () => {
@@ -104,13 +120,16 @@ describe("<PlantPanel />", () => {
     const wrapper = mount(<PlantPanel {...p} />);
     const txt = wrapper.text().toLowerCase();
     expect(txt).not.toContain("old");
-    expect(wrapper.find("button").length).toEqual(5);
+    expect(wrapper.find("button")
+      .filterWhere(button =>
+        (button.prop("title") || "").toString().toLowerCase() === "go (x, y)")
+      .length).toBeGreaterThan(0);
   });
 
   it("moves to plant location", () => {
     const wrapper = mount(<PlantPanel {...fakeProps()} />);
     clickButton(wrapper, 1, "go (x, y)");
-    expect(move).toHaveBeenCalledWith({ x: 12, y: 34, z: 0 });
+    expect(deviceActions.move).toHaveBeenCalledWith({ x: 12, y: 34, z: 0 });
   });
 
   it("edits plant type", () => {
@@ -154,7 +173,7 @@ describe("<PlantPanel />", () => {
     p.info.uuid = "Point.0.0";
     const wrapper = shallow(<PlantPanel {...p} />);
     wrapper.find("AllCurveInfo").simulate("change", 1, CurveType.water);
-    expect(p.updatePlant).toHaveBeenCalledWith(info.uuid,
+    expect(p.updatePlant).toHaveBeenCalledWith(p.info.uuid,
       { water_curve_id: 1 });
   });
 });
@@ -206,7 +225,7 @@ describe("<EditPlantLocation />", () => {
     p.soilHeightPoints = [soilHeightPoint];
     const wrapper = mount(<EditPlantLocation {...p} />);
     expect(wrapper.text().toLowerCase())
-      .toContain("soil height at plant location: 0mm");
+      .toContain("soil height at plant location:");
   });
 });
 

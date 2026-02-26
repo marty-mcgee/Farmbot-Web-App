@@ -1,21 +1,4 @@
-jest.mock("../../point_groups/actions", () => ({
-  createGroup: jest.fn(),
-}));
-
-jest.mock("../../api/delete_points", () => ({
-  deletePoints: jest.fn(),
-}));
-
-import { PopoverProps } from "../../ui/popover";
-jest.mock("../../ui/popover", () => ({
-  Popover: ({ target, content }: PopoverProps) => <div>{target}{content}</div>,
-}));
-
 let mockValue: number | boolean = 0;
-jest.mock("../../config_storage/actions", () => ({
-  setWebAppConfigValue: jest.fn(),
-  getWebAppConfigValue: jest.fn(x => { x(); return () => mockValue; }),
-}));
 
 import React from "react";
 import {
@@ -29,18 +12,50 @@ import {
 import { fakeState } from "../../__test_support__/fake_state";
 import { SearchField } from "../../ui/search_field";
 import { Actions } from "../../constants";
-import { createGroup } from "../../point_groups/actions";
+import * as pointGroupActions from "../../point_groups/actions";
 import { DEFAULT_CRITERIA } from "../../point_groups/criteria/interfaces";
-import { deletePoints } from "../../api/delete_points";
+import * as deletePointsApi from "../../api/delete_points";
 import { Panel } from "../../farm_designer/panel_header";
 import { plantsPanelState } from "../../__test_support__/panel_state";
 import { Path } from "../../internal_urls";
 import { buildResourceIndex } from "../../__test_support__/resource_index_builder";
 import { changeBlurableInput } from "../../__test_support__/helpers";
-import { setWebAppConfigValue } from "../../config_storage/actions";
+import * as configStorageActions from "../../config_storage/actions";
 import { NumericSetting } from "../../session_keys";
+import * as popover from "../../ui/popover";
 
 describe("<PlantInventory />", () => {
+  let createGroupSpy: jest.SpyInstance;
+  let deletePointsSpy: jest.SpyInstance;
+  let setWebAppConfigValueSpy: jest.SpyInstance;
+  let getWebAppConfigValueSpy: jest.SpyInstance;
+  let popoverSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    popoverSpy = jest.spyOn(popover, "Popover")
+      .mockImplementation(({ target, content }: popover.PopoverProps) =>
+        <div>{target}{content}</div>);
+    createGroupSpy = jest.spyOn(pointGroupActions, "createGroup")
+      .mockImplementation(jest.fn());
+    deletePointsSpy = jest.spyOn(deletePointsApi, "deletePoints")
+      .mockImplementation(jest.fn());
+    setWebAppConfigValueSpy = jest.spyOn(configStorageActions, "setWebAppConfigValue")
+      .mockImplementation(jest.fn());
+    getWebAppConfigValueSpy = jest.spyOn(configStorageActions, "getWebAppConfigValue")
+      .mockImplementation((getState: Function) => {
+        getState();
+        return () => mockValue;
+      });
+  });
+
+  afterEach(() => {
+    popoverSpy.mockRestore();
+    createGroupSpy.mockRestore();
+    deletePointsSpy.mockRestore();
+    setWebAppConfigValueSpy.mockRestore();
+    getWebAppConfigValueSpy.mockRestore();
+  });
+
   const fakeProps = (): PlantInventoryProps => ({
     plants: [fakePlant()],
     dispatch: jest.fn(),
@@ -68,7 +83,7 @@ describe("<PlantInventory />", () => {
     const p = fakeProps();
     const wrapper = mount(<Plants {...p} />);
     changeBlurableInput(wrapper, "100", 1);
-    expect(setWebAppConfigValue).toHaveBeenCalledWith(
+    expect(setWebAppConfigValueSpy).toHaveBeenCalledWith(
       NumericSetting.default_plant_depth, 100);
   });
 
@@ -109,15 +124,15 @@ describe("<PlantInventory />", () => {
 
   it("navigates to group", () => {
     const wrapper = shallow<Plants>(<Plants {...fakeProps()} />);
-    wrapper.instance().navigate = jest.fn();
+    wrapper.instance().context = jest.fn();
     wrapper.instance().navigateById(1)();
-    expect(wrapper.instance().navigate).toHaveBeenCalledWith(Path.groups(1));
+    expect(wrapper.instance().context).toHaveBeenCalledWith(Path.groups(1));
   });
 
   it("adds new group", () => {
     const wrapper = shallow(<Plants {...fakeProps()} />);
     wrapper.find(PanelSection).first().props().addNew();
-    expect(createGroup).toHaveBeenCalledWith({
+    expect(pointGroupActions.createGroup).toHaveBeenCalledWith({
       criteria: { ...DEFAULT_CRITERIA, string_eq: { pointer_type: ["Plant"] } },
       navigate: expect.anything(),
     });
@@ -125,17 +140,17 @@ describe("<PlantInventory />", () => {
 
   it("adds new saved garden", () => {
     const wrapper = shallow<Plants>(<Plants {...fakeProps()} />);
-    wrapper.instance().navigate = jest.fn();
+    wrapper.instance().context = jest.fn();
     wrapper.find(PanelSection).at(1).props().addNew();
-    expect(wrapper.instance().navigate).toHaveBeenCalledWith(
+    expect(wrapper.instance().context).toHaveBeenCalledWith(
       Path.savedGardens("add"));
   });
 
   it("adds new plant", () => {
     const wrapper = shallow<Plants>(<Plants {...fakeProps()} />);
-    wrapper.instance().navigate = jest.fn();
+    wrapper.instance().context = jest.fn();
     wrapper.find(PanelSection).last().props().addNew();
-    expect(wrapper.instance().navigate).toHaveBeenCalledWith(Path.cropSearch());
+    expect(wrapper.instance().context).toHaveBeenCalledWith(Path.cropSearch());
   });
 
   it("deletes all plants", () => {
@@ -146,7 +161,8 @@ describe("<PlantInventory />", () => {
     const plantsSection = wrapper.find(PanelSection).at(2);
     expect(plantsSection.text().toLowerCase()).toContain("delete all");
     plantsSection.find("button").simulate("click");
-    expect(deletePoints).toHaveBeenCalledWith("plants", { pointer_type: "Plant" });
+    expect(deletePointsSpy)
+      .toHaveBeenCalledWith("plants", { pointer_type: "Plant" });
   });
 
   it("doesn't show delete all button", () => {
@@ -184,14 +200,14 @@ describe("<PlantInventory />", () => {
   it("navigates to crop search", () => {
     const p = fakeProps();
     const wrapper = mount<Plants>(<Plants {...p} />);
-    wrapper.instance().navigate = jest.fn();
     wrapper.setState({ searchTerm: "mint" });
+    wrapper.instance().context = jest.fn();
     const noResult = mount(wrapper.instance().noResult);
     noResult.find("a").first().simulate("click");
     expect(p.dispatch).toHaveBeenCalledWith({
       type: Actions.SEARCH_QUERY_CHANGE, payload: "mint",
     });
-    expect(wrapper.instance().navigate).toHaveBeenCalledWith(Path.cropSearch());
+    expect(wrapper.instance().context).toHaveBeenCalledWith(Path.cropSearch());
   });
 });
 

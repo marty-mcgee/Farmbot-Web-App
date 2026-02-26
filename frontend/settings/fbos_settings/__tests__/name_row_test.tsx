@@ -10,6 +10,13 @@ import { NameRowProps } from "../interfaces";
 import { edit, save } from "../../../api/crud";
 import { fakeDevice } from "../../../__test_support__/resource_index_builder";
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+afterAll(() => {
+  jest.unmock("../../../api/crud");
+});
 describe("<NameRow />", () => {
   const fakeProps = (): NameRowProps => ({
     device: fakeDevice(),

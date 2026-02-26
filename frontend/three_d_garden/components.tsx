@@ -8,9 +8,10 @@ export const AmbientLight = (props: ThreeElements["ambientLight"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
   <ambientLight {...props} />;
 
-export const DirectionalLight = (props: ThreeElements["directionalLight"]) =>
-  // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
-  <directionalLight {...props} />;
+export const DirectionalLight =
+  React.forwardRef((props: ThreeElements["directionalLight"], ref) =>
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <directionalLight ref={ref} {...props} />);
 
 export const Group = React.forwardRef((props: ThreeElements["group"], ref) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
@@ -33,9 +34,11 @@ export const MeshNormalMaterial = (props: ThreeElements["meshNormalMaterial"]) =
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
   <meshNormalMaterial {...props} />;
 
-export const InstancedMesh = (props: ThreeElements["instancedMesh"]) =>
-  // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
-  <instancedMesh {...props} />;
+export const InstancedMesh =
+  React.forwardRef((props: ThreeElements["instancedMesh"], ref) => (
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <instancedMesh ref={ref} {...props} />
+  ));
 
 export const Primitive = (props: ThreeElements["primitive"]) =>
   // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
@@ -83,4 +86,28 @@ export const PointsMaterial =
   React.forwardRef((props: ThreeElements["pointsMaterial"], ref) => (
     // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
     <pointsMaterial ref={ref} {...props} />
+  ));
+
+export const PlaneGeometry =
+  React.forwardRef((props: ThreeElements["planeGeometry"], ref) => (
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <planeGeometry ref={ref} {...props} />
+  ));
+
+export const LineSegments =
+  React.forwardRef((props: ThreeElements["lineSegments"], ref) => (
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <lineSegments ref={ref} {...props} />
+  ));
+
+export const LineBasicMaterial =
+  React.forwardRef((props: ThreeElements["lineBasicMaterial"], ref) => (
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <lineBasicMaterial ref={ref} {...props} />
+  ));
+
+export const SphereGeometry =
+  React.forwardRef((props: ThreeElements["sphereGeometry"], ref) => (
+    // @ts-expect-error Property does not exist on type JSX.IntrinsicElements
+    <sphereGeometry ref={ref} {...props} />
   ));
