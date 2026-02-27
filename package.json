@@ -1,7 +1,7 @@
 {
-  "name": "farmbot-web-frontend",
-  "version": "1.1.0",
-  "description": "Farmbot web frontend.",
+  "name": "threedbot-farmbot-web-frontend",
+  "version": "1.1.2-alpha.0",
+  "description": "ThreeD.Bot: Farmbot web frontend (forked from v1.1.0)",
   "engines": {
     "browsers": "defaults",
     "bun": "1.x"
@@ -26,9 +26,10 @@
     "linters": "X=0;bun run typecheck;X=$(($X+$?));bun run dev-typecheck;X=$(($X+$?));bun run eslint;X=$(($X+$?));bun run sass-lint;X=$(($X+$?));bun run sass-check;X=$(($X+$?));bun run translation-check;X=$(($X+$?));[ $X = 0 ]"
   },
   "keywords": [
-    "farmbot"
+    "farmbot",
+    "threed"
   ],
-  "author": "farmbot.io",
+  "author": "threed.ai",
   "license": "MIT",
   "browser": {
     "mqtt": "mqtt/dist/mqtt.esm.js"
