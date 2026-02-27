@@ -9,7 +9,7 @@
   "packageManager": "bun@1.x",
   "repository": {
     "type": "git",
-    "url": "https://github.com/farmbot/farmbot-web-app"
+    "url": "https://github.com/marty-mcgee/farmbot-web-app"
   },
   "scripts": {
     "test-slow": "bun test --bail && bun run coverage-html",
