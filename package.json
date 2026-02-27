@@ -1,6 +1,6 @@
 {
   "name": "threedbot-farmbot-web-frontend",
-  "version": "1.1.2-alpha.0",
+  "version": "1.1.2-alpha.1",
   "description": "ThreeD.Bot: Farmbot web frontend (forked from v1.1.0)",
   "engines": {
     "browsers": "defaults",
