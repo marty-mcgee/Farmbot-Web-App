@@ -153,10 +153,12 @@ namespace :api do
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
-    sh "mkdir -p public/assets/"
+    # [MM] PRODUCTION RELEASE: add -v
+    sh "mkdir -v -p public/assets"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
-    sh "mkdir #{dst}/basic-languages"
+    # [MM] PRODUCTION RELEASE: add -v -p
+    sh "mkdir -v -p #{dst}/basic-languages"
     sh "cp -r #{lua_src}/#{lua} #{dst}/#{lua}"
   end
 
