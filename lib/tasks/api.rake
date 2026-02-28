@@ -155,6 +155,7 @@ namespace :api do
     lua = "basic-languages/lua"
     # [MM] PRODUCTION RELEASE: add -v
     sh "mkdir -v -p public/assets"
+    sh "echo [MM] add_monaco public/assets created?"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
     # [MM] PRODUCTION RELEASE: add -v -p
@@ -171,6 +172,7 @@ namespace :api do
       # DashboardController::PUBLIC_OUTPUT_DIR,
       "public/assets"
     ].join(" ") unless truthy_env?("NO_CLEAN")
+    sh "echo [MM] serve_assets public/assets created?"
     # [MM] end force
     add_monaco
     patch_three_stdlib
@@ -180,6 +182,14 @@ namespace :api do
   desc "Don't call this directly. Use `rake assets:precompile`."
   task assets_compile: :environment do
     clean_assets
+    # [MM] force create public/assets directory
+    sh [
+      "mkdir -v -p",
+      # DashboardController::PUBLIC_OUTPUT_DIR,
+      "public/assets"
+    ].join(" ") unless truthy_env?("NO_CLEAN")
+    sh "echo [MM] assets_compile public/assets created?"
+    # [MM] end force
     add_monaco
     patch_three_stdlib
     run_bun_assets "scripts/bun/build.ts"
