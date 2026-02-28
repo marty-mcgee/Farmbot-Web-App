@@ -98,9 +98,14 @@ namespace :api do
     sh [
       "rm -rf",
       DashboardController::CACHE_DIR,
-      # DashboardController::PUBLIC_OUTPUT_DIR, # [MM]
-      # "public/assets/monaco", # [MM]
+      DashboardController::PUBLIC_OUTPUT_DIR, # [MM]
+      "public/assets/monaco", # [MM]
     ].join(" ") unless truthy_env?("NO_CLEAN")
+    # [MM] PRODUCTION RELEASE: add_assets
+    sh "mkdir -v -p public/assets"
+    sh "mkdir -v -p public/assets/dist"
+    sh "mkdir -v -p public/assets/monaco"
+    # sh "mkdir -v -p public/assets/etc/etc"
   end
 
   # three-stdlib still references LuminanceFormat, which was removed in three.
@@ -155,7 +160,7 @@ namespace :api do
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
     # [MM] PRODUCTION RELEASE: add -v
-    sh "mkdir -v -p public/assets"
+    # sh "mkdir -v -p public/assets"
     # sh "echo [MM] add_monaco public/assets created?"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
@@ -167,15 +172,6 @@ namespace :api do
   desc "Serve javascript assets (via Bun bundler)."
   task serve_assets: :environment do
     clean_assets
-    # [MM] force create public/assets directory
-    sh [
-      "mkdir -v -p",
-      # DashboardController::PUBLIC_OUTPUT_DIR,
-      "public/assets",
-      "public/assets/dist",
-    ].join(" ") unless truthy_env?("NO_CLEAN")
-    # sh "echo [MM] serve_assets public/assets created?"
-    # [MM] end force
     add_monaco
     patch_three_stdlib
     run_bun_assets "scripts/bun/dev_server.ts"
