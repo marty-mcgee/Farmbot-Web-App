@@ -95,86 +95,85 @@ module FarmBot
       .map { |x| x.present? ? "#{x}:#{ENV["API_PORT"]}" : nil }.compact
 
 
-
-        SecureHeaders::Configuration.default do |config|
-          config.hsts = "max-age=#{1.week.to_i}"
-          # We need this off in dev mode otherwise email previews won't show up.
-          config.x_content_type_options = "nosniff"
-          config.x_xss_protection = "1; mode=block"
-          config.x_download_options = "noopen"
-          config.x_permitted_cross_domain_policies = "none"
-          config.referrer_policy =
-            %w(origin-when-cross-origin strict-origin-when-cross-origin)
-          connect_src = ALL_LOCAL_URIS + [
-            ENV["MQTT_HOST"],
-            "api.github.com",
-            "raw.githubusercontent.com",
-            "api.rollbar.com",
-            ASSET_DEV_URL,
-            ENV["FORCE_SSL"] ? "wss:" : "ws:",
-            "localhost:#{API_PORT}",
-            "localhost:#{ASSET_DEV_PORT}",
-            "browser-http-intake.logs.datadoghq.com",
-            "#{ENV.fetch("API_HOST")}:#{API_PORT}",
-            "#{ENV.fetch("API_HOST")}:#{ASSET_DEV_PORT}",
-            "blob:", # 3D
-          ]
-          config.csp = {
-            default_src: %w(https: 'self'),
-            base_uri: %w('self'),
-            connect_src: connect_src,
-            font_src: %w(
-              fonts.gstatic.com
-              fonts.googleapis.com
-              data:
-              cdnjs.cloudflare.com
-              'self'
-            ),
-            form_action: %w('self'),
-            frame_src: %w(*),       # We need "*" to support webcam users.
-            frame_ancestors: %w('self' https://farm.bot https://*.shopify.com https://*.shopifypreview.com),
-            img_src: %w(* data:),   # We need "*" to support webcam users.
-            manifest_src: %w('self'),
-            media_src: %w(),
-            object_src: %w(),
-            sandbox: %w(
-              allow-scripts
-              allow-forms
-              allow-same-origin
-              allow-modals
-              allow-popups
-              allow-downloads
-              allow-top-navigation
-            ),
-            plugin_types: %w(),
-            script_src: [
-              ASSET_DEV_URL,
-              "www.datadoghq-browser-agent.com",
-              "cdn.rollbar.com",
-              "localhost:#{ASSET_DEV_PORT}",
-              "chrome-extension:",
-              "cdnjs.cloudflare.com",
-              "'unsafe-inline'",
-              "'unsafe-eval'",
-              "'self'",
-              "blob:", # 3D
-            ],
-            style_src: %w(
-              fonts.gstatic.com
-              fonts.googleapis.com
-              cdnjs.cloudflare.com
-              'unsafe-inline'
-              'self'
-            ),
-            worker_src: %w(),
-            upgrade_insecure_requests: false, # WHY? Some people run webcam feeds
-                                              # over plain http://. I wish they
-                                              # wouldn't, but I think it's too much
-                                              # of an inconvenience to block that
-                                              # feature. Comments welcome -RC.
-            report_uri: %w(/csp_reports),
-          }
-        end
+    SecureHeaders::Configuration.default do |config|
+      config.hsts = "max-age=#{1.week.to_i}"
+      # We need this off in dev mode otherwise email previews won't show up.
+      config.x_content_type_options = "nosniff"
+      config.x_xss_protection = "1; mode=block"
+      config.x_download_options = "noopen"
+      config.x_permitted_cross_domain_policies = "none"
+      config.referrer_policy =
+        %w(origin-when-cross-origin strict-origin-when-cross-origin)
+      connect_src = ALL_LOCAL_URIS + [
+        ENV["MQTT_HOST"],
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "api.rollbar.com",
+        ASSET_DEV_URL,
+        ENV["FORCE_SSL"] ? "wss:" : "ws:",
+        "localhost:#{API_PORT}",
+        "localhost:#{ASSET_DEV_PORT}",
+        "browser-http-intake.logs.datadoghq.com",
+        "#{ENV.fetch("API_HOST")}:#{API_PORT}",
+        "#{ENV.fetch("API_HOST")}:#{ASSET_DEV_PORT}",
+        "blob:", # 3D
+      ]
+      config.csp = {
+        default_src: %w(https: 'self'),
+        base_uri: %w('self'),
+        connect_src: connect_src,
+        font_src: %w(
+          fonts.gstatic.com
+          fonts.googleapis.com
+          data:
+          cdnjs.cloudflare.com
+          'self'
+        ),
+        form_action: %w('self'),
+        frame_src: %w(*),       # We need "*" to support webcam users.
+        frame_ancestors: %w('self' https://farm.bot https://*.shopify.com https://*.shopifypreview.com),
+        img_src: %w(* data:),   # We need "*" to support webcam users.
+        manifest_src: %w('self'),
+        media_src: %w(),
+        object_src: %w(),
+        sandbox: %w(
+          allow-scripts
+          allow-forms
+          allow-same-origin
+          allow-modals
+          allow-popups
+          allow-downloads
+          allow-top-navigation
+        ),
+        plugin_types: %w(),
+        script_src: [
+          ASSET_DEV_URL,
+          "www.datadoghq-browser-agent.com",
+          "cdn.rollbar.com",
+          "localhost:#{ASSET_DEV_PORT}",
+          "chrome-extension:",
+          "cdnjs.cloudflare.com",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "'self'",
+          "blob:", # 3D
+        ],
+        style_src: %w(
+          fonts.gstatic.com
+          fonts.googleapis.com
+          cdnjs.cloudflare.com
+          'unsafe-inline'
+          'self'
+        ),
+        worker_src: %w(),
+        upgrade_insecure_requests: false, # WHY? Some people run webcam feeds
+                                          # over plain http://. I wish they
+                                          # wouldn't, but I think it's too much
+                                          # of an inconvenience to block that
+                                          # feature. Comments welcome -RC.
+        report_uri: %w(/csp_reports),
+      }
+    end
 
   end
 
