@@ -53,3 +53,4 @@ end
 
 gem "passenger" # Used by Heroku as default rails server
 gem "puma" # Used by Render as default rails server
+gem "bundlebun" # Used by Render to add $PATH variables
