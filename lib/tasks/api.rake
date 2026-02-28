@@ -156,7 +156,7 @@ namespace :api do
     lua = "basic-languages/lua"
     # [MM] PRODUCTION RELEASE: add -v
     sh "mkdir -v -p public/assets"
-    sh "echo [MM] add_monaco public/assets created?"
+    # sh "echo [MM] add_monaco public/assets created?"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
     # [MM] PRODUCTION RELEASE: add -v -p
@@ -171,9 +171,10 @@ namespace :api do
     sh [
       "mkdir -v -p",
       # DashboardController::PUBLIC_OUTPUT_DIR,
-      "public/assets"
+      "public/assets",
+      "public/assets/dist",
     ].join(" ") unless truthy_env?("NO_CLEAN")
-    sh "echo [MM] serve_assets public/assets created?"
+    # sh "echo [MM] serve_assets public/assets created?"
     # [MM] end force
     add_monaco
     patch_three_stdlib
@@ -187,9 +188,10 @@ namespace :api do
     sh [
       "mkdir -v -p",
       # DashboardController::PUBLIC_OUTPUT_DIR,
-      "public/assets"
+      "public/assets",
+      "public/assets/dist",
     ].join(" ") unless truthy_env?("NO_CLEAN")
-    sh "echo [MM] assets_compile public/assets created?"
+    # sh "echo [MM] assets_compile public/assets created?"
     # [MM] end force
     add_monaco
     patch_three_stdlib
