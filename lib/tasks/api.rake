@@ -165,6 +165,13 @@ namespace :api do
   desc "Serve javascript assets (via Bun bundler)."
   task serve_assets: :environment do
     clean_assets
+    # [MM] force create public/assets directory
+    sh [
+      "mkdir -v -p",
+      # DashboardController::PUBLIC_OUTPUT_DIR,
+      "public/assets"
+    ].join(" ") unless truthy_env?("NO_CLEAN")
+    # [MM] end force
     add_monaco
     patch_three_stdlib
     run_bun_assets "scripts/bun/dev_server.ts"
@@ -173,13 +180,6 @@ namespace :api do
   desc "Don't call this directly. Use `rake assets:precompile`."
   task assets_compile: :environment do
     clean_assets
-    # [MM] force create public/assets directory
-    sh [
-      "mkdir -v -p",
-      # DashboardController::PUBLIC_OUTPUT_DIR,
-      "public/assets"
-    ].join(" ") unless truthy_env?("NO_CLEAN")
-    # [MM] end force
     add_monaco
     patch_three_stdlib
     run_bun_assets "scripts/bun/build.ts"
