@@ -94,11 +94,12 @@ namespace :api do
 
   def clean_assets
     # Clear out cache and previous builds on initial load.
+    # [MM] PRODUCTION RELEASE: problem making dir public/assets
     sh [
       "rm -rf",
       DashboardController::CACHE_DIR,
-      DashboardController::PUBLIC_OUTPUT_DIR,
-      "public/assets/monaco",
+      # DashboardController::PUBLIC_OUTPUT_DIR, # [MM]
+      # "public/assets/monaco", # [MM]
     ].join(" ") unless truthy_env?("NO_CLEAN")
   end
 
