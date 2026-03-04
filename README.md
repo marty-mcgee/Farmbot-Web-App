@@ -1,5 +1,29 @@
 # ThreeDBot -- Custom FarmBot Web App
 
+ThreeD.Bot
+is a project by developer Marty McGee that offers a self-deployable version of the FarmBot Web App and FarmBotOS. It is primarily a fork of the official FarmBot open-source codebase, adapted for users who want to host their own instance of the garden automation software rather than using the standard my.farm.bot hosted service. 
+Core Capabilities
+The software suite provides a complete end-to-end management system for a FarmBot robot:
+
+    Farm Designer: A graphical drag-and-drop interface used to map out your garden layout and place plants.
+    Sequence & Regimen Editors: Tools to build custom automation routines (sequences) and schedule them over a plant's entire lifecycle (regimens).
+    Real-time Controls: A web-based remote control panel for manually moving the robot, controlling peripherals (pumps, lights), and viewing sensor data.
+    3D Environment: Recent updates to the FarmBot ecosystem include a 3D Farm Designer that renders soil height interpolation and dynamic robot models. 
+
+Deployment Components
+To run ThreeD.Bot, you typically deploy two major software blocks found in the repository:
+
+    Web App (Backend/Frontend): Built with Ruby on Rails and PostgreSQL, this acts as the "brain" for data storage, user accounts, and garden designs. It also includes a Dockerized MQTT server for real-time communication between the app and the robot.
+    FarmBotOS: A custom operating system flashed onto a Raspberry Pi using tools like Raspberry Pi Imager. It handles the direct execution of G-code commands and synchronizes data with the Web App. 
+
+Why Use the Marty-McGee Fork?
+
+    Self-Hosting: Ideal for "off-grid" or private intranet setups where an internet connection to the official servers is not desired.
+    Customization: Developers can modify the source code to support non-standard hardware or unique peripheral tools not found in official kits.
+    Experimentation: As Marty McGee is a 3D React developer, this specific fork may focus on enhancing the 3D visualization features or performance of the web interface. 
+
+---
+
 [![codebeat badge](https://codebeat.co/badges/7f81859b-67fe-4bdb-b56f-050bfed35e9c)](https://codebeat.co/projects/github-com-farmbot-farmbot-web-app-staging)
 [![codecov](https://codecov.io/gh/FarmBot/Farmbot-Web-App/branch/staging/graph/badge.svg)](https://codecov.io/gh/FarmBot/Farmbot-Web-App)
 [![Coverage Status](https://coveralls.io/repos/github/FarmBot/Farmbot-Web-App/badge.svg)](https://coveralls.io/github/FarmBot/Farmbot-Web-App)

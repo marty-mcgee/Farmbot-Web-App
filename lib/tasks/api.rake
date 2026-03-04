@@ -70,9 +70,9 @@ namespace :api do
     sh [
       "rm -rf",
       DashboardController::CACHE_DIR,
-      # DashboardController::PUBLIC_OUTPUT_DIR, 
-      # "public/assets/monaco",
-      # "public/assets/parcel",
+      # DashboardController::PUBLIC_OUTPUT_DIR, # [MM]
+      # "public/assets/monaco", # [MM]
+      # "public/assets/parcel", # [MM]
       ".parcel-cache",
     ].join(" ") unless ENV["NO_CLEAN"]
   end
