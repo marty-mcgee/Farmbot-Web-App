@@ -111,6 +111,10 @@ GEM
     discard (1.4.0)
       activerecord (>= 4.2, < 9.0)
     docile (1.4.1)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     drb (2.2.3)
     e2mmap (0.1.0)
     erubi (1.13.1)
@@ -432,6 +436,7 @@ DEPENDENCIES
   delayed_job_active_record
   devise
   discard
+  dotenv-rails (~> 3.2)
   drb
   factory_bot_rails
   faker
@@ -511,6 +516,8 @@ CHECKSUMS
   digest-crc (0.7.0) sha256=64adc23a26a241044cbe6732477ca1b3c281d79e2240bcff275a37a5a0d78c07
   discard (1.4.0) sha256=6efcd2a53ddf96781f81b825d398f1c88ab88c0faa84e131bea6e16ef95d65d0
   docile (1.4.1) sha256=96159be799bfa73cdb721b840e9802126e4e03dfc26863db73647204c727f21e
+  dotenv (3.2.0) sha256=e375b83121ea7ca4ce20f214740076129ab8514cd81378161f11c03853fe619d
+  dotenv-rails (3.2.0) sha256=657e25554ba622ffc95d8c4f1670286510f47f2edda9f68293c3f661b303beab
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
   e2mmap (0.1.0) sha256=45ee6bba2d97a7d91ee0885774261feee87e28c598355df31e93b56196ec0f59
   erubi (1.13.1) sha256=a082103b0885dbc5ecf1172fede897f9ebdb745a4b97a5e8dc63953db1ee4ad9
