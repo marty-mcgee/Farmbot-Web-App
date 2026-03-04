@@ -152,25 +152,25 @@ namespace :api do
   # [MM] PRODUCTION RELEASE: add_assets
   def add_assets
     # sh "echo [MM] assets_compile public/assets created?"
-    sh "mkdir -v -p public/assets"
-    sh "mkdir -v -p public/assets/dist"
+    # sh "mkdir -v -p public/assets"
+    # sh "mkdir -v -p public/assets/dist"
     sh [
       "mkdir -v -p",
       # DashboardController::PUBLIC_OUTPUT_DIR,
       "public/assets",
       "public/assets/dist",
-    # "public/assets/monaco",
-    # "public/assets/etc/etc",
+      "public/assets/monaco",
+      # "public/assets/etc/etc",
     ].join(" ") unless truthy_env?("NO_CLEAN")
   end
 
   def add_monaco
+    add_assets # [MM]
     src = "node_modules/monaco-editor/min/vs"
     dst = "public/assets/monaco"
     lua_src = "node_modules/monaco-editor/esm/vs"
     lua = "basic-languages/lua"
     # [MM] PRODUCTION RELEASE: add -v
-    # sh "echo [MM] add_monaco public/assets created?"
     # sh "mkdir -v -p public/assets"
     sh "cp -r #{src} #{dst}"
     sh "rm -rf #{dst}/*language*"
@@ -190,7 +190,6 @@ namespace :api do
   desc "Don't call this directly. Use `rake assets:precompile`."
   task assets_compile: :environment do
     clean_assets
-    add_assets # [MM]
     add_monaco
     patch_three_stdlib
     run_bun_assets "scripts/bun/build.ts"
