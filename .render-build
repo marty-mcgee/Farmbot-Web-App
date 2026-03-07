@@ -1,0 +1,12 @@
+#!/bin/bash
+# .render-build - runs before main build
+
+# Create bunx symlink in existing bin folder
+ln -sf $(which bun) /opt/render/project/src/bin/bunx
+
+# Add bin folder to PATH
+export PATH="/opt/render/project/src/bin:$PATH"
+
+# Optional: Verify it worked
+echo "bunx location: $(which bunx)"
+bunx --version
