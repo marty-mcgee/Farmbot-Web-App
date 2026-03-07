@@ -1,22 +1,28 @@
 #!/bin/bash
-# bin/render-prebuild.sh
 set -e
 
 echo "🔧 Render pre-build: Setting up bunx..."
 
-# Create bin directory if it doesn't exist
-mkdir -v -p /opt/render/project/src/bin
+# Find bun location
+BUN_PATH=$(which bun)
+echo "bun found at: $BUN_PATH"
 
-# Create bunx symlink pointing to bun
-ln -sf $(which bun) /opt/render/project/src/bin/bunx
+# Use home directory bin (always writable)
+mkdir -p ~/bin
+TARGET="$HOME/bin/bunx"
 
-# Add to PATH for this session
-export PATH="/opt/render/project/src/bin:$PATH"
+# Remove any existing file and create fresh symlink
+rm -f "$TARGET"
+ln -sf "$BUN_PATH" "$TARGET"
+echo "Created symlink: $TARGET -> $BUN_PATH"
 
-# Verify
-echo "PATH is now $PATH"
-echo "✅ bunx is now at: $(which bunx)"
+# Add home bin to PATH (BEFORE everything else)
+export PATH="$HOME/bin:$PATH"
+echo "PATH is now: $PATH"
+
+# Verify bunx works
+echo "Testing bunx:"
 bunx --version
 
-# Execute the main build command passed as arguments
+# Execute main build
 exec "$@"
