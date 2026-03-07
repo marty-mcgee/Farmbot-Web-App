@@ -117,7 +117,7 @@ if (cssEntries.length > 0) {
   cssEntries.forEach(([input, output]) => {
     sassArgs.push(`${input}:${output}`);
   });
-  const sassProc = Bun.spawn(["bunx", ...sassArgs], {
+  const sassProc = Bun.spawn(["bun x", ...sassArgs], {
     stdout: "inherit",
     stderr: "inherit",
   });
