@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
-echo "🔧 Render pre-build: Creating bunx wrapper in /home/render/bin..."
+echo "🔧 Render pre-build: Creating bunx wrapper in ~/project/src/bin..."
 
-# Use home directory bin (definitely writable)
-mkdir -p /home/render/bin
-WRAPPER_PATH="/home/render/bin/bunx"
+# Use the correct home directory path
+PROJECT_BIN="/home/render/project/src/bin"
+mkdir -p "$PROJECT_BIN"
+WRAPPER_PATH="$PROJECT_BIN/bunx"
 
 # Real bun binary
 REAL_BUN="/home/render/.bun/bin/bun"
@@ -23,12 +24,12 @@ EOF
 # Make it executable
 chmod +x "$WRAPPER_PATH"
 
-# Add home bin to PATH (this is the key line)
-export PATH="/home/render/bin:$PATH"
+# Add to PATH
+export PATH="$PROJECT_BIN:$PATH"
 
 # Verify
 echo "✅ bunx wrapper created at: $WRAPPER_PATH"
-echo "✅ Current PATH: $PATH"
+ls -la "$WRAPPER_PATH"
 echo "✅ Which bunx: $(which bunx)"
 echo "✅ bunx version: $(bunx --version)"
 
