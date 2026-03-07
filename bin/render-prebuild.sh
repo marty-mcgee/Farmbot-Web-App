@@ -14,6 +14,7 @@ ln -sf $(which bun) /opt/render/project/src/bin/bunx
 export PATH="/opt/render/project/src/bin:$PATH"
 
 # Verify
+echo "PATH is now $PATH"
 echo "✅ bunx is now at: $(which bunx)"
 bunx --version
 
