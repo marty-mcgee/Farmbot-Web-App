@@ -125,7 +125,7 @@ cssEntries.forEach(([input, output]) => {
   sassArgs.push(`${input}:${output}`);
 });
 
-const sassProc = Bun.spawn(["bun x", ...sassArgs], {
+const sassProc = Bun.spawn(["bunx", ...sassArgs], {
   stdout: "inherit",
   stderr: "inherit",
 });
