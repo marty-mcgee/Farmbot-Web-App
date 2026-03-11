@@ -52,4 +52,7 @@ group :development, :test do
   gem "webmock"
 end
 
-gem "passenger"
+gem "passenger" # Used by Heroku as default rails server
+gem "puma" # Used by Render as default rails server
+# gem "bundlebun" # Used by Render to add $PATH variables ??? failed
+gem "dotenv-rails", "~> 3.2"

@@ -127,6 +127,10 @@ GEM
     discard (1.4.0)
       activerecord (>= 4.2, < 9.0)
     docile (1.4.1)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     drb (2.2.3)
     e2mmap (0.1.0)
     erb (6.0.2)
@@ -284,6 +288,8 @@ GEM
       date
       stringio
     public_suffix (7.0.5)
+    puma (7.2.0)
+      nio4r (~> 2.0)
     rabbitmq_http_api_client (3.2.2)
       addressable (~> 2.7)
       faraday (~> 2.9)
@@ -452,6 +458,7 @@ DEPENDENCIES
   delayed_job_active_record
   devise
   discard
+  dotenv-rails (~> 3.2)
   drb
   factory_bot_rails
   faker
@@ -470,6 +477,7 @@ DEPENDENCIES
   pg
   pry
   pry-rails
+  puma
   rabbitmq_http_api_client
   rack-attack
   rack-cors
