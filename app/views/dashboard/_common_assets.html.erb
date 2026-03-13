@@ -2,26 +2,30 @@
 <meta name="Pragma" content="no-cache">
 <meta name="Expires" content="0">
 <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-<title>The FarmBot Web App</title>
-<meta name="description" content="Setup, customize, and control FarmBot from your computer, tablet, or smartphone.">
+<title>ThreeD.Bot Web App</title>
+<meta name="description" content="Setup, customize, control your FarmBot from anywhere.">
 <script>
-<% # IMPORTANT!!!! %>
+<% # IMPORTANT !!! %>
 <% # ALWAYS LOAD THIS *FIRST* %>
-window.globalConfig = <%= raw(@global_config) %> // SEE COMMENTS!;
-<% # READ COMMENT ABOVE %>
+window.globalConfig = <%= raw(@global_config) %>; // [MM] SEE COMMENTS!
+<% # [MM] READ COMMENT ABOVE %>
 window.process = {
   env: {
     NODE_ENV: <%= raw(Rails.env.inspect) %>
   }
-}
+};
 </script>
 <%= render "addons" %>
 <%= javascript_include_tag *@js_assets, type: "module" %>
-<% if Rails.env.development? &&
-     ENV.fetch("ASSET_LIVERELOAD", "true") == "true" %>
-  <% asset_host = ENV.fetch("ASSET_HOST",
-                            ENV.fetch("API_HOST", "localhost")) %>
-  <% asset_port = ENV.fetch("ASSET_PORT", "3808") %>
+
+<% # [MM] TEST and DEVELOPMENT environments only %>
+<% if 1 == 0 && 
+      Rails.env.development? &&
+      ENV.fetch("ASSET_LIVERELOAD", "true") == "false"
+    
+        asset_host = ENV.fetch("ASSET_HOST", ENV.fetch("API_HOST", "localhost"))
+        asset_port = ENV.fetch("ASSET_PORT", "3808")
+%>
   <script>
     (() => {
       const protocol = location.protocol === "https:" ? "wss" : "ws";
@@ -36,4 +40,7 @@ window.process = {
     })();
   </script>
 <% end %>
+
+
 <meta content="width=device-width, initial-scale=1" name="viewport">
+
