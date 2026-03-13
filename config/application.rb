@@ -88,7 +88,8 @@ module FarmBot
         "raw.githubusercontent.com",
         "api.rollbar.com",
         ASSET_DEV_URL,
-        ENV["FORCE_SSL"] ? "wss:" : "ws:",
+        # ENV["FORCE_SSL"] ? "wss:" : "ws:", # [MM] support both
+        "wss:", "ws:",
         "localhost:#{API_PORT}",
         "localhost:#{ASSET_DEV_PORT}",
         "browser-http-intake.logs.datadoghq.com",
