@@ -4,21 +4,32 @@ Rails.application.configure do
 
   config
     .action_mailer
-    .default_url_options = { host: ENV.fetch("API_HOST", "threed.bot") }
+    .default_url_options = { host: ENV.fetch("API_HOST", "threed.bot") 
+  }
   config.active_support.report_deprecations = false
   config.enable_reloading            = false
-  config.consider_all_requests_local = true # [MM] default: false
   config.eager_load                  = true
   config.force_ssl                   = true if ENV["FORCE_SSL"]
   config.i18n.fallbacks              = true
   config.log_formatter               = ::Logger::Formatter.new
   config.log_level                   = :info
-  config.action_controller.perform_caching  = false
+  config.action_controller.perform_caching = false
+  config.active_record.dump_schema_after_migration = false
+  # [MM] custom config settings
+  config.consider_all_requests_local = true # [MM] default: false
   config.public_file_server.enabled  = true # [MM] default: false
   config.assets.compile              = true # [MM] default: false
-  config.active_record.dump_schema_after_migration = false
+  config.assets.debug                = true
+  config.assets.raise_runtime_errors = true
   config.serve_static_assets         = true # [MM] custom (for Render)
   config.assets.digest               = true # [MM] custom (for Render)
+
+  config.active_record.migration_error        = :page_load
+  config.active_record.verbose_query_logs     = true
+  config.active_record.query_log_tags_enabled = true
+  config.active_job.verbose_enqueue_logs      = true
+  config.action_controller.raise_on_missing_callback_actions = true
+
   # HACK AHEAD! Here's why:
   # 1. FarmBot Inc. Uses Sendgrid for email.
   # 2. FarmBot is an open source project that must be vendor neutral.
