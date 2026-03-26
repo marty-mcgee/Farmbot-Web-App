@@ -18,13 +18,15 @@ window.process = {
 <%= render "addons" %>
 <%= javascript_include_tag *@js_assets, type: "module" %>
 
-<% # [MM] TEST and DEVELOPMENT environments only %>
-<% if 1 == 0 && 
-      Rails.env.development? &&
-      ENV.fetch("ASSET_LIVERELOAD", "true") == "false"
-    
-        asset_host = ENV.fetch("ASSET_HOST", ENV.fetch("API_HOST", "localhost"))
-        asset_port = ENV.fetch("ASSET_PORT", "3808")
+<% # [MM] TEST and DEVELOPMENT environments only ??? %>
+<% 
+  if ( 1 == 0 && 
+    Rails.env.development? &&
+    ENV.fetch("ASSET_LIVERELOAD", "true") == "false"
+  )
+    asset_host = ENV.fetch("ASSET_HOST", ENV.fetch("API_HOST", "localhost"))
+    asset_port = ENV.fetch("ASSET_PORT", "3808")
+  end 
 %>
   <script>
     (() => {
