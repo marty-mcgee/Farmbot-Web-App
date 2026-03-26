@@ -22,6 +22,10 @@
     <link rel="apple-touch-icon" href="/images/favicon.png" type="image/png">
     <% manifest_file =
          case ENV["API_HOST"]
+         when "threed.bot"
+           "/manifest.production.json"
+         when "staging.threed.bot"
+           "/manifest.staging.json"
          when "my.farm.bot"
            "/manifest.production.json"
          when "staging.farm.bot"
