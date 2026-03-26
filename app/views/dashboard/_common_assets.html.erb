@@ -4,6 +4,8 @@
 <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 <title>ThreeD.Bot Web App</title>
 <meta name="description" content="Setup, customize, control your FarmBot from anywhere.">
+<meta content="width=device-width, initial-scale=1" name="viewport">
+
 <script>
 <% # IMPORTANT !!! %>
 <% # ALWAYS LOAD THIS *FIRST* %>
@@ -15,7 +17,9 @@ window.process = {
   }
 };
 </script>
+
 <%= render "addons" %>
+
 <%= javascript_include_tag *@js_assets, type: "module" %>
 
 <% # [MM] TEST and DEVELOPMENT environments only ??? %>
@@ -44,5 +48,4 @@ window.process = {
 <% end %>
 
 
-<meta content="width=device-width, initial-scale=1" name="viewport">
 
