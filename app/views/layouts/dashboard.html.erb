@@ -35,18 +35,24 @@
          end
     %>
     <link rel="manifest" href="<%= manifest_file %>">
+    
+    
     <script>
       /** L@@K!!! THIS IS IMPORT */
       window.globalConfig = <%= raw(@global_config) %>; // <= DONT MOVE
       /** ALWAYS LOAD THAT FIRST!!! ^ */
       window.process = { env: { NODE_ENV: <%= raw(Rails.env.inspect) %> } }
     </script>
+
+
     <%= render "addons" %>
     <%= yield :head %>
   </head>
   <body>
     <%= yield %>
     <%= javascript_include_tag *@js_assets, type: "module" %>
+
+
     <% if 1 == 0 && Rails.env.development? &&
          ENV.fetch("ASSET_LIVERELOAD", "true") == "true" %>
       <% asset_host = ENV.fetch("ASSET_HOST",
@@ -66,5 +72,7 @@
         })();
       </script>
     <% end %>
+
+
   </body>
 </html>
